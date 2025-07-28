@@ -1,0 +1,32 @@
+{
+  "name": "reval",
+  "version": "0.1.0",
+  "description": "A benchmark framework for evaluating LLM applications",
+  "private": true,
+  "scripts": {
+    "reval": "bun run src/run.ts",
+    "build": "npm run build",
+    "dev": "npm run dev",
+    "test": "vitest run",
+    "lint": "npm run lint",
+    "clean": "npm run clean"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.1.2",
+    "@types/node": "^24.1.0",
+    "bun": "^1.2.19",
+    "typescript": "^5.8.3",
+    "ultracite": "5.1.2",
+    "vitest": "^3.2.4"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "data-forge": "^1.10.4",
+    "data-forge-fs": "^0.0.9",
+    "p-queue": "^8.1.0",
+    "p-retry": "^6.2.1",
+    "zod": "^4.0.14"
+  }
+}
