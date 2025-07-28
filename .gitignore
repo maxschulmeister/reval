@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+.next/
+out/
+
+# Environment files
+.env*
+
+# Logs
+*.log
+
+# OS generated files
+.DS_Store
+
+# IDE files
+.vscode/
+.cursor/
+.trae/
+.windsurf/
+.kiro/
+
+# Temporary folders
+tmp/
+temp/
