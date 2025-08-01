@@ -1,5 +1,5 @@
 import { type Config } from "./src/types/config";
-import { functionWithOneArg } from "./test/function";
+import fn from "./test/modifiedOutput";
 
 const revalConfig: Config = {
   concurrency: 10,
@@ -15,7 +15,7 @@ const revalConfig: Config = {
     },
   },
   run: {
-    function: functionWithOneArg,
+    function: fn,
     /**
      * The args function must return an array matching the number and types of parameters expected by the target function.
      *  Note that TypeScript cannot validate this at compile time, so ensure the arguments match your function's signature at runtime.

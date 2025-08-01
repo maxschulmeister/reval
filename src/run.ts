@@ -1,52 +1,31 @@
-import dataForge from "data-forge";
 import "data-forge-fs";
 import PQueue from "p-queue";
 import pRetry from "p-retry";
-import { combineArgs } from "./utils";
+import { combineArgs, getCurrentVariant, loadConfig, loadData } from "./utils";
 
 const run = async () => {
-  const configModule = await import("../reval.config");
-  const config = configModule.default || configModule;
+  const config = await loadConfig();
 
-  let df;
-  let dfIn;
-  let dfOut;
-  if (
-    config.data.path &&
-    typeof config.data.in === "string" &&
-    typeof config.data.out === "string"
-  ) {
-    df = dataForge.readFileSync(config.data.path).parseCSV();
-
-    if (config.data.trim) {
-      df = df.take(config.data.trim);
-    }
-
-    dfIn = config.data.in
-      ? df.getSeries(config.data.in).toArray()
-      : df.getSeries(df.getColumnNames()[0]).toArray();
-    dfOut = config.data.out
-      ? df.getSeries(config.data.out).toArray()
-      : df.getSeries(df.getColumnNames()[1]).toArray();
-  } else {
-    df = dataForge.fromObject({
-      input: config.data.in,
-      output: config.data.out,
-    });
-    dfIn = df.getSeries("input").toArray();
-    dfOut = df.getSeries("output").toArray();
-  }
+  const data = await loadData();
 
   const context = {
     path: config.data.path,
-    in: dfIn,
-    out: dfOut,
+    in: data.in,
+    out: data.out,
     variants: config.data.variants,
   };
 
-  const args = combineArgs(config.run.args(context));
-
-  console.log(`Generated ${args.length} combinations:`, args.slice(0, 3));
+  // Generate a runId based on the function name, variants (and lengths) and timestamp
+  const fnName = config.run.function.name;
+  const variants = Object.entries(config.data.variants).map(([key, value]) => {
+    if (Array.isArray(value)) {
+      return `${value.length}_${key}`;
+    }
+    return `${key}`;
+  });
+  const timestamp = Date.now();
+  const runId = `${fnName}-${variants.join("-")}-${timestamp}`;
+  console.log(runId);
 
   // Create queue with concurrency control and 1-second interval
   const queue = new PQueue({
@@ -56,10 +35,11 @@ const run = async () => {
   });
 
   // Add all tasks to the queue
+  const args = combineArgs(config.run.args(context));
   const promises = args.map((arg) =>
     queue.add(async () => {
       let retryCount = 0;
-      let startTime: number;
+      let startTime: number = Date.now();
       let state: "success" | "error" | undefined;
       let response: any;
       let error: any;
@@ -68,6 +48,7 @@ const run = async () => {
         response = await pRetry(
           async () => {
             startTime = Date.now();
+
             return await config.run.function(...arg);
           },
           {
@@ -91,13 +72,19 @@ const run = async () => {
       }
 
       const endTime = Date.now();
-      const executionTime = endTime - startTime!;
+      const executionTime = endTime - startTime;
+
+      const variant = getCurrentVariant(arg, config.data.variants, context.in);
+      console.log(variant);
 
       return {
         result: response || error,
+        runId: runId,
+        args: arg,
         time: executionTime,
         retries: retryCount,
         state,
+        variant,
       };
     })
   );
