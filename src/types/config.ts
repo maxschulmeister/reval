@@ -58,16 +58,16 @@ export interface Config {
      *   (context) => ({
      *     response: context.choices[0].message.content,
      *     token: {
-     *       in: context.usage.prompt_tokens,
-     *       out: context.usage.completion_tokens,
+     *       features: context.usage.prompt_tokens,
+     *       target: context.usage.completion_tokens,
      *     }
      *   })
      * example:
      * metrics: (context) => ({
      *   response: context.result,
      *   tokens: {
-     *     in: context.tokens_in,
-     *     out: context.tokens_out,
+     *     features: context.tokens_in,
+     *     target: context.tokens_out,
      *   },
      *   totalTokens: context.tokens_in + context.tokens_out,
      * }),
@@ -75,8 +75,8 @@ export interface Config {
     metrics: (context: ReturnType<Config["run"]["function"]>) => {
       response: string;
       tokens: {
-        in: number;
-        out: number;
+        features: number;
+        target: number;
       };
       [key: string]: any;
     };
@@ -91,11 +91,11 @@ export interface ConfigData {
   /**
    * The column name for the input data. Defaults to the first column.
    */
-  in?: string;
+  features?: string;
   /**
-   * The column name for the expected output. Defaults to the second column.
+   * The column name for the expected output. All others are treated as features.
    */
-  out?: string;
+  target?: string;
   /**
    * Defines the variables to be tested. Reval will generate a benchmark for each
    * possible combination of these variants.
@@ -125,9 +125,9 @@ export interface ConfigData {
   trim?: number;
 }
 
-export type Context = Omit<ConfigData, "in" | "out"> & {
-  in: any[];
-  out: any[];
+export type Context = Omit<ConfigData, "features" | "target"> & {
+  features: any[];
+  target: any[];
 };
 
 // Utility type: Converts a function's parameter types to an object with array values

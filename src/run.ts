@@ -10,8 +10,8 @@ const run = async () => {
 
   const context = {
     path: config.data.path,
-    in: data.in,
-    out: data.out,
+    features: data.features,
+    target: data.target,
     variants: config.data.variants,
   };
 
@@ -74,7 +74,11 @@ const run = async () => {
       const endTime = Date.now();
       const executionTime = endTime - startTime;
 
-      const variant = getCurrentVariant(arg, config.data.variants, context.in);
+      const variant = getCurrentVariant(
+        arg,
+        config.data.variants,
+        context.features
+      );
       console.log(variant);
 
       return {

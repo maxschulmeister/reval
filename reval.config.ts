@@ -8,8 +8,7 @@ const revalConfig: Config = {
   data: {
     path: "./data/test.csv",
     trim: 10,
-    in: "image_path",
-    out: "expected_json",
+    target: "expected_json",
     variants: {
       models: ["gemini-2.5-flash", "deepseek-chat-v3-0324"],
     },
@@ -22,7 +21,7 @@ const revalConfig: Config = {
      */
     args: (context) => [
       {
-        file: context.in,
+        file: context.features,
         model: context.variants.models,
       },
     ],

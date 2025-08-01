@@ -7,8 +7,8 @@ export default async function modifyOutput(args: {
   const data = await loadData();
   const { file, model } = args;
 
-  const index = data.in.findIndex((item: string) => item === file);
-  const result = data.out[index];
+  const index = data.features.findIndex((item: string) => item === file);
+  const result = data.target[index];
 
   const modifiedResult = eraseRandomCharacters(result, 10, 20);
 

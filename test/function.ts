@@ -10,8 +10,8 @@ export const functionWithOneArg = async ({
   return {
     response: "test",
     tokens: {
-      in: 10,
-      out: 10,
+      features: 10,
+      target: 10,
     },
   };
 };
@@ -22,8 +22,8 @@ export const functionWithMultipleArgs = async (file: string, model: string) => {
   return {
     response: "test",
     tokens: {
-      in: 10,
-      out: 10,
+      features: 10,
+      target: 10,
     },
   };
 };

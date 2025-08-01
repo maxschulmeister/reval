@@ -34,46 +34,55 @@ export const loadConfig = async () => {
 export const loadData = async () => {
   const config = await loadConfig();
   let df;
-  let dfIn;
-  let dfOut;
-  if (
-    config.data.path &&
-    typeof config.data.in === "string" &&
-    typeof config.data.out === "string"
-  ) {
+  let dfFeatures;
+  let dfTarget;
+  if (config.data.path && typeof config.data.target === "string") {
     df = dataForge.readFileSync(config.data.path).parseCSV();
 
     if (config.data.trim) {
       df = df.take(config.data.trim);
     }
 
-    dfIn = config.data.in
-      ? df.getSeries(config.data.in).toArray()
-      : df.getSeries(df.getColumnNames()[0]).toArray();
-    dfOut = config.data.out
-      ? df.getSeries(config.data.out).toArray()
-      : df.getSeries(df.getColumnNames()[1]).toArray();
+    const dfWithoutTarget = df.dropSeries(config.data.target);
+    if (config.data.features) {
+      dfFeatures = df.getSeries(config.data.features).toArray();
+    } else if (dfWithoutTarget.getColumns().toArray().length > 1) {
+      dfFeatures = dfWithoutTarget.toArray();
+    } else {
+      dfFeatures = dfWithoutTarget
+        .toArray()
+        .flatMap((feature) => Object.values(feature));
+    }
+
+    if (config.data.target) {
+      dfTarget = df.getSeries(config.data.target).toArray();
+    } else {
+      dfTarget = df.getSeries(df.getColumnNames()[1]).toArray();
+    }
   } else {
     df = dataForge.fromObject({
-      input: config.data.in,
-      output: config.data.out,
+      input: config.data.features,
+      output: config.data.target,
     });
-    dfIn = df.getSeries("input").toArray();
-    dfOut = df.getSeries("output").toArray();
+    dfFeatures = df.getSeries("features").toArray();
+    dfTarget = df.getSeries("target").toArray();
   }
 
-  return { frame: df, in: dfIn, out: dfOut };
+  console.log("dfFeatures", dfFeatures);
+  console.log("dfTarget", dfTarget);
+
+  return { frame: df, features: dfFeatures, target: dfTarget };
 };
 
 export const getCurrentVariant = (
   arg: any,
   variants: Context["variants"],
-  inputData: Context["in"]
+  inputData: Context["features"]
 ): Record<string, any> & { input?: any } => {
   const variantValues: Record<string, any> = {};
   let inputValue: any;
 
-  // Find the input value that matches with data.in
+  // Find the input value that matches with data.features
   if (Array.isArray(arg)) {
     // For array arguments, find the value that exists in inputData
     inputValue = arg.find((argValue) => {
