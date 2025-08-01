@@ -2,7 +2,7 @@
 
 ## 1. Introduction
 
-**reval** is a benchmark framework designed to simplify the evaluation of applications that leverage Large Language Models (LLMs). As LLM-powered features become more prevalent, developers need a standardized, easy-to-use tool to measure, compare, and track the performance of their LLM integrations. `reval` provides a CLI, a configurable evaluation engine, and a local dashboard to visualize results.
+**reval** is a benchmark framework designed to simplify the evaluation of applications that leverage Large Language Models (LLMs). As LLM-powered features become more prevalent, developers need a standardized, easy-to-use tool to measure, compare, and track the performance of their LLM integrations.
 
 ## 2. Vision
 
@@ -10,30 +10,13 @@ To become the industry-standard tool for benchmarking LLM-based applications, em
 
 ## 3. Development Phases
 
-### Phase 1: TypeScript/JavaScript Foundation
+### Core Functionality
 
-- Support for TypeScript/JavaScript functions only
-- **Benchmark Types:**
-  - Text-to-text
-  - Image-to-text
-- Basic CSV input/output format
-- Essential metrics (speed, accuracy)
-- Simple dashboard with table view
-- File-based test data handling
-
-### Phase 2: Enhanced Features
-
-- Support for Python integration
-- Advanced metrics (cost, retries)
-- Graph visualization
-- Run comparison in dashboard
-
-### Phase 3: Extended Language Support
-
-- Support for Go, Rust, and other languages
-- Custom metric definitions
-- CI/CD integration
-- Cloud storage and team features
+- Support for TypeScript/JavaScript functions only.
+- Benchmark text-to-text functions.
+- Handle CSV data using `data-forge`.
+- Calculate essential metrics like speed and accuracy.
+- Store benchmark runs and results in a local SQLite database.
 
 ## 4. Target Audience & User Personas
 
@@ -68,7 +51,7 @@ To become the industry-standard tool for benchmarking LLM-based applications, em
 
 ### CSV Format
 
-The test data must be provided in CSV format with two columns:
+The test data must be provided in CSV format. It is processed using `data-forge`.
 
 ```csv
 input,expected_output
@@ -91,89 +74,37 @@ input,expected_output
 
 ## 6. User Flow
 
-1.  **Installation:**
+1.  **Setup:**
+    - No installation is needed. The project is run directly using `bun`.
+
+2.  **Configuration:**
+    - Edit `reval.config.ts` to define the benchmark parameters, data source, and function to test.
+
+3.  **Execution:**
 
     ```bash
-    npm install -g reval
+    bun reval
     ```
 
-2.  **Initialization:**
-
-    ```bash
-    reval init
-    ```
-
-    Creates `reval.config.js` and `reval-tests/` directory.
-
-3.  **Configuration:** Edit `reval.config.js`:
-
-    ```javascript
-    module.exports = {
-      function: './src/sqlGenerator.ts', // Path to function as default export
-      // or
-      function: {
-        path: './src/sqlGenerator.ts',
-        name: 'generateSQL'
-      } // Object for function as named export
-      data: './data/sql-test-cases.csv',
-      output: {
-        dir: './reval-results',
-        format: 'json'
-      }
-    }
-    ```
-
-4.  **Execution:**
-
-    ```bash
-    reval run
-    ```
-
-    Results are saved as `reval-results/generateSQL_2024-01-20T14-30-00.json`
-
-5.  **Analysis:**
-    ```bash
-    reval ui
-    ```
+    Results are saved to a local SQLite database.
 
 ## 7. Features & Requirements
 
-### Phase 1 Requirements
+### Core Requirements
 
-#### Core Engine (`@reval/core`)
-
-- Execute TypeScript/JavaScript functions
-- Read CSV test data
-- Calculate speed and accuracy metrics
-- Generate uniquely named results (timestamp + function name)
-
-#### CLI (`@reval/cli`)
-
-- Initialize new projects
-- Run benchmarks
-- Launch dashboard
-
-#### UI (`@reval/ui`)
-
-- List benchmark runs
-- Display results in sortable table
-- Basic filtering capabilities
-
-### Future Phase Requirements
-
-(As outlined in Phase 2 and 3 sections)
+- Execute TypeScript/JavaScript functions.
+- Read CSV test data via `data-forge`.
+- Calculate speed and accuracy metrics.
+- Store results in a SQLite database using `bun:sqlite` and `drizzle-orm`.
 
 ## 8. Technical Stack
 
 - **Language:** TypeScript
-- **Framework (UI):** Next.js
-- **UI Components:** shadcn/ui
-- **Styling:** Tailwind CSS
-- **CLI Framework:** commander.js
+- **Runtime:** Bun
+- **Data Handling:** data-forge
+- **Database:** bun:sqlite, Drizzle ORM
 
 ## 9. Success Metrics
 
-- **Adoption:** Weekly npm downloads
 - **Reliability:** < 1% error rate in benchmark runs
 - **Performance:** < 100ms overhead per test case
-- **User Satisfaction:** GitHub stars and user feedback
