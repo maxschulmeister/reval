@@ -25,7 +25,7 @@ export interface Config {
     /**
      * The function to be benchmarked. This is required.
      */
-    function: (...args: any[]) => any;
+    function: (...args: any[]) => unknown;
     /**
      * Defines the arguments to be passed to the benchmarked function.
      * Can be a function that receives context with data and variants,
@@ -41,7 +41,7 @@ export interface Config {
      *     },
      *   ],
      */
-    args: (context: Context) => Array<any>;
+    args: (context: Context) => unknown[];
   };
   /**
    * Configures the output settings for the benchmark.
@@ -72,7 +72,7 @@ export interface Config {
      *   totalTokens: context.tokens_in + context.tokens_out,
      * }),
      */
-    metrics: (context: ReturnType<Config["run"]["function"]>) => {
+    metrics: (context: unknown) => {
       response: string;
       tokens: {
         features: number;
@@ -129,17 +129,3 @@ export type Context = Omit<ConfigData, "features" | "target"> & {
   features: any[];
   target: any[];
 };
-
-// Utility type: Converts a function's parameter types to an object with array values
-// Generic utility type: Converts a function's parameter types to an object with array values for all parameter names and types
-export type ParametersToArrays<T extends (...args: any) => any> = T extends (
-  ...args: infer P
-) => any
-  ? P extends []
-    ? {}
-    : P extends [infer A]
-    ? A extends object
-      ? { [K in keyof A]: A[K][] }
-      : { 0: A[] }
-    : { [K in keyof P]: P[K][] }
-  : never;
