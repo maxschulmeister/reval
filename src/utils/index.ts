@@ -1,9 +1,10 @@
 import dataForge from "data-forge";
 import "data-forge-fs";
-import type { Context } from "../types/config";
+import type { ArgsContext } from "../types/config";
+import { Config } from "../types/config";
 
-export const combineArgs = (input: Array<any>) => {
-  if (input.length === 0) return [];
+export const combineArgs = (args: Array<any>) => {
+  if (args.length === 0) return [];
 
   const cartesian = (...arrays: any[][]) => {
     return arrays.reduce(
@@ -13,9 +14,9 @@ export const combineArgs = (input: Array<any>) => {
   };
 
   // Handle array of objects with array values
-  if (typeof input[0] === "object" && !Array.isArray(input[0])) {
-    const keys = Object.keys(input[0]);
-    const values = keys.map((key) => input[0][key]);
+  if (typeof args[0] === "object" && !Array.isArray(args[0])) {
+    const keys = Object.keys(args[0]);
+    const values = keys.map((key) => args[0][key]);
     const combinations = cartesian(...values);
     return combinations.map((combo) => [
       keys.reduce((obj, key, index) => ({ ...obj, [key]: combo[index] }), {}),
@@ -23,12 +24,16 @@ export const combineArgs = (input: Array<any>) => {
   }
 
   // Handle array of arrays
-  return cartesian(...input);
+  return cartesian(...args);
 };
 
 export const loadConfig = async () => {
-  const configModule = await import("@config");
-  return configModule.default || configModule;
+  try {
+    const configModule = await import("@config");
+    return configModule.default || configModule;
+  } catch (error) {
+    throw new Error("Failed to load config", error as Error);
+  }
 };
 
 export const loadData = async () => {
@@ -37,7 +42,8 @@ export const loadData = async () => {
   let dfFeatures;
   let dfTarget;
   if (config.data.path && typeof config.data.target === "string") {
-    df = dataForge.readFileSync(config.data.path).parseCSV();
+      df = dataForge.readFileSync(config.data.path).parseCSV();
+    
 
     if (config.data.trim) {
       df = df.take(config.data.trim);
@@ -61,7 +67,7 @@ export const loadData = async () => {
     }
   } else {
     df = dataForge.fromObject({
-      input: config.data.features,
+      features: config.data.features,
       output: config.data.target,
     });
     dfFeatures = df.getSeries("features").toArray();
@@ -74,44 +80,51 @@ export const loadData = async () => {
   return { frame: df, features: dfFeatures, target: dfTarget };
 };
 
-export const getCurrentVariant = (
+export const getFeatures = (
   arg: any,
-  variants: Context["variants"],
-  inputData: Context["features"]
-): Record<string, any> & { input?: any } => {
-  const variantValues: Record<string, any> = {};
-  let inputValue: any;
+  features: ArgsContext["features"]
+): any => {
+  let featuresValue: any;
 
-  // Find the input value that matches with data.features
+  // Find the features value that matches with data.features
   if (Array.isArray(arg)) {
-    // For array arguments, find the value that exists in inputData
-    inputValue = arg.find((argValue) => {
+    // For array arguments, find the value that exists in features
+    featuresValue = arg.find((argValue) => {
       if (typeof argValue === "object" && argValue !== null) {
         return Object.values(argValue).some((propValue) =>
-          inputData.includes(propValue)
+          features.includes(propValue)
         );
       }
-      return inputData.includes(argValue);
+      return features.includes(argValue);
     });
 
     // If it's an object, find the specific property that matched
-    if (typeof inputValue === "object" && inputValue !== null) {
-      const matchingInputValue = Object.values(inputValue).find((propValue) =>
-        inputData.includes(propValue)
+    if (typeof featuresValue === "object" && featuresValue !== null) {
+      const matchingInputValue = Object.values(featuresValue).find(
+        (propValue) => features.includes(propValue)
       );
-      inputValue = matchingInputValue;
+      featuresValue = matchingInputValue;
     }
   } else {
     // Single argument case
     if (typeof arg === "object" && arg !== null) {
       const matchingInputValue = Object.values(arg).find((propValue) =>
-        inputData.includes(propValue)
+        features.includes(propValue)
       );
-      inputValue = matchingInputValue;
-    } else if (inputData.includes(arg)) {
-      inputValue = arg;
+      featuresValue = matchingInputValue;
+    } else if (features.includes(arg)) {
+      featuresValue = arg;
     }
   }
+
+  return featuresValue;
+};
+
+export const getVariant = (
+  arg: any,
+  variants: ArgsContext["variants"]
+): Record<string, any> => {
+  const variantValues: Record<string, any> = {};
 
   // For each variant key, find the corresponding value in the current arg
   Object.entries(variants).forEach(([variantKey, variantArray]) => {
@@ -155,8 +168,13 @@ export const getCurrentVariant = (
     }
   });
 
-  return {
-    ...variantValues,
-    ...(inputValue !== undefined && { input: inputValue }),
-  };
+  return variantValues;
 };
+
+
+
+export function defineConfig<F extends (args: any) => Promise<any>>(
+  config: Config<F>
+) {
+  return config;
+}
