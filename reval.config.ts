@@ -1,10 +1,10 @@
-import { type Config } from "./src/types/config";
+import { defineConfig } from "@/utils";
 import fn from "./test/modifiedOutput";
 
-const revalConfig: Config = {
-  concurrency: 10,
+const revalConfig = defineConfig({
+  concurrency: 100,
   retries: 5,
-  interval: 500,
+  interval: 10,
   data: {
     path: "./data/test.csv",
     trim: 10,
@@ -25,7 +25,15 @@ const revalConfig: Config = {
         model: context.variants.models,
       },
     ],
+
+    result: (response) => ({
+      prediction: response.content,
+      tokens: {
+        in: response.tokens.in,
+        out: response.tokens.out,
+      },
+    }),
   },
-};
+});
 
 export default revalConfig;

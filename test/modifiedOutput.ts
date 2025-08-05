@@ -15,7 +15,13 @@ export default async function modifyOutput(args: {
   console.log("file", file);
   console.log("model", model);
   console.log("result", modifiedResult);
-  return modifiedResult;
+  return {
+    content: modifiedResult,
+    tokens: {
+      in: 10,
+      out: 10,
+    },
+  };
 }
 
 const eraseRandomCharacters = (
