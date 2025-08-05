@@ -2,37 +2,27 @@
   "name": "reval",
   "version": "0.1.0",
   "description": "A benchmark framework for evaluating LLM applications",
+  "author": "Max Schulmeister <mail@kmaxschulmeister.com> (https://github.com/kmaxschulmeister)",
+  "license": "MIT",
   "private": true,
   "scripts": {
-    "reval": "bun run src/run.ts",
-    "build": "npm run build",
-    "dev": "npm run dev",
-    "test": "vitest run",
-    "lint": "npm run lint",
-    "clean": "npm run clean",
-    "db-ui": "bunx drizzle-kit studio",
-    "db-create": "rm -rf .reval && bunx drizzle-kit generate && bun run src/db/index.ts && bunx drizzle-kit migrate"
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "clean": "turbo run clean",
+    "reval": "turbo run reval",
+    "db-create": "turbo run db-create",
+    "db-ui": "turbo run db-ui"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.1.2",
-    "@types/node": "^24.1.0",
-    "better-sqlite3": "^12.2.0",
-    "bun": "^1.2.19",
-    "drizzle-kit": "^0.31.4",
-    "typescript": "^5.8.3",
-    "ultracite": "5.1.2",
-    "vitest": "^3.2.4"
+    "turbo": "^2.5.5"
   },
+  "workspaces": [
+    "packages/*"
+  ],
+  "packageManager": "bun@1.2.19",
   "engines": {
-    "node": ">=18.0.0"
-  },
-  "dependencies": {
-    "data-forge": "^1.10.4",
-    "data-forge-fs": "^0.0.9",
-    "drizzle-orm": "^0.44.4",
-    "nanoid": "^5.1.5",
-    "p-queue": "^8.1.0",
-    "p-retry": "^6.2.1",
-    "zod": "^4.0.14"
+    "node": ">=18"
   }
 }
