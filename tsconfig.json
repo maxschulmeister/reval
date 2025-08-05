@@ -14,6 +14,8 @@
     "isolatedModules": true,
     "noEmit": true,
     "paths": {
+      "@/*": ["./src/*"],
+      "@types": ["./src/types/index.ts"],
       "@config": ["./reval.config.ts"]
     }
   }
