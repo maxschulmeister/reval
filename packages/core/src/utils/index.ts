@@ -29,10 +29,11 @@ export const combineArgs = (args: Array<any>) => {
 
 export const loadConfig = async () => {
   try {
-    const configModule = await import("@config");
+    const configModule = await import("../../reval.config");
     return configModule.default || configModule;
   } catch (error) {
-    throw new Error("Failed to load config", error as Error);
+    console.error('Config loading error:', error);
+    throw new Error(`Failed to load config: ${error}`);
   }
 };
 
@@ -42,8 +43,7 @@ export const loadData = async () => {
   let dfFeatures;
   let dfTarget;
   if (config.data.path && typeof config.data.target === "string") {
-      df = dataForge.readFileSync(config.data.path).parseCSV();
-    
+    df = dataForge.readFileSync(config.data.path).parseCSV();
 
     if (config.data.trim) {
       df = df.take(config.data.trim);
@@ -170,8 +170,6 @@ export const getVariant = (
 
   return variantValues;
 };
-
-
 
 export function defineConfig<F extends (args: any) => Promise<any>>(
   config: Config<F>

@@ -1,0 +1,24 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "outDir": "./dist",
+    "types": ["bun-types"],
+    "paths": {
+      "@/*": ["./src/*"],
+      "@types": ["./src/types/index.ts"],
+      "@config": ["./reval.config.ts"]
+    }
+  },
+  "include": [
+    "src/**/*",
+    "reval.config.ts",
+    "drizzle.config.ts",
+    "dev/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    ".reval"
+  ]
+}

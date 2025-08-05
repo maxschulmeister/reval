@@ -75,9 +75,11 @@ input,expected_output
 ## 6. User Flow
 
 1.  **Setup:**
+
     - No installation is needed. The project is run directly using `bun`.
 
 2.  **Configuration:**
+
     - Edit `reval.config.ts` to define the benchmark parameters, data source, and function to test.
 
 3.  **Execution:**
