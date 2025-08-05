@@ -1,22 +1,27 @@
 {
   "compilerOptions": {
-    "strictNullChecks": true,
-    "esModuleInterop": true,
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "bundler",
     "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
     "allowJs": true,
     "strict": true,
+    "strictNullChecks": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "paths": {
-      "@/*": ["./src/*"],
-      "@types": ["./src/types/index.ts"],
-      "@config": ["./reval.config.ts"]
-    }
-  }
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "composite": true,
+    "incremental": true
+  },
+  "exclude": [
+    "node_modules",
+    "dist",
+    ".reval"
+  ]
 }
