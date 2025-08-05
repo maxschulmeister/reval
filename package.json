@@ -2,7 +2,7 @@
   "name": "reval",
   "version": "0.1.0",
   "description": "A benchmark framework for evaluating LLM applications",
-  "author": "Max Schulmeister <mail@kmaxschulmeister.com> (https://github.com/kmaxschulmeister)",
+  "author": "Max Schulmeister <mail@kmaxschulmeister.com> (https://github.com/maxschulmeister)",
   "license": "MIT",
   "private": true,
   "scripts": {
