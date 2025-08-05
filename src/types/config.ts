@@ -1,7 +1,7 @@
 /**
  * Specifies the data source for the benchmark.
  */
-export interface Config {
+export interface Config<F extends (...args: any[]) => Promise<any>> {
   /**
    * Maximum number of concurrent executions to run in parallel.
    * Defaults to the number of CPU cores available.
@@ -25,7 +25,7 @@ export interface Config {
     /**
      * The function to be benchmarked. This is required.
      */
-    function: (...args: any[]) => unknown;
+    function: F;
     /**
      * Defines the arguments to be passed to the benchmarked function.
      * Can be a function that receives context with data and variants,
@@ -41,17 +41,8 @@ export interface Config {
      *     },
      *   ],
      */
-    args: (context: Context) => unknown[];
-  };
-  /**
-   * Configures the output settings for the benchmark.
-   */
-  result?: {
-    /**
-     * The path to save the benchmark output file that is used to display the data in the frontend.
-     * defaults to ./.reval/runs/
-     */
-    path?: string;
+    args: (context: ArgsContext) => ParametersToArrays<Parameters<F>>;
+
     /**
      * Object to map metrics directly to properties of the return type of the function that ran.
      * defaults to OpenAI specification:
@@ -72,11 +63,11 @@ export interface Config {
      *   totalTokens: context.tokens_in + context.tokens_out,
      * }),
      */
-    metrics: (context: unknown) => {
-      response: string;
+    result: (context: Awaited<ReturnType<F>>) => {
+      prediction: string;
       tokens: {
-        features: number;
-        target: number;
+        in: number;
+        out: number;
       };
       [key: string]: any;
     };
@@ -125,7 +116,16 @@ export interface ConfigData {
   trim?: number;
 }
 
-export type Context = Omit<ConfigData, "features" | "target"> & {
+// this includes the resolved data, so we now have array instead of strings.
+export type ArgsContext = Omit<ConfigData, "features" | "target"> & {
   features: any[];
   target: any[];
 };
+
+type ParametersToArrays<T> = T extends any[]
+  ? {
+      [K in keyof T]: T[K] extends object
+        ? { [P in keyof T[K]]: T[K][P][] }
+        : T[K][];
+    }
+  : never;
