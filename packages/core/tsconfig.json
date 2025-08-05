@@ -6,19 +6,9 @@
     "types": ["bun-types"],
     "paths": {
       "@/*": ["./src/*"],
-      "@types": ["./src/types/index.ts"],
-      "@config": ["./reval.config.ts"]
+      "@types": ["./src/types"]
     }
   },
-  "include": [
-    "src/**/*",
-    "reval.config.ts",
-    "drizzle.config.ts",
-    "dev/**/*"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    ".reval"
-  ]
+  "include": ["src/**/*", "dev/**/*", "drizzle.config.ts", "reval.config.ts"],
+  "exclude": ["node_modules", "dist"]
 }

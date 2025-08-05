@@ -1,5 +1,5 @@
-import { defineConfig } from "./src/utils";
 import fn from "./dev/modifiedOutput";
+import { defineConfig } from "./src/utils";
 
 const revalConfig = defineConfig({
   concurrency: 100,
