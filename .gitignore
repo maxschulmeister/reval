@@ -34,3 +34,6 @@ data/
 
 # Turborepo
 .turbo/
+
+# bun
+bun.*

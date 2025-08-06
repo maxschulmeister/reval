@@ -9,12 +9,18 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@radix-ui/react-dialog": "^1.1.14",
+    "@radix-ui/react-popover": "^1.1.14",
+    "@radix-ui/react-select": "^2.2.5",
     "@radix-ui/react-slot": "^1.2.3",
     "@reval/core": "workspace:*",
+    "@shadcn/ui": "^0.0.4",
     "@types/react-syntax-highlighter": "^15.5.13",
+    "bright": "^1.0.0",
     "chokidar": "^4.0.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "cmdk": "^1.1.1",
     "drizzle-orm": "^0.44.4",
     "lucide-react": "^0.536.0",
     "next": "15.4.5",
