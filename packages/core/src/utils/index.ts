@@ -1,4 +1,4 @@
-import dataForge from "data-forge";
+import * as dataForge from "data-forge";
 import "data-forge-fs";
 import type { ArgsContext } from "../types/config";
 import { Config } from "../types/config";
