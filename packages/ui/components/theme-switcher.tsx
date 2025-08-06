@@ -1,90 +1,89 @@
 "use client";
 import { cn } from "@/lib/utils";
 import { useControllableState } from "@radix-ui/react-use-controllable-state";
-import { Monitor, Moon, Sun } from "lucide-react";
-import { motion } from "motion/react";
+import { Moon, Sun } from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useState } from "react";
-const themes = [
-  {
-    key: "system",
-    icon: Monitor,
-    label: "System theme",
-  },
-  {
-    key: "light",
-    icon: Sun,
-    label: "Light theme",
-  },
-  {
-    key: "dark",
-    icon: Moon,
-    label: "Dark theme",
-  },
-];
+
 export type ThemeSwitcherProps = {
-  value?: "light" | "dark" | "system";
-  onChange?: (theme: "light" | "dark" | "system") => void;
-  defaultValue?: "light" | "dark" | "system";
+  value?: "light" | "dark";
+  onChange?: (theme: "light" | "dark") => void;
   className?: string;
 };
+
 export const ThemeSwitcher = ({
   value,
   onChange,
-  defaultValue = "system",
   className,
 }: ThemeSwitcherProps) => {
+  const [systemTheme, setSystemTheme] = useState<"light" | "dark">("light");
+
+  // Detect system theme and set as default if no defaultValue provided
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    const updateSystemTheme = () => {
+      setSystemTheme(mediaQuery.matches ? "dark" : "light");
+    };
+
+    updateSystemTheme();
+    mediaQuery.addEventListener("change", updateSystemTheme);
+
+    return () => mediaQuery.removeEventListener("change", updateSystemTheme);
+  }, []);
+
   const [theme, setTheme] = useControllableState({
-    defaultProp: defaultValue,
+    defaultProp: systemTheme,
     prop: value,
     onChange,
   });
   const [mounted, setMounted] = useState(false);
-  const handleThemeClick = useCallback(
-    (themeKey: "light" | "dark" | "system") => {
-      setTheme(themeKey);
-    },
-    [setTheme]
-  );
+
+  const handleToggle = useCallback(() => {
+    setTheme(theme === "dark" ? "light" : "dark");
+  }, [theme, setTheme]);
+
   // Prevent hydration mismatch
   useEffect(() => {
     setMounted(true);
   }, []);
+
   if (!mounted) {
     return null;
   }
+
+  // Determine which icon to show
+  const getIcon = () => {
+    return theme === "dark" ? Moon : Sun;
+  };
+
+  const getLabel = () => {
+    return `Switch to ${theme === "dark" ? "light" : "dark"} theme`;
+  };
+
+  const Icon = getIcon();
+
   return (
-    <div
+    <button
+      aria-label={getLabel()}
       className={cn(
-        "relative isolate flex h-8 rounded-radius bg-background p-1 ring-1 ring-border",
+        "relative h-8 w-8 rounded-radius bg-background ring-1 ring-border hover:bg-secondary/50 transition-colors",
         className
       )}
+      onClick={handleToggle}
+      type="button"
     >
-      {themes.map(({ key, icon: Icon, label }) => {
-        const isActive = theme === key;
-        return (
-          <button
-            aria-label={label}
-            className="relative h-6 w-6 rounded-full"
-            key={key}
-            onClick={() => handleThemeClick(key as "light" | "dark" | "system")}
-            type="button"
-          >
-            {isActive && (
-              <motion.div
-                className="absolute inset-0 rounded-full bg-secondary"
-                layoutId="activeTheme"
-                transition={{ type: "spring", duration: 0.5 }}
-              />
-            )}
-            <Icon
-              className={cn(
-                "relative z-10 m-auto h-4 w-4",
-                isActive ? "text-foreground" : "text-muted-foreground"
-              )}
-            />
-          </button>
-        );
-      })}
-    </div>
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={theme}
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0, opacity: 0 }}
+          transition={{ type: "spring", duration: 0.2, bounce: 0.1 }}
+          className="absolute inset-0 flex items-center justify-center"
+        >
+          <Icon className="h-4 w-4 text-foreground" />
+        </motion.div>
+      </AnimatePresence>
+    </button>
   );
 };

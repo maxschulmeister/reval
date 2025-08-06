@@ -11,19 +11,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import type { Execution } from "@reval/core";
 import Code from "react-shiki";
-
-export type Execution = {
-  id: string;
-  runId: string;
-  features: Record<string, unknown> | unknown[];
-  target: Record<string, unknown> | string;
-  result: Record<string, unknown> | string;
-  time: number;
-  retries: number;
-  status: string;
-  variant: Record<string, unknown>;
-};
 
 const renderCollapsibleContent = (
   content: unknown,
@@ -104,7 +93,8 @@ export const createColumns = (
   })),
   // Variant columns
   ...variantKeys.map((variantKey) => ({
-    accessorFn: (row: Execution) => String(row.variant?.[variantKey] ?? ""),
+    accessorFn: (row: Execution) =>
+      String(row.variant?.[variantKey as keyof typeof row.variant] ?? ""),
     id: `variant.${variantKey}`,
     header: ({ column }: { column: Column<Execution, unknown> }) => {
       return (

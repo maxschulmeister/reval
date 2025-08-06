@@ -80,7 +80,7 @@
   --radius: 0.25rem;
   
   /* Light theme using Radix color scale */
-  --background: var(--white-alpha-12); /* App background */
+  --background: white; /* App background */
   --foreground: var(--sage-12); /* High-contrast text */
   --card: var(--sage-2); /* Subtle background */
   --card-foreground: var(--sage-12); /* High-contrast text */
@@ -93,15 +93,15 @@
   
   /* Success colors using Grass */
   --success: var(--grass-9); /* Solid backgrounds */
-  --success-foreground: var(--white-alpha-12); /* Contrasting text on success */
+  --success-foreground: white; /* Contrasting text on success */
   
   /* Error colors using Tomato */
   --error: var(--tomato-9); /* Solid backgrounds */
-  --error-foreground: var(--white-alpha-12); /* Contrasting text on error */
+  --error-foreground: white; /* Contrasting text on error */
   
   /* Warning colors using Amber */
   --warning: var(--orange-9); /* Solid backgrounds */
-  --warning-foreground: var(--white-alpha-12); /* High-contrast text */
+  --warning-foreground: white; /* High-contrast text */
   
   /* Secondary and muted colors */
   --secondary: var(--sage-3); /* UI element background */
@@ -113,7 +113,7 @@
   
   /* Destructive (same as error) */
   --destructive: var(--tomato-9); /* Solid backgrounds */
-  --destructive-foreground: var(--white-alpha-12); /* Contrasting text */
+  --destructive-foreground: white; /* Contrasting text */
   
   /* Borders and inputs */
   --border: var(--sage-6); /* Subtle borders */

@@ -6,11 +6,9 @@ import Code from "react-shiki";
 import jsBeautify from "js-beautify";
 import { useEffect, useState } from "react";
 
+import type { Execution } from "@reval/core";
 import { useTheme } from "next-themes";
-import {
-  createColumns,
-  type Execution,
-} from "../components/data-table/columns";
+import { createColumns } from "../components/data-table/columns";
 import { DataTable } from "../components/data-table/data-table";
 import {
   ThemeSwitcher,
@@ -32,16 +30,6 @@ import {
   SelectTrigger,
 } from "../components/ui/select";
 import { calculateAverageTime, calculateSuccessRate } from "../lib/grouping";
-
-// Accent color selection (Tailwind): lime
-// Base monochrome palette via gray scale, subtle borders, and soft shadows
-// Design adjustments per request:
-// - Fluid layout
-// - Gapless columns with 0.5px light borders
-// - Stealth select: show run name as h1 with chevron
-// - Small border radius for buttons/badges
-// - No shadows
-// - Unique highlight color: lime
 
 type RunWithExecutions = {
   run: Run;
@@ -159,7 +147,7 @@ export default function Home() {
         variantFilters
       )) {
         if (selectedValues.length > 0) {
-          const executionVariantValue = execution.variant[variantKey];
+          const executionVariantValue = (execution.variant as any)[variantKey];
           if (!selectedValues.includes(String(executionVariantValue))) {
             return false;
           }
@@ -232,7 +220,7 @@ export default function Home() {
   const getUniqueVariantValues = (variantKey: string): string[] => {
     if (!runData) return [];
     const values = runData.executions.map((e) =>
-      String(e.variant[variantKey] || "")
+      String((e.variant as any)[variantKey] || "")
     );
     return [...new Set(values)].filter(Boolean);
   };
@@ -334,7 +322,6 @@ export default function Home() {
           <div className="flex items-center gap-0">
             <Cell borderLeft>
               <ThemeSwitcher
-                defaultValue="system"
                 onChange={setTheme}
                 value={theme as ThemeSwitcherProps["value"]}
               />
