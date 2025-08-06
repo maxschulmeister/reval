@@ -4,24 +4,25 @@
   "description": "A benchmark framework for evaluating LLM applications",
   "private": true,
   "scripts": {
-    "reval": "bun run src/run.ts",
-    "build": "bunx tsc",
-    "dev": "bun run dev",
+    "reval": "tsx src/run.ts",
+    "build": "vite build",
+    "dev": "tsx watch src/run.ts",
     "test": "vitest run",
-    "lint": "bunx @biomejs/biome check .",
+    "lint": "pnpm biome check .",
     "clean": "rm -rf dist .reval",
-    "db-ui": "bunx drizzle-kit studio",
-    "db-create": "rm -rf ../../.reval && bunx drizzle-kit generate && bun run src/db/index.ts && bunx drizzle-kit migrate"
+    "db-ui": "pnpm drizzle-kit studio",
+    "db-create": "rm -rf ../../.reval && pnpm drizzle-kit generate && tsx src/db/index.ts && pnpm drizzle-kit migrate"
   },
   "devDependencies": {
     "@biomejs/biome": "2.1.2",
-    "@types/node": "^24.1.0",
+    "@types/node": "^20.0.0",
     "better-sqlite3": "^12.2.0",
-    "bun": "^1.2.19",
-    "bun-types": "^1.2.19",
     "drizzle-kit": "^0.31.4",
+    "tsx": "^4.0.0",
     "typescript": "^5.8.3",
     "ultracite": "5.1.2",
+    "vite": "^5.0.0",
+    "vite-node": "^1.0.0",
     "vitest": "^3.2.4"
   },
   "engines": {
