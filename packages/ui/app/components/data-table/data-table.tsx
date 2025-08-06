@@ -14,7 +14,7 @@ import {
 import * as React from "react";
 
 // Dropdown menu component not available, removing for now
-import { MultiSelect } from "@/components/ui/multi-select";
+import { MultiSelect } from "@/app/components/ui/multi-select";
 import {
   Table,
   TableBody,
@@ -22,7 +22,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from "@/app/components/ui/table";
 import { Cell } from "../ui/cell";
 
 interface DataTableProps<TData, TValue> {

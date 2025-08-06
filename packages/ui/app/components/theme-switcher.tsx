@@ -1,5 +1,5 @@
 "use client";
-import { cn } from "@/lib/utils";
+import { cn } from "@/app/lib/utils";
 import { useControllableState } from "@radix-ui/react-use-controllable-state";
 import { Moon, Sun } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
