@@ -1,5 +1,5 @@
 import "data-forge-fs";
-import { nanoid } from "nanoid";
+import { customRandom, random, urlAlphabet } from "nanoid";
 import pQueue from "p-queue";
 import pRetry from "p-retry";
 import { saveRun } from "./db/save-run";
@@ -11,6 +11,8 @@ import {
   loadConfig,
   loadData,
 } from "./utils";
+
+const nanoid = customRandom(urlAlphabet, 24, random);
 
 const run = async () => {
   const timestamp = Date.now();
