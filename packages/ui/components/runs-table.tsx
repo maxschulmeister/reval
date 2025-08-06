@@ -11,7 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { Run } from "@/lib/db";
+import type { Run } from "@reval/core";
 
 export function RunsTable() {
   const [runs, setRuns] = useState<Run[]>([]);

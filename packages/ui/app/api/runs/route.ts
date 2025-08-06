@@ -1,4 +1,4 @@
-import { db, runs } from "@/lib/db";
+import { db, runs } from "@reval/core";
 import { NextResponse } from "next/server";
 
 export async function GET() {

@@ -3,6 +3,8 @@
   "version": "0.1.0",
   "description": "A benchmark framework for evaluating LLM applications",
   "private": true,
+  "main": "src/index.ts",
+  "types": "src/index.ts",
   "scripts": {
     "reval": "tsx src/run.ts",
     "build": "vite build",

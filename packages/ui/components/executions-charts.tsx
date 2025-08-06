@@ -14,7 +14,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { Execution } from "@/lib/db";
+import type { Execution } from "@reval/core";
 
 interface ExecutionsChartsProps {
   executions: Execution[];

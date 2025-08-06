@@ -5,12 +5,14 @@
     "outDir": "./dist",
     "target": "ES2022",
     "module": "ESNext",
-    "moduleResolution": "bundler",
-    "paths": {
-      "@/*": ["./src/*"],
-      "@types": ["./src/types"]
-    }
+    "moduleResolution": "bundler"
   },
-  "include": ["src/**/*", "dev/**/*", "drizzle.config.ts", "reval.config.ts", "vite.config.ts"],
+  "include": [
+    "src/**/*",
+    "dev/**/*",
+    "drizzle.config.ts",
+    "reval.config.ts",
+    "vite.config.ts"
+  ],
   "exclude": ["node_modules", "dist"]
 }

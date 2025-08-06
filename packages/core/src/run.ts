@@ -1,10 +1,9 @@
-import type { Execution } from "@types";
 import "data-forge-fs";
 import { nanoid } from "nanoid";
 import pQueue from "p-queue";
 import pRetry from "p-retry";
 import { saveRun } from "./db/save-run";
-import type { Benchmark } from "./types";
+import type { Benchmark, Execution } from "./types";
 import {
   combineArgs,
   getFeatures,

@@ -1,4 +1,4 @@
-import { executions, runs } from "@/db/schema";
+import { executions, runs } from "../db/schema";
 
 export type Run = typeof runs.$inferInsert;
 export type Execution = typeof executions.$inferInsert;
