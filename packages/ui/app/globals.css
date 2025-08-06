@@ -1,7 +1,33 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-@custom-variant dark (&:is(.dark *));
+/* Monochrome */
+@import "@radix-ui/colors/black-alpha.css";
+@import "@radix-ui/colors/white-alpha.css";
+
+/* Neutral */
+@import "@radix-ui/colors/sage.css";
+@import "@radix-ui/colors/sage-dark.css";
+
+/* Primary */
+@import "@radix-ui/colors/mint.css";
+@import "@radix-ui/colors/mint-dark.css";
+
+/* Success */
+@import "@radix-ui/colors/grass.css";
+@import "@radix-ui/colors/grass-dark.css";
+
+/* Error */
+@import "@radix-ui/colors/tomato.css";
+@import "@radix-ui/colors/tomato-dark.css";
+
+/* Warn */
+@import "@radix-ui/colors/orange.css";
+@import "@radix-ui/colors/orange-dark.css";
+@import "@radix-ui/colors/amber.css";
+@import "@radix-ui/colors/amber-dark.css";
+
+@custom-variant dark (&:is(.dark));
 
 @theme inline {
   --color-background: var(--background);
@@ -25,6 +51,7 @@
   --color-input: var(--input);
   --color-border: var(--border);
   --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);
@@ -33,6 +60,12 @@
   --color-secondary: var(--secondary);
   --color-primary-foreground: var(--primary-foreground);
   --color-primary: var(--primary);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-error: var(--error);
+  --color-error-foreground: var(--error-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
   --color-popover-foreground: var(--popover-foreground);
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
@@ -44,72 +77,125 @@
 }
 
 :root {
-  --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.13 0.028 261.692);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.13 0.028 261.692);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.13 0.028 261.692);
-  --primary: oklch(0.21 0.034 264.665);
-  --primary-foreground: oklch(0.985 0.002 247.839);
-  --secondary: oklch(0.967 0.003 264.542);
-  --secondary-foreground: oklch(0.21 0.034 264.665);
-  --muted: oklch(0.967 0.003 264.542);
-  --muted-foreground: oklch(0.551 0.027 264.364);
-  --accent: oklch(0.967 0.003 264.542);
-  --accent-foreground: oklch(0.21 0.034 264.665);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.928 0.006 264.531);
-  --input: oklch(0.928 0.006 264.531);
-  --ring: oklch(0.707 0.022 261.325);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.985 0.002 247.839);
-  --sidebar-foreground: oklch(0.13 0.028 261.692);
-  --sidebar-primary: oklch(0.21 0.034 264.665);
-  --sidebar-primary-foreground: oklch(0.985 0.002 247.839);
-  --sidebar-accent: oklch(0.967 0.003 264.542);
-  --sidebar-accent-foreground: oklch(0.21 0.034 264.665);
-  --sidebar-border: oklch(0.928 0.006 264.531);
-  --sidebar-ring: oklch(0.707 0.022 261.325);
+  --radius: 0.25rem;
+  
+  /* Light theme using Radix color scale */
+  --background: var(--white-alpha-12); /* App background */
+  --foreground: var(--sage-12); /* High-contrast text */
+  --card: var(--sage-2); /* Subtle background */
+  --card-foreground: var(--sage-12); /* High-contrast text */
+  --popover: var(--sage-1); /* App background */
+  --popover-foreground: var(--sage-12); /* High-contrast text */
+  
+  /* Primary colors using Mint */
+  --primary: var(--mint-9); /* Solid backgrounds */
+  --primary-foreground: var(--sage-12); /* Contrasting text on primary */
+  
+  /* Success colors using Grass */
+  --success: var(--grass-9); /* Solid backgrounds */
+  --success-foreground: var(--white-alpha-12); /* Contrasting text on success */
+  
+  /* Error colors using Tomato */
+  --error: var(--tomato-9); /* Solid backgrounds */
+  --error-foreground: var(--white-alpha-12); /* Contrasting text on error */
+  
+  /* Warning colors using Amber */
+  --warning: var(--orange-9); /* Solid backgrounds */
+  --warning-foreground: var(--white-alpha-12); /* High-contrast text */
+  
+  /* Secondary and muted colors */
+  --secondary: var(--sage-3); /* UI element background */
+  --secondary-foreground: var(--sage-12); /* High-contrast text */
+  --muted: var(--sage-2); /* Subtle background */
+  --muted-foreground: var(--sage-11); /* Low-contrast text */
+  --accent: var(--sage-4); /* Hovered UI element background */
+  --accent-foreground: var(--sage-12); /* High-contrast text */
+  
+  /* Destructive (same as error) */
+  --destructive: var(--tomato-9); /* Solid backgrounds */
+  --destructive-foreground: var(--white-alpha-12); /* Contrasting text */
+  
+  /* Borders and inputs */
+  --border: var(--sage-6); /* Subtle borders */
+  --input: var(--sage-7); /* UI element border */
+  --ring: var(--sage-8); /* Focus rings */
+  
+  /* Chart colors */
+  --chart-1: var(--mint-9);
+  --chart-2: var(--mint-7);
+  --chart-3: var(--mint-4);
+  --chart-4: var(--mint-11);
+  --chart-5: var(--mint-12);
+  
+  /* Sidebar colors */
+  --sidebar: var(--sage-1); /* App background */
+  --sidebar-foreground: var(--sage-12); /* High-contrast text */
+  --sidebar-primary: var(--mint-9); /* Solid backgrounds */
+  --sidebar-primary-foreground: var(--sage-1); /* Contrasting text */
+  --sidebar-accent: var(--sage-3); /* UI element background */
+  --sidebar-accent-foreground: var(--sage-12); /* High-contrast text */
+  --sidebar-border: var(--sage-6); /* Subtle borders */
+  --sidebar-ring: var(--sage-8); /* Focus rings */
 }
 
 .dark {
-  --background: oklch(0.13 0.028 261.692);
-  --foreground: oklch(0.985 0.002 247.839);
-  --card: oklch(0.21 0.034 264.665);
-  --card-foreground: oklch(0.985 0.002 247.839);
-  --popover: oklch(0.21 0.034 264.665);
-  --popover-foreground: oklch(0.985 0.002 247.839);
-  --primary: oklch(0.928 0.006 264.531);
-  --primary-foreground: oklch(0.21 0.034 264.665);
-  --secondary: oklch(0.278 0.033 256.848);
-  --secondary-foreground: oklch(0.985 0.002 247.839);
-  --muted: oklch(0.278 0.033 256.848);
-  --muted-foreground: oklch(0.707 0.022 261.325);
-  --accent: oklch(0.278 0.033 256.848);
-  --accent-foreground: oklch(0.985 0.002 247.839);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.551 0.027 264.364);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.21 0.034 264.665);
-  --sidebar-foreground: oklch(0.985 0.002 247.839);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0.002 247.839);
-  --sidebar-accent: oklch(0.278 0.033 256.848);
-  --sidebar-accent-foreground: oklch(0.985 0.002 247.839);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.551 0.027 264.364);
+  /* Dark theme using Radix dark color scale */
+  --background: var(--sage-1); /* App background */
+  --foreground: var(--sage-12); /* High-contrast text */
+  --card: var(--sage-2); /* Subtle background */
+  --card-foreground: var(--sage-12); /* High-contrast text */
+  --popover: var(--sage-1); /* App background */
+  --popover-foreground: var(--sage-12); /* High-contrast text */
+  
+  /* Primary colors using Mint dark */
+  --primary: var(--mint-9); /* Solid backgrounds */
+  --primary-foreground: var(--sage-1); /* Contrasting text on primary */
+  
+  /* Success colors using Grass dark */
+  --success: var(--grass-9); /* Solid backgrounds */
+  --success-foreground: var(--sage-12); /* Contrasting text on success */
+  
+  /* Error colors using Tomato dark */
+  --error: var(--tomato-9); /* Solid backgrounds */
+  --error-foreground: var(--sage-12); /* Contrasting text on error */
+  
+  /* Warning colors using Amber dark */
+  --warning: var(--orange-9); /* Solid backgrounds */
+  --warning-foreground: var(--sage-12); /* High-contrast text */
+  
+  /* Secondary and muted colors */
+  --secondary: var(--sage-3); /* UI element background */
+  --secondary-foreground: var(--sage-12); /* High-contrast text */
+  --muted: var(--sage-2); /* Subtle background */
+  --muted-foreground: var(--sage-11); /* Low-contrast text */
+  --accent: var(--sage-4); /* Hovered UI element background */
+  --accent-foreground: var(--sage-12); /* High-contrast text */
+  
+  /* Destructive (same as error) */
+  --destructive: var(--tomato-9); /* Solid backgrounds */
+  --destructive-foreground: var(--sage-12); /* Contrasting text */
+  
+  /* Borders and inputs */
+  --border: var(--sage-6); /* Subtle borders */
+  --input: var(--sage-7); /* UI element border */
+  --ring: var(--sage-8); /* Focus rings */
+  
+  /* Chart colors */
+  --chart-1: var(--mint-9);
+  --chart-2: var(--mint-7);
+  --chart-3: var(--mint-4);
+  --chart-4: var(--mint-11);
+  --chart-5: var(--mint-12);
+  
+  /* Sidebar colors */
+  --sidebar: var(--sage-1); /* App background */
+  --sidebar-foreground: var(--sage-12); /* High-contrast text */
+  --sidebar-primary: var(--mint-9); /* Solid backgrounds */
+  --sidebar-primary-foreground: var(--sage-1); /* Contrasting text */
+  --sidebar-accent: var(--sage-3); /* UI element background */
+  --sidebar-accent-foreground: var(--sage-12); /* High-contrast text */
+  --sidebar-border: var(--sage-6); /* Subtle borders */
+  --sidebar-ring: var(--sage-8); /* Focus rings */
 }
 
 @layer base {

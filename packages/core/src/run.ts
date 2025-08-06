@@ -108,7 +108,7 @@ const run = async () => {
     id: runId,
     name,
     notes: "",
-    function: config.run.function.name,
+    function: config.run.function.toString(),
     features: context.features,
     target: context.target,
     variants: context.variants,

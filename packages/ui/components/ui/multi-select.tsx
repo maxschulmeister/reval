@@ -1,9 +1,9 @@
 "use client";
 
-import * as React from "react";
 import { Check, ChevronsUpDown, X } from "lucide-react";
-import { cn } from "../lib/utils";
-import { Button } from "./ui/button";
+import * as React from "react";
+import { cn } from "../../lib/utils";
+import { Button } from "./button";
 import {
   Command,
   CommandEmpty,
@@ -11,12 +11,8 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "./ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "./ui/popover";
+} from "./command";
+import { Popover, PopoverContent, PopoverTrigger } from "./popover";
 
 export interface Option {
   label: string;
@@ -56,7 +52,7 @@ export function MultiSelect({
     if (selected.length === options.length) {
       onChange([]);
     } else {
-      onChange(options.map(option => option.value));
+      onChange(options.map((option) => option.value));
     }
   };
 
@@ -68,10 +64,12 @@ export function MultiSelect({
     if (selected.length === 0) {
       return placeholder;
     } else if (selected.length === 1) {
-      const option = options.find(opt => opt.value === selected[0]);
+      const option = options.find((opt) => opt.value === selected[0]);
       return option?.label || selected[0];
     } else {
-      const variantName = placeholder.toLowerCase().includes('model') ? 'models' : 'items';
+      const variantName = placeholder.toLowerCase().includes("model")
+        ? "models"
+        : "items";
       return `${selected.length} ${variantName} selected`;
     }
   };
@@ -85,14 +83,18 @@ export function MultiSelect({
             role="combobox"
             aria-expanded={open}
             className={cn(
-              "w-full justify-between text-left font-normal pr-8",
+              "w-full justify-between text-left font-normal pr-8 rounded-radius border-border shadow-none hover:bg-accent hover:text-accent-foreground",
               className
             )}
             onClick={() => setOpen(!open)}
           >
-            <span className={cn(
-              selected.length > 0 ? "text-foreground" : "text-muted-foreground"
-            )}>
+            <span
+              className={cn(
+                selected.length > 0
+                  ? "text-foreground"
+                  : "text-muted-foreground"
+              )}
+            >
               {getDisplayText()}
             </span>
             <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50" />
@@ -112,7 +114,10 @@ export function MultiSelect({
           )}
         </div>
       </PopoverTrigger>
-      <PopoverContent className="w-full p-0" align="start">
+      <PopoverContent
+        className="w-full p-0 border-border shadow-none"
+        align="start"
+      >
         <Command>
           <CommandInput placeholder="Search..." />
           <CommandEmpty>No item found.</CommandEmpty>
@@ -127,7 +132,9 @@ export function MultiSelect({
                       : "opacity-0"
                   )}
                 />
-                {selected.length === options.length ? "Deselect All" : "Select All"}
+                {selected.length === options.length
+                  ? "Deselect All"
+                  : "Select All"}
               </CommandItem>
               {options.map((option) => (
                 <CommandItem

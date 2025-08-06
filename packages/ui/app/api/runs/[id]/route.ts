@@ -4,10 +4,10 @@ import { NextResponse } from "next/server";
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const runId = params.id;
+    const { id: runId } = await params;
 
     // Get the run details
     const run = await db.select().from(runs).where(eq(runs.id, runId)).limit(1);
