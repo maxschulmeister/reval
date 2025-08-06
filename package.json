@@ -13,7 +13,8 @@
     "clean": "turbo run clean",
     "reval": "turbo run reval",
     "db-create": "turbo run db-create",
-    "db-ui": "turbo run db-ui"
+    "db-ui": "turbo run db-ui",
+    "ui": "cd packages/ui && bun dev"
   },
   "devDependencies": {
     "turbo": "^2.5.5"
