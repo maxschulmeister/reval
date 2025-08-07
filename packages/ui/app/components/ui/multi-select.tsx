@@ -75,21 +75,22 @@ export function MultiSelect({
   };
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <div className="relative">
+    <div className="relative w-64">
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
           <Button
             variant="outline"
             role="combobox"
             aria-expanded={open}
             className={cn(
-              "w-full justify-between text-left font-normal pr-8 rounded-radius border-border shadow-none hover:bg-accent hover:text-accent-foreground",
+              "w-full justify-between text-left font-normal pr-16 rounded-radius border-border shadow-none hover:bg-accent hover:text-accent-foreground",
               className
             )}
             onClick={() => setOpen(!open)}
           >
             <span
               className={cn(
+                "truncate pr-4",
                 selected.length > 0
                   ? "text-foreground"
                   : "text-muted-foreground"
@@ -99,63 +100,63 @@ export function MultiSelect({
             </span>
             <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50" />
           </Button>
-          {selected.length > 0 && (
-            <button
-              type="button"
-              className="absolute right-8 top-1/2 -translate-y-1/2 p-1 hover:bg-muted rounded-sm"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                handleClearAll();
-              }}
-            >
-              <X className="h-3 w-3 text-muted-foreground hover:text-foreground" />
-            </button>
-          )}
-        </div>
-      </PopoverTrigger>
-      <PopoverContent
-        className="w-full p-0 border-border shadow-none"
-        align="start"
-      >
-        <Command>
-          <CommandInput placeholder="Search..." />
-          <CommandEmpty>No item found.</CommandEmpty>
-          <CommandGroup>
-            <CommandList>
-              <CommandItem onSelect={handleSelectAll}>
-                <Check
-                  className={cn(
-                    "mr-2 h-4 w-4",
-                    selected.length === options.length
-                      ? "opacity-100"
-                      : "opacity-0"
-                  )}
-                />
-                {selected.length === options.length
-                  ? "Deselect All"
-                  : "Select All"}
-              </CommandItem>
-              {options.map((option) => (
-                <CommandItem
-                  key={option.value}
-                  onSelect={() => handleSelect(option.value)}
-                >
+        </PopoverTrigger>
+        <PopoverContent
+          className="w-full p-0 border-border shadow-none"
+          align="start"
+        >
+          <Command>
+            <CommandInput placeholder="Search..." />
+            <CommandEmpty>No item found.</CommandEmpty>
+            <CommandGroup>
+              <CommandList>
+                <CommandItem onSelect={handleSelectAll}>
                   <Check
                     className={cn(
                       "mr-2 h-4 w-4",
-                      selected.includes(option.value)
+                      selected.length === options.length
                         ? "opacity-100"
                         : "opacity-0"
                     )}
                   />
-                  {option.label}
+                  {selected.length === options.length
+                    ? "Deselect All"
+                    : "Select All"}
                 </CommandItem>
-              ))}
-            </CommandList>
-          </CommandGroup>
-        </Command>
-      </PopoverContent>
-    </Popover>
+                {options.map((option) => (
+                  <CommandItem
+                    key={option.value}
+                    onSelect={() => handleSelect(option.value)}
+                  >
+                    <Check
+                      className={cn(
+                        "mr-2 h-4 w-4",
+                        selected.includes(option.value)
+                          ? "opacity-100"
+                          : "opacity-0"
+                      )}
+                    />
+                    {option.label}
+                  </CommandItem>
+                ))}
+              </CommandList>
+            </CommandGroup>
+          </Command>
+        </PopoverContent>
+      </Popover>
+      {selected.length > 0 && (
+        <button
+          type="button"
+          className="absolute right-8 top-1/2 -translate-y-1/2 p-1 hover:bg-muted rounded-sm z-10"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleClearAll();
+          }}
+        >
+          <X className="h-3 w-3 text-muted-foreground hover:text-foreground" />
+        </button>
+      )}
+    </div>
   );
 }

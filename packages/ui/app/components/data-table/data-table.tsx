@@ -24,6 +24,7 @@ import {
   TableRow,
 } from "@/app/components/ui/table";
 import { Cell } from "../ui/cell";
+import { DT } from "../ui/typography";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -80,9 +81,7 @@ export function DataTable<TData, TValue>({
     <div className="w-full">
       {/* Filters */}
       <Cell>
-        <h3 className="text-xs font-semibold tracking-wide text-card-foreground uppercase">
-          Filters
-        </h3>
+        <DT as="h4">Filters</DT>
 
         <div className="flex flex-wrap items-center gap-4 py-4">
           {/* Status Filter */}

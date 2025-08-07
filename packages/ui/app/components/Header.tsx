@@ -6,6 +6,7 @@ import { ThemeSwitcher, type ThemeSwitcherProps } from "./theme-switcher";
 import { Button } from "./ui/button";
 import { Cell } from "./ui/cell";
 import { Select, SelectContent, SelectItem, SelectTrigger } from "./ui/select";
+import { H3 } from "./ui/typography";
 
 interface HeaderProps {
   runs: Run[];
@@ -34,11 +35,9 @@ export const Header = ({
         <Select value={currentRunId} onValueChange={handleRunChange}>
           <SelectTrigger
             aria-label="Change run"
-            className="h-auto w-auto p-0 border-0 bg-transparent hover:bg-transparent focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none data-[state=open]:text-primary text-muted-foreground gap-1.5 rounded-none"
+            className="h-auto w-auto p-0 border-0 bg-transparent hover:bg-transparent focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none gap-1.5 rounded-none"
           >
-            <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-              {currentRunName || "Select a run"}
-            </h1>
+            <H3 as="h1">{currentRunName || "Select a run"}</H3>
           </SelectTrigger>
           <SelectContent className="border border-border shadow-none rounded-radius bg-popover">
             {runs.map((run) => (

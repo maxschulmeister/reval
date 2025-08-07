@@ -14,15 +14,15 @@ export const SortableHeader = ({ column, title }: SortableHeaderProps) => {
     <Button
       variant="ghost"
       onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-      className="h-auto p-0 text-muted-foreground text-xs uppercase tracking-wide"
+      className="h-auto p-0! text-sm font-medium hover:bg-transparent"
     >
       {title}
       {column.getIsSorted() === "asc" ? (
-        <ArrowUp className="ml-1 h-3 w-3 text-primary" />
+        <ArrowUp className="size-3 text-accent-foreground" />
       ) : column.getIsSorted() === "desc" ? (
-        <ArrowDown className="ml-1 h-3 w-3 text-primary" />
+        <ArrowDown className="size-3 text-accent-foreground" />
       ) : (
-        <ArrowDown className="ml-1 h-3 w-3" />
+        <ArrowDown className="size-3" />
       )}
     </Button>
   );

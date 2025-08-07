@@ -4,7 +4,7 @@ import { CodeDialog } from "@/app/components/code-dialog";
 import { Button } from "@/app/components/ui/button";
 import type { Execution } from "@reval/core";
 import { Column, ColumnDef } from "@tanstack/react-table";
-import { Cell } from "./cell";
+import { titleCase } from "text-title-case";
 import { SortableHeader } from "./sortable-header";
 import { StatusBadge } from "./status-badge";
 
@@ -17,18 +17,15 @@ const renderCollapsibleContent = (
 
   return (
     <div className="flex items-center gap-2 w-full">
-      <span className="flex-1 truncate text-xs text-muted-foreground">
-        {contentStr}
-      </span>
+      <div className="w-full min-h-4 relative">
+        <span className="absolute w-full inset-0 truncate">{contentStr}</span>
+      </div>
+      {/* <span className="truncate w-auto flex-1">{contentStr}</span> */}
       <CodeDialog
         title={`${type} Content`}
         content={contentStr}
         trigger={
-          <Button
-            variant="outline"
-            size="sm"
-            className="text-xs rounded-radius border-border shadow-none hover:bg-accent hover:text-accent-foreground flex-shrink-0"
-          >
+          <Button variant="outline" size="sm">
             View
           </Button>
         }
@@ -54,12 +51,10 @@ export const createColumns = (
     },
     id: `features.${col}`,
     header: ({ column }: { column: Column<Execution, unknown> }) => (
-      <SortableHeader column={column} title={`Feature: ${col}`} />
+      <SortableHeader column={column} title={`${titleCase(col)}`} />
     ),
     cell: ({ getValue }: { getValue: () => unknown }) => (
-      <Cell className="whitespace-nowrap">
-        {String(getValue())}
-      </Cell>
+      <div className="whitespace-nowrap">{String(getValue())}</div>
     ),
   })),
   // Variant columns
@@ -68,24 +63,20 @@ export const createColumns = (
       String(row.variant?.[variantKey as keyof typeof row.variant] ?? ""),
     id: `variant.${variantKey}`,
     header: ({ column }: { column: Column<Execution, unknown> }) => (
-      <SortableHeader column={column} title={`Variant: ${variantKey}`} />
+      <SortableHeader column={column} title={`${titleCase(variantKey)}`} />
     ),
     cell: ({ getValue }: { getValue: () => unknown }) => (
-      <Cell className="whitespace-nowrap">
-        {String(getValue())}
-      </Cell>
+      <div className="whitespace-nowrap">{String(getValue())}</div>
     ),
   })),
   // Target column
   {
     accessorKey: "target",
-    header: ({ column }) => (
-      <SortableHeader column={column} title="Target" />
-    ),
+    header: ({ column }) => <SortableHeader column={column} title="Target" />,
     cell: ({ row }) => (
-      <Cell className="min-w-0">
+      <div className="min-w-0">
         {renderCollapsibleContent(row.getValue("target"), "target")}
-      </Cell>
+      </div>
     ),
   },
   // Prediction column
@@ -95,45 +86,35 @@ export const createColumns = (
       <SortableHeader column={column} title="Prediction" />
     ),
     cell: ({ row }) => (
-      <Cell className="min-w-0">
+      <div className="min-w-0">
         {renderCollapsibleContent(row.getValue("result"), "prediction")}
-      </Cell>
+      </div>
     ),
   },
   // Time column
   {
     accessorKey: "time",
-    header: ({ column }) => (
-      <SortableHeader column={column} title="Time" />
-    ),
+    header: ({ column }) => <SortableHeader column={column} title="Time" />,
     cell: ({ row }) => (
-      <Cell className="whitespace-nowrap">
-        {row.getValue("time")}ms
-      </Cell>
+      <div className="whitespace-nowrap">{row.getValue("time")}ms</div>
     ),
   },
   // Retries column
   {
     accessorKey: "retries",
-    header: ({ column }) => (
-      <SortableHeader column={column} title="Retries" />
-    ),
+    header: ({ column }) => <SortableHeader column={column} title="Retries" />,
     cell: ({ row }) => (
-      <Cell className="whitespace-nowrap">
-        {row.getValue("retries")}
-      </Cell>
+      <div className="whitespace-nowrap">{row.getValue("retries")}</div>
     ),
   },
   // Status column
   {
     accessorKey: "status",
-    header: ({ column }) => (
-      <SortableHeader column={column} title="Status" />
-    ),
+    header: ({ column }) => <SortableHeader column={column} title="Status" />,
     cell: ({ row }) => (
-      <Cell>
+      <div>
         <StatusBadge status={row.getValue("status") as string} />
-      </Cell>
+      </div>
     ),
   },
 ];
