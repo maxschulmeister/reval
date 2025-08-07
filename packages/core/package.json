@@ -16,12 +16,10 @@
     "db-create": "rm -rf ../../.reval && pnpm drizzle-kit generate && tsx src/db/index.ts && pnpm drizzle-kit migrate"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.1.2",
     "@types/node": "^20.0.0",
     "drizzle-kit": "^0.31.4",
     "tsx": "^4.0.0",
     "typescript": "^5.8.3",
-    "ultracite": "5.1.2",
     "vite": "^5.0.0",
     "vite-node": "^1.0.0",
     "vitest": "^3.2.4"
