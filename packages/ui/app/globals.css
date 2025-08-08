@@ -1,0 +1,208 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/* Monochrome */
+@import "@radix-ui/colors/black-alpha.css";
+@import "@radix-ui/colors/white-alpha.css";
+
+/* Neutral */
+@import "@radix-ui/colors/sage.css";
+@import "@radix-ui/colors/sage-dark.css";
+
+/* Primary */
+@import "@radix-ui/colors/mint.css";
+@import "@radix-ui/colors/mint-dark.css";
+
+/* Success */
+@import "@radix-ui/colors/grass.css";
+@import "@radix-ui/colors/grass-dark.css";
+
+/* Error */
+@import "@radix-ui/colors/tomato.css";
+@import "@radix-ui/colors/tomato-dark.css";
+
+/* Warn */
+@import "@radix-ui/colors/orange.css";
+@import "@radix-ui/colors/orange-dark.css";
+@import "@radix-ui/colors/amber.css";
+@import "@radix-ui/colors/amber-dark.css";
+
+@custom-variant dark (&:is(.dark));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-error: var(--error);
+  --color-error-foreground: var(--error-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+:root {
+  --radius: 0.375rem;
+
+  /* Light theme using Radix color scale */
+  --background: white; /* App background */
+  --foreground: var(--sage-12); /* High-contrast text */
+  --card: var(--sage-2); /* Subtle background */
+  --card-foreground: var(--sage-12); /* High-contrast text */
+  --popover: var(--sage-1); /* App background */
+  --popover-foreground: var(--sage-12); /* High-contrast text */
+
+  /* Primary colors using Mint */
+  --primary: var(--mint-9); /* Solid backgrounds */
+  --primary-foreground: var(--sage-12); /* Contrasting text on primary */
+
+  /* Success colors using Grass */
+  --success: var(--grass-9); /* Solid backgrounds */
+  --success-foreground: white; /* Contrasting text on success */
+
+  /* Error colors using Tomato */
+  --error: var(--tomato-9); /* Solid backgrounds */
+  --error-foreground: white; /* Contrasting text on error */
+
+  /* Warning colors using Amber */
+  --warning: var(--orange-9); /* Solid backgrounds */
+  --warning-foreground: white; /* High-contrast text */
+
+  /* Secondary and muted colors */
+  --secondary: var(--sage-3); /* UI element background */
+  --secondary-foreground: var(--mint-12); /* High-contrast text */
+  --muted: var(--sage-2); /* Subtle background */
+  --muted-foreground: var(--sage-11); /* Low-contrast text */
+  --accent: var(--sage-4); /* Hovered UI element background */
+  --accent-foreground: var(--mint-11); /* High-contrast text */
+
+  /* Destructive (same as error) */
+  --destructive: var(--tomato-9); /* Solid backgrounds */
+  --destructive-foreground: white; /* Contrasting text */
+
+  /* Borders and inputs */
+  --border: var(--sage-6); /* Subtle borders */
+  --input: var(--sage-7); /* UI element border */
+  --ring: var(--sage-8); /* Focus rings */
+
+  /* Chart colors */
+  --chart-1: var(--mint-9);
+  --chart-2: var(--mint-7);
+  --chart-3: var(--mint-4);
+  --chart-4: var(--mint-11);
+  --chart-5: var(--mint-12);
+
+  /* Sidebar colors */
+  --sidebar: var(--sage-1); /* App background */
+  --sidebar-foreground: var(--sage-12); /* High-contrast text */
+  --sidebar-primary: var(--mint-9); /* Solid backgrounds */
+  --sidebar-primary-foreground: var(--sage-1); /* Contrasting text */
+  --sidebar-accent: var(--sage-3); /* UI element background */
+  --sidebar-accent-foreground: var(--sage-12); /* High-contrast text */
+  --sidebar-border: var(--sage-6); /* Subtle borders */
+  --sidebar-ring: var(--sage-8); /* Focus rings */
+}
+
+.dark {
+  /* Dark theme using Radix dark color scale */
+  --background: var(--sage-1); /* App background */
+  --foreground: var(--sage-12); /* High-contrast text */
+  --card: var(--sage-2); /* Subtle background */
+  --card-foreground: var(--sage-12); /* High-contrast text */
+  --popover: var(--sage-1); /* App background */
+  --popover-foreground: var(--sage-12); /* High-contrast text */
+
+  /* Primary colors using Mint dark */
+  --primary: var(--mint-9); /* Solid backgrounds */
+  --primary-foreground: var(--sage-1); /* Contrasting text on primary */
+
+  /* Success colors using Grass dark */
+  --success: var(--grass-9); /* Solid backgrounds */
+  --success-foreground: var(--sage-12); /* Contrasting text on success */
+
+  /* Error colors using Tomato dark */
+  --error: var(--tomato-9); /* Solid backgrounds */
+  --error-foreground: var(--sage-12); /* Contrasting text on error */
+
+  /* Warning colors using Amber dark */
+  --warning: var(--orange-9); /* Solid backgrounds */
+  --warning-foreground: var(--sage-12); /* High-contrast text */
+
+  /* Secondary and muted colors */
+  --secondary: var(--sage-3); /* UI element background */
+  --secondary-foreground: var(--sage-12); /* High-contrast text */
+  --muted: var(--sage-2); /* Subtle background */
+  --muted-foreground: var(--sage-11); /* Low-contrast text */
+  --accent: var(--sage-4); /* Hovered UI element background */
+  --accent-foreground: var(--mint-11); /* High-contrast text */
+
+  /* Destructive (same as error) */
+  --destructive: var(--tomato-9); /* Solid backgrounds */
+  --destructive-foreground: var(--sage-12); /* Contrasting text */
+
+  /* Borders and inputs */
+  --border: var(--sage-6); /* Subtle borders */
+  --input: var(--sage-7); /* UI element border */
+  --ring: var(--sage-8); /* Focus rings */
+
+  /* Chart colors */
+  --chart-1: var(--mint-9);
+  --chart-2: var(--mint-7);
+  --chart-3: var(--mint-4);
+  --chart-4: var(--mint-11);
+  --chart-5: var(--mint-12);
+
+  /* Sidebar colors */
+  --sidebar: var(--sage-1); /* App background */
+  --sidebar-foreground: var(--sage-12); /* High-contrast text */
+  --sidebar-primary: var(--mint-9); /* Solid backgrounds */
+  --sidebar-primary-foreground: var(--sage-1); /* Contrasting text */
+  --sidebar-accent: var(--sage-3); /* UI element background */
+  --sidebar-accent-foreground: var(--sage-12); /* High-contrast text */
+  --sidebar-border: var(--sage-6); /* Subtle borders */
+  --sidebar-ring: var(--sage-8); /* Focus rings */
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}

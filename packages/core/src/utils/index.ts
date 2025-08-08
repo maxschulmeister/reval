@@ -1,7 +1,6 @@
 import * as dataForge from "data-forge";
 import "data-forge-fs";
-import type { ArgsContext } from "../types/config";
-import { Config } from "../types/config";
+import type { ArgsContext, Config } from "../types/config";
 
 export const combineArgs = (args: Array<any>) => {
   if (args.length === 0) return [];
@@ -9,7 +8,7 @@ export const combineArgs = (args: Array<any>) => {
   const cartesian = (...arrays: any[][]) => {
     return arrays.reduce(
       (acc, curr) => acc.flatMap((x) => curr.map((y) => [...x, y])),
-      [[]]
+      [[]],
     );
   };
 
@@ -39,9 +38,9 @@ export const loadConfig = async () => {
 
 export const loadData = async () => {
   const config = await loadConfig();
-  let df;
-  let dfFeatures;
-  let dfTarget;
+  let df: dataForge.IDataFrame<number, any>;
+  let dfFeatures: string[];
+  let dfTarget: string[];
   if (config.data.path && typeof config.data.target === "string") {
     df = dataForge.readFileSync(config.data.path).parseCSV();
 
@@ -82,7 +81,7 @@ export const loadData = async () => {
 
 export const getFeatures = (
   arg: any,
-  features: ArgsContext["features"]
+  features: ArgsContext["features"],
 ): any => {
   let featuresValue: any;
 
@@ -92,7 +91,7 @@ export const getFeatures = (
     featuresValue = arg.find((argValue) => {
       if (typeof argValue === "object" && argValue !== null) {
         return Object.values(argValue).some((propValue) =>
-          features.includes(propValue)
+          features.includes(propValue),
         );
       }
       return features.includes(argValue);
@@ -101,7 +100,7 @@ export const getFeatures = (
     // If it's an object, find the specific property that matched
     if (typeof featuresValue === "object" && featuresValue !== null) {
       const matchingInputValue = Object.values(featuresValue).find(
-        (propValue) => features.includes(propValue)
+        (propValue) => features.includes(propValue),
       );
       featuresValue = matchingInputValue;
     }
@@ -109,7 +108,7 @@ export const getFeatures = (
     // Single argument case
     if (typeof arg === "object" && arg !== null) {
       const matchingInputValue = Object.values(arg).find((propValue) =>
-        features.includes(propValue)
+        features.includes(propValue),
       );
       featuresValue = matchingInputValue;
     } else if (features.includes(arg)) {
@@ -122,7 +121,7 @@ export const getFeatures = (
 
 export const getVariant = (
   arg: any,
-  variants: ArgsContext["variants"]
+  variants: ArgsContext["variants"],
 ): Record<string, any> => {
   const variantValues: Record<string, any> = {};
 
@@ -135,7 +134,7 @@ export const getVariant = (
         // Handle object arguments - check if any property value matches
         if (typeof argValue === "object" && argValue !== null) {
           return Object.values(argValue).some((propValue) =>
-            variantArray.includes(propValue)
+            variantArray.includes(propValue),
           );
         }
         // Handle primitive arguments
@@ -146,7 +145,7 @@ export const getVariant = (
         // If it's an object, find the specific property that matched
         if (typeof foundValue === "object" && foundValue !== null) {
           const matchingValue = Object.values(foundValue).find((propValue) =>
-            variantArray.includes(propValue)
+            variantArray.includes(propValue),
           );
           variantValues[variantKey] = matchingValue;
         } else {
@@ -157,7 +156,7 @@ export const getVariant = (
       // Single argument case
       if (typeof arg === "object" && arg !== null) {
         const matchingValue = Object.values(arg).find((propValue) =>
-          variantArray.includes(propValue)
+          variantArray.includes(propValue),
         );
         if (matchingValue !== undefined) {
           variantValues[variantKey] = matchingValue;
@@ -172,7 +171,7 @@ export const getVariant = (
 };
 
 export function defineConfig<F extends (args: any) => Promise<any>>(
-  config: Config<F>
+  config: Config<F>,
 ) {
   return config;
 }

@@ -1,65 +1,71 @@
-# UI Generation Prompt for Reval Dashboard
+### Optimized Prompt for UI Frontend Development
 
-## 1. Overview
+**Objective:** Restructure the UI frontend to a single-page application, modeled after the structure at [https://llm-benchmark-five.vercel.app/](https://llm-benchmark-five.vercel.app/). Implement all specified components with full functionality, but keep styling minimal and unstyled (e.g., use basic HTML elements or simple CSS only where necessary for functionality). Focus on logic, data handling, and interactivity.
 
-This document contains a prompt for an AI agent to generate a web-based UI for the `reval` benchmarking framework. The UI will display benchmark data from a local SQLite database.
+**Assumptions and Setup:**
 
-## 2. Core Requirements
+- Assume data is fetched from an API or local source (e.g., runs, variants, results). Implement placeholders or mock data if needed.
+- Use React with Next.js (based on project structure).
+- Ensure the page is responsive by default.
+- Implement all features in a single page (e.g., `/app/page.tsx`).
 
-- **Frameworks**: Next.js (App Router), Tailwind CSS, and shadcn/ui.
-- **Database**: Read data from the existing SQLite database (`.reval/reval.db`). Use `drizzle-orm`.
-- **Real-time Updates**: The UI must hot-reload when the database content changes. Implement this using a file watcher (like `chokidar`) on the server to monitor `db.sqlite` and push updates to the client via WebSockets or Server-Sent Events (SSE).
-- **Styling**: The UI must be clean, minimal, and neutral. Use a monochrome color palette for the majority of the interface. Use colors sparingly for charts and important UI elements (like status badges). Refer to `https://kinde.com/`, `https://ui.shadcn.com/`, and `https://www.v7labs.com/` for style inspiration.
-- **Launch Command**: The UI should be launchable via `bun run ui`.
+**Step 1: Header Section**
 
-## 3. AI Agent Prompt
+- **Top Left:** Dropdown select for choosing the run to display.
+  - Options: Use run `name` as display text, `id` as value.
+  - On selection, update the page content to show data for the selected run.
+- **Top Right:**
+  - Secondary button: Link to GitHub ([www.github.com](www.github.com)).
+  - Primary button: Link to documentation ([www.google.com](www.google.com)).
 
-"You are an expert Next.js developer. Your task is to build a web dashboard for the `reval` benchmarking tool. Follow these instructions precisely.
+**Step 2: Filter Section**
 
-### **Project Setup**
+- **By Variant:** For each key in the `variants` object (assume variants is an object with dynamic keys), create a select dropdown.
+  - Populate options based on possible values for that variant key.
+  - Allow multi-select if applicable; apply filters to table data.
+- **By Status:** Select dropdown with options: 'success', 'failed', 'retried'.
+  - Filter table rows based on selected status(es).
 
-1.  **Next.js**: A Next.js app is already setup in `packages/ui`.
+**Step 3: Summary Rows (Above Table)**
 
-### **Backend (Data Fetching & Hot Reload)**
+- **First Summary Row:** Display aggregated metrics for the selected run.
+  - Columns:
+    - Function name (clickable collapsible to show the function code as a string in a code syntax highlighter, e.g., using Prism.js or react-syntax-highlighter).
+    - Timestamp of the run.
+    - Number of Executions.
+    - Success rate (percentage).
+    - Average execution time.
+- **Second Summary Row:** Empty row with a placeholder comment: `<!-- Placeholder for future charts insertion -->`.
 
-1.  **Database Connection**: In `core/db`, set up Drizzle ORM to connect to the SQLite database located at `../.reval/reval.db`.
-2.  **API Routes**: Create Next.js API routes or use Server Actions to fetch data from the `runs` and `executions` tables.
+**Step 4: Main Table**
 
-### **Frontend (UI Components)**
+- Display detailed results in a sortable table.
+- **Columns:**
+  - Separate columns for each feature (assume `features` is an array or object; dynamically generate columns).
+  - Separate columns for each key in `variants`.
+  - Target: Collapsible cell showing content with code syntax highlighting.
+  - Prediction: Collapsible cell showing content with code syntax highlighting.
+  - Time.
+  - Retries.
+  - Status.
+- **Sorting:** Make each column header clickable to sort the table.
+  - Display an arrow indicator (↑ for ascending, ↓ for descending) on the active sort column.
+  - Implement client-side sorting logic.
 
-Implement the following pages and components using `shadcn/ui` components wherever possible.
+**Step 5: Grouping Function**
 
-**Page 1: Runs Dashboard (Default Route: `/`)**
+- Implement a utility function to group results into 3 categories: 'good', 'ok', 'bad'.
+  - Must work with any numeric values (e.g., scores, times).
+  - Use an existing module like [simple-statistics](https://github.com/simple-statistics/simple-statistics) for calculations (e.g., quartiles or standard deviation to determine thresholds).
+  - Example logic: Use quantiles to divide into thirds (bottom third 'bad', middle 'ok', top 'good').
+  - Install via npm if not present: `npm install simple-statistics`.
+  - Export and use this function where needed (e.g., for summaries or filters).
 
-- **Layout**: A simple, clean layout.
-- **Component: `RunsTable`**
-  - Use the `Table` component from `shadcn/ui`.
-  - Display a list of all benchmark `runs`.
-  - **Columns**: Run Name, Function, Variants, Timestamp.
-  - Each row should be clickable and navigate to the detailed run view (`/run/[runId]`)
+**Guidelines:**
 
-**Page 2: Detailed Run View (`/run/[runId]`)**
+- **No Styling Focus:** Use minimal, unstyled elements (e.g., native HTML tables, selects). Avoid Tailwind or custom CSS unless required for functionality (e.g., collapsible).
+- **Full Functionality:** Ensure all interactions (selects, collapsibles, sorting) work without errors.
+- **Edge Cases:** Handle empty data, loading states, and invalid selections.
+- **Testing:** Suggest unit tests for grouping function and integration tests for UI components.
 
-- **Layout**: A two-column layout might work well, with summary stats on one side and detailed executions on the other.
-- **Component: `RunSummary`**
-  - Display the selected run's details (Name, Function, Notes, etc.) using `Card` components.
-  - Show aggregate metrics: Total Executions, Success Rate (%), Average Execution Time.
-- **Component: `ExecutionsCharts`**
-  - Use `recharts` to create charts.
-  - **Chart 1: Status Distribution**: A `PieChart` showing the distribution of `status` (`success` vs. `error`).
-  - **Chart 2: Execution Time per Variant**: A `BarChart` comparing the average `execution_time` for each `variant`.
-- **Component: `ExecutionsTable`**
-  - Use a `Table` to list all `executions` for the selected run.
-  - **Columns**: Variant, Status (use a `Badge` with color: green for success, red for error), Execution Time, Retries, Result (show the `prediction` from the result JSON).
-
-### **Styling**
-
-- Adhere to the minimal, monochrome design. Use shades of gray, black, and white.
-- Use a single accent color for interactive elements (links, buttons) and for the charts to make them stand out.
-- Ensure ample white space and clean typography.
-
-### **Final Steps**
-
-1.  Add a `ui` script to the root `package.json`: `"ui": "cd ui && bun dev"`.
-
-By following these instructions, you will create a fully functional and aesthetically pleasing dashboard for the `reval` framework."
+Implement step-by-step, verifying each section before proceeding.
