@@ -32,7 +32,7 @@
   - Columns:
     - Function name (clickable collapsible to show the function code as a string in a code syntax highlighter, e.g., using Prism.js or react-syntax-highlighter).
     - Timestamp of the run.
-    - Number of executions.
+    - Number of Executions.
     - Success rate (percentage).
     - Average execution time.
 - **Second Summary Row:** Empty row with a placeholder comment: `<!-- Placeholder for future charts insertion -->`.

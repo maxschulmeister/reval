@@ -78,7 +78,7 @@
 
 :root {
   --radius: 0.375rem;
-  
+
   /* Light theme using Radix color scale */
   --background: white; /* App background */
   --foreground: var(--sage-12); /* High-contrast text */
@@ -86,23 +86,23 @@
   --card-foreground: var(--sage-12); /* High-contrast text */
   --popover: var(--sage-1); /* App background */
   --popover-foreground: var(--sage-12); /* High-contrast text */
-  
+
   /* Primary colors using Mint */
   --primary: var(--mint-9); /* Solid backgrounds */
   --primary-foreground: var(--sage-12); /* Contrasting text on primary */
-  
+
   /* Success colors using Grass */
   --success: var(--grass-9); /* Solid backgrounds */
   --success-foreground: white; /* Contrasting text on success */
-  
+
   /* Error colors using Tomato */
   --error: var(--tomato-9); /* Solid backgrounds */
   --error-foreground: white; /* Contrasting text on error */
-  
+
   /* Warning colors using Amber */
   --warning: var(--orange-9); /* Solid backgrounds */
   --warning-foreground: white; /* High-contrast text */
-  
+
   /* Secondary and muted colors */
   --secondary: var(--sage-3); /* UI element background */
   --secondary-foreground: var(--mint-12); /* High-contrast text */
@@ -110,23 +110,23 @@
   --muted-foreground: var(--sage-11); /* Low-contrast text */
   --accent: var(--sage-4); /* Hovered UI element background */
   --accent-foreground: var(--mint-11); /* High-contrast text */
-  
+
   /* Destructive (same as error) */
   --destructive: var(--tomato-9); /* Solid backgrounds */
   --destructive-foreground: white; /* Contrasting text */
-  
+
   /* Borders and inputs */
   --border: var(--sage-6); /* Subtle borders */
   --input: var(--sage-7); /* UI element border */
   --ring: var(--sage-8); /* Focus rings */
-  
+
   /* Chart colors */
   --chart-1: var(--mint-9);
   --chart-2: var(--mint-7);
   --chart-3: var(--mint-4);
   --chart-4: var(--mint-11);
   --chart-5: var(--mint-12);
-  
+
   /* Sidebar colors */
   --sidebar: var(--sage-1); /* App background */
   --sidebar-foreground: var(--sage-12); /* High-contrast text */
@@ -146,47 +146,47 @@
   --card-foreground: var(--sage-12); /* High-contrast text */
   --popover: var(--sage-1); /* App background */
   --popover-foreground: var(--sage-12); /* High-contrast text */
-  
+
   /* Primary colors using Mint dark */
   --primary: var(--mint-9); /* Solid backgrounds */
   --primary-foreground: var(--sage-1); /* Contrasting text on primary */
-  
+
   /* Success colors using Grass dark */
   --success: var(--grass-9); /* Solid backgrounds */
   --success-foreground: var(--sage-12); /* Contrasting text on success */
-  
+
   /* Error colors using Tomato dark */
   --error: var(--tomato-9); /* Solid backgrounds */
   --error-foreground: var(--sage-12); /* Contrasting text on error */
-  
+
   /* Warning colors using Amber dark */
   --warning: var(--orange-9); /* Solid backgrounds */
   --warning-foreground: var(--sage-12); /* High-contrast text */
-  
+
   /* Secondary and muted colors */
   --secondary: var(--sage-3); /* UI element background */
   --secondary-foreground: var(--sage-12); /* High-contrast text */
   --muted: var(--sage-2); /* Subtle background */
   --muted-foreground: var(--sage-11); /* Low-contrast text */
   --accent: var(--sage-4); /* Hovered UI element background */
-  --accent-foreground: var(--sage-12); /* High-contrast text */
-  
+  --accent-foreground: var(--mint-11); /* High-contrast text */
+
   /* Destructive (same as error) */
   --destructive: var(--tomato-9); /* Solid backgrounds */
   --destructive-foreground: var(--sage-12); /* Contrasting text */
-  
+
   /* Borders and inputs */
   --border: var(--sage-6); /* Subtle borders */
   --input: var(--sage-7); /* UI element border */
   --ring: var(--sage-8); /* Focus rings */
-  
+
   /* Chart colors */
   --chart-1: var(--mint-9);
   --chart-2: var(--mint-7);
   --chart-3: var(--mint-4);
   --chart-4: var(--mint-11);
   --chart-5: var(--mint-12);
-  
+
   /* Sidebar colors */
   --sidebar: var(--sage-1); /* App background */
   --sidebar-foreground: var(--sage-12); /* High-contrast text */

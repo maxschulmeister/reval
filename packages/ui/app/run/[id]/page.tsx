@@ -25,7 +25,7 @@ async function getRunData(runId: string) {
       return null;
     }
 
-    // Get all executions for this run
+    // Get all Executions for this run
     const runExecutions = await db
       .select()
       .from(executions)
