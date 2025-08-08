@@ -12,10 +12,12 @@ import {
   loadConfig,
   loadData,
 } from "./utils";
+import { validateConfig } from "./utils/config";
 
 const run = async () => {
   const timestamp = Date.now();
-  const config = await loadConfig();
+  const rawConfig = await loadConfig();
+  const config = validateConfig(rawConfig);
   const data = await loadData();
   const context = {
     path: config.data.path,
@@ -35,10 +37,10 @@ const run = async () => {
   const name = `${fnName}-${variants.join("-")}-${timestamp}`;
   const runId = nanoid();
 
-  // Create queue with concurrency control and 1-second interval
+  // Create queue with concurrency control and interval
   const queue = new pQueue({
-    concurrency: config.concurrency ?? 10,
-    interval: config.interval ?? 1000,
+    concurrency: config.concurrency,
+    interval: config.interval,
     intervalCap: 1,
   });
 

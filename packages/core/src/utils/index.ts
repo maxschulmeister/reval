@@ -32,7 +32,7 @@ export const loadConfig = async () => {
     const configModule = await import("../../reval.config");
     return configModule.default || configModule;
   } catch (error) {
-    console.error('Config loading error:', error);
+    console.error("Config loading error:", error);
     throw new Error(`Failed to load config: ${error}`);
   }
 };
