@@ -3,7 +3,7 @@
  */
 export interface Config<F extends (...args: any[]) => Promise<any>> {
   /**
-   * Maximum number of concurrent executions to run in parallel.
+   * Maximum number of concurrent Executions to run in parallel.
    * Defaults to the number of CPU cores available.
    */
   concurrency?: number;
