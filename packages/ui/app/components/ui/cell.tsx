@@ -1,5 +1,5 @@
-import { cn } from "@/app/lib/utils";
-import { ReactNode } from "react";
+import { cn } from '@/app/lib/utils';
+import { ReactNode } from 'react';
 
 interface CellProps {
   children: ReactNode;
@@ -17,9 +17,9 @@ export const Cell = ({
   return (
     <div
       className={cn(
-        "flex items-center px-8 py-4 gap-x-8",
-        borderRight && "border-r border-border",
-        borderLeft && "border-l border-border",
+        'flex items-center px-8 py-4 gap-x-8',
+        borderRight && 'border-r border-border',
+        borderLeft && 'border-l border-border',
         className
       )}
     >

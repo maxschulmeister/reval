@@ -75,7 +75,7 @@ export function MultiSelect({
   };
 
   return (
-    <div className="relative w-64">
+    <div className="relative shrink grow">
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
@@ -83,8 +83,8 @@ export function MultiSelect({
             role="combobox"
             aria-expanded={open}
             className={cn(
-              "w-full justify-between text-left font-normal pr-16 rounded-radius border-border shadow-none hover:bg-accent hover:text-accent-foreground",
-              className
+              "rounded-radius border-border hover:bg-accent hover:text-accent-foreground w-full justify-between pr-16 text-left font-normal shadow-none",
+              className,
             )}
             onClick={() => setOpen(!open)}
           >
@@ -93,7 +93,7 @@ export function MultiSelect({
                 "truncate pr-4",
                 selected.length > 0
                   ? "text-foreground"
-                  : "text-muted-foreground"
+                  : "text-muted-foreground",
               )}
             >
               {getDisplayText()}
@@ -102,7 +102,7 @@ export function MultiSelect({
           </Button>
         </PopoverTrigger>
         <PopoverContent
-          className="w-full p-0 border-border shadow-none"
+          className="border-border w-full p-0 shadow-none"
           align="start"
         >
           <Command>
@@ -116,7 +116,7 @@ export function MultiSelect({
                       "mr-2 h-4 w-4",
                       selected.length === options.length
                         ? "opacity-100"
-                        : "opacity-0"
+                        : "opacity-0",
                     )}
                   />
                   {selected.length === options.length
@@ -133,7 +133,7 @@ export function MultiSelect({
                         "mr-2 h-4 w-4",
                         selected.includes(option.value)
                           ? "opacity-100"
-                          : "opacity-0"
+                          : "opacity-0",
                       )}
                     />
                     {option.label}
@@ -147,14 +147,14 @@ export function MultiSelect({
       {selected.length > 0 && (
         <button
           type="button"
-          className="absolute right-8 top-1/2 -translate-y-1/2 p-1 hover:bg-muted rounded-sm z-10"
+          className="hover:bg-muted absolute right-8 top-1/2 z-10 -translate-y-1/2 rounded-sm p-1"
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
             handleClearAll();
           }}
         >
-          <X className="h-3 w-3 text-muted-foreground hover:text-foreground" />
+          <X className="text-muted-foreground hover:text-foreground h-3 w-3" />
         </button>
       )}
     </div>
