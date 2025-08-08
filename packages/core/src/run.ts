@@ -4,6 +4,7 @@ import pQueue from "p-queue";
 import pRetry from "p-retry";
 import { saveRun } from "./db/save-run";
 import type { Benchmark, Execution } from "./types";
+import { Status } from "./types";
 import {
   combineArgs,
   getFeatures,
@@ -49,7 +50,7 @@ const run = async () => {
     queue.add(async () => {
       let retryCount = 0;
       let startTime: number = Date.now();
-      let status: "success" | "error" = "success";
+      let status: Status = Status.Success;
       let response: Awaited<ReturnType<typeof config.run.function>> | null;
       let error: any;
 
@@ -68,13 +69,13 @@ const run = async () => {
                   attemptError.attemptNumber
                 } failed for args ${JSON.stringify(arg)}. ${
                   attemptError.retriesLeft
-                } retries left. Error: ${attemptError.message}`
+                } retries left. Error: ${attemptError.message}`,
               );
             },
-          }
+          },
         );
       } catch (err) {
-        status = "error";
+        status = Status.Error;
         error = err;
         response = null;
       }
@@ -94,13 +95,19 @@ const run = async () => {
         target: context.target[index],
         result: response ? config.run.result(response) : null,
         time: executionTime,
-        retries: retryCount,
+        retries:
+          config.run.result["retries" as keyof typeof config.run.result] ||
+          retryCount,
+        // TODO:
+        // cost: config.run.result["cost" as keyof typeof config.run.result] || 0,
+        // accuracy:
+        //   config.run.result["accuracy" as keyof typeof config.run.result] || 0,
         status,
         variant,
       };
 
       return execution;
-    })
+    }),
   );
 
   const executions = (await Promise.all(promises)) as unknown as Execution[];
