@@ -1,6 +1,6 @@
 "use client";
 
-import type { Execution, Run } from "@reval/core";
+import type { Execution, Run } from "@reval/core/src/types";
 import { createColumns } from "./data-table/columns";
 import { DataTable } from "./data-table/data-table";
 
@@ -30,7 +30,9 @@ export const RunDataTable = ({
     if (!sortedExecutions.length) return [];
     const firstExecution = sortedExecutions[0];
     if (Array.isArray(firstExecution.features)) {
-      return firstExecution.features.map((_, index) => `feature_${index}`);
+      return firstExecution.features.map(
+        (_: unknown, index: number) => `feature_${index}`,
+      );
     }
     if (
       typeof firstExecution.features === "object" &&
@@ -46,7 +48,7 @@ export const RunDataTable = ({
       <DataTable
         columns={createColumns(
           getFeatureColumns(),
-          Object.keys(run.variants || {})
+          Object.keys(run.variants || {}),
         )}
         data={sortedExecutions}
         variantFilters={variantFilters}

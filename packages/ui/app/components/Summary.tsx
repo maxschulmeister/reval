@@ -1,25 +1,20 @@
 "use client";
 
-import type { Execution, Run } from "@reval/core";
+import type { Benchmark } from "@reval/core/src/types";
 import jsBeautify from "js-beautify";
 import { calculateAverageTime, calculateSuccessRate } from "../lib/grouping";
 import { CodeDialog } from "./code-dialog";
 import { Button } from "./ui/button";
 import { Cell } from "./ui/cell";
-import { DD, DT } from "./ui/typography";
+import { H5, Small } from "./ui/typography";
 
-interface SummaryProps {
-  run: Run;
-  filteredExecutions: Execution[];
-}
-
-export const Summary = ({ run, filteredExecutions }: SummaryProps) => {
+export const Summary = ({ run, executions }: Benchmark) => {
   return (
-    <Cell className="border-b border-border">
+    <Cell className="border-border border-b">
       {/* Function summary */}
-      <dl className="flex gap-x-2 items-center">
-        <DT>Function</DT>
-        <DD className="mr-8">
+      <dl className="flex items-center gap-x-2">
+        <H5 as="dt">Function</H5>
+        <Small as="dd" className="mr-8">
           <CodeDialog
             title="Function"
             content={jsBeautify(run.function, {
@@ -30,30 +25,40 @@ export const Summary = ({ run, filteredExecutions }: SummaryProps) => {
               <Button
                 variant="outline"
                 size="sm"
-                className="ml-2 rounded-radius border-border shadow-none hover:bg-accent hover:text-accent-foreground"
+                className="rounded-radius border-border hover:bg-accent hover:text-accent-foreground ml-2 shadow-none"
               >
                 Show Code
               </Button>
             }
           />
-        </DD>
+        </Small>
 
         {/* Timestamp Summary */}
-        <DT>Timestamp</DT>
-        <DD className="mr-8">
-          {new Date(run.timestamp).toISOString().replace("T", " ").slice(0, 19)}
-        </DD>
+        <H5 as="dt">Timestamp</H5>
+        <Small as="dd" className="mr-8">
+          {new Intl.DateTimeFormat("en-GB", {
+            dateStyle: "long",
+            timeStyle: "short",
+            // timeZoneName: "short",
+          }).format(run.timestamp)}
+        </Small>
 
         {/* Executions Summary */}
-        <DT>Executions</DT>
-        <DD className="mr-8">{filteredExecutions.length}</DD>
+        <H5 as="dt">Executions</H5>
+        <Small as="dd" className="mr-8">
+          {executions.length}
+        </Small>
 
         {/* Success Rate Summary */}
-        <DT>Success Rate</DT>
-        <DD className="mr-8">{calculateSuccessRate(filteredExecutions)}%</DD>
+        <H5 as="dt">Success Rate</H5>
+        <Small as="dd" className="mr-8">
+          {calculateSuccessRate(executions)}%
+        </Small>
         {/* Average Time Summary */}
-        <DT>Avg Time</DT>
-        <DD className="mr-8">{calculateAverageTime(filteredExecutions)}ms</DD>
+        <H5 as="dt">Avg Time</H5>
+        <Small as="dd" className="mr-8">
+          {calculateAverageTime(executions)}ms
+        </Small>
       </dl>
     </Cell>
   );

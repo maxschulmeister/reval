@@ -1,6 +1,6 @@
 "use client";
 
-import type { Run } from "@reval/core";
+import type { Run } from "@reval/core/src/types";
 import { useRouter } from "next/navigation";
 import { ThemeSwitcher, type ThemeSwitcherProps } from "./theme-switcher";
 import { Button } from "./ui/button";
@@ -30,16 +30,16 @@ export const Header = ({
   };
 
   return (
-    <div className="flex items-center justify-between border-b border-border">
+    <div className="border-border flex items-center justify-between border-b">
       <Cell borderRight>
         <Select value={currentRunId} onValueChange={handleRunChange}>
           <SelectTrigger
             aria-label="Change run"
-            className="h-auto w-auto p-0 border-0 bg-transparent hover:bg-transparent focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none gap-1.5 rounded-none"
+            className="h-auto w-auto gap-1.5 rounded-none border-0 bg-transparent p-0 shadow-none hover:bg-transparent focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0"
           >
             <H3 as="h1">{currentRunName || "Select a run"}</H3>
           </SelectTrigger>
-          <SelectContent className="border border-border shadow-none rounded-radius bg-popover">
+          <SelectContent className="border-border rounded-radius bg-popover border shadow-none">
             {runs.map((run) => (
               <SelectItem key={run.id} value={run.id}>
                 {run.name}
