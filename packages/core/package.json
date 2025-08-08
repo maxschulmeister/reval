@@ -10,16 +10,17 @@
     "build": "vite build",
     "dev": "tsx watch src/run.ts",
     "test": "vitest run",
-    "lint": "pnpm biome check .",
+    "lint": "tsc --noEmit",
     "clean": "rm -rf dist .reval",
     "db-ui": "pnpm drizzle-kit studio",
     "db-create": "rm -rf ../../.reval && pnpm drizzle-kit generate && tsx src/db/index.ts && pnpm drizzle-kit migrate"
   },
   "devDependencies": {
+    "@eslint/js": "^9.32.0",
     "@types/node": "^20.0.0",
     "drizzle-kit": "^0.31.4",
     "tsx": "^4.0.0",
-    "typescript": "^5.8.3",
+    "typescript": "^5.9.2",
     "vite": "^5.0.0",
     "vite-node": "^1.0.0",
     "vitest": "^3.2.4"
