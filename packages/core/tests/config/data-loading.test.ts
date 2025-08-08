@@ -217,6 +217,404 @@ describe("Config Structure & Validation Tests", () => {
   });
 });
 
+describe("Data Configuration Tests", () => {
+  describe("1.2 data.path property", () => {
+    it("should handle valid CSV file paths (relative and absolute)", async () => {
+      const csv = ["a,b,y", "1,10,foo", "2,20,bar"].join("\n");
+      const csvPath = writeTempCsv("tmp1.csv", csv);
+
+      const mockConfig = {
+        data: { path: csvPath, target: "y" },
+        run: {
+          function: async () => ({}),
+          args: () => [],
+          result: (r: any) => r,
+        },
+      } as any;
+
+      vi.doMock("../../reval.config", () => ({ default: mockConfig }));
+      vi.resetModules();
+
+      const utils = await import("../../src/utils");
+      const { features, target } = await utils.loadData();
+
+      expect(features).toEqual([{ a: "1", b: "10" }, { a: "2", b: "20" }]);
+      expect(target).toEqual(["foo", "bar"]);
+
+      vi.doUnmock("../../reval.config");
+    });
+
+    it("should handle non-existent file paths (should error)", async () => {
+      const mockConfig = {
+        data: { path: "/non/existent/file.csv", target: "y" },
+        run: {
+          function: async () => ({}),
+          args: () => [],
+          result: (r: any) => r,
+        },
+      } as any;
+
+      vi.doMock("../../reval.config", () => ({ default: mockConfig }));
+      vi.resetModules();
+
+      const utils = await import("../../src/utils");
+      await expect(utils.loadData()).rejects.toThrow();
+
+      vi.doUnmock("../../reval.config");
+    });
+
+    it("should handle invalid file formats (should error)", async () => {
+      const invalidPath = writeTempCsv("tmp2.csv", "This is not a valid CSV format");
+
+      const mockConfig = {
+        data: { path: invalidPath, target: "y" },
+        run: {
+          function: async () => ({}),
+          args: () => [],
+          result: (r: any) => r,
+        },
+      } as any;
+
+      vi.doMock("../../reval.config", () => ({ default: mockConfig }));
+      vi.resetModules();
+
+      const utils = await import("../../src/utils");
+      
+      // Should throw an error because the malformed CSV doesn't have the expected 'y' column
+      await expect(utils.loadData()).rejects.toThrow("Target column 'y' not found in CSV");
+
+      vi.doUnmock("../../reval.config");
+    });
+
+    it("should handle missing path property with target and features defined as arrays", async () => {
+      const mockConfig = {
+        data: { 
+          target: ["foo", "bar"],
+          features: [["a", "b"], ["c", "d"]] 
+        },
+        run: {
+          function: async () => ({}),
+          args: () => [],
+          result: (r: any) => r,
+        },
+      } as any;
+
+      vi.doMock("../../reval.config", () => ({ default: mockConfig }));
+      vi.resetModules();
+
+      const utils = await import("../../src/utils");
+      const { features, target } = await utils.loadData();
+
+      // Now works correctly with the bug fix
+      expect(features).toEqual([["a", "b"], ["c", "d"]]);
+      expect(target).toEqual(["foo", "bar"]);
+
+      vi.doUnmock("../../reval.config");
+    });
+
+    it("should throw error when missing path property without target and features defined", async () => {
+      const mockConfig = {
+        data: { },
+        run: {
+          function: async () => ({}),
+          args: () => [],
+          result: (r: any) => r,
+        },
+      } as any;
+
+      vi.doMock("../../reval.config", () => ({ default: mockConfig }));
+      vi.resetModules();
+
+      const utils = await import("../../src/utils");
+      
+      // Should throw an error when both target and features are missing
+      await expect(utils.loadData()).rejects.toThrow('Both target and features must be provided when path is not specified');
+
+      vi.doUnmock("../../reval.config");
+    });
+  });
+
+  describe("1.2 data.target property", () => {
+    it("should handle valid column names that exist in CSV", async () => {
+      const csv = ["a,b,y", "1,10,foo", "2,20,bar"].join("\n");
+      const csvPath = writeTempCsv("tmp1.csv", csv);
+
+      const mockConfig = {
+        data: { path: csvPath, target: "y" },
+        run: {
+          function: async () => ({}),
+          args: () => [],
+          result: (r: any) => r,
+        },
+      } as any;
+
+      vi.doMock("../../reval.config", () => ({ default: mockConfig }));
+      vi.resetModules();
+
+      const utils = await import("../../src/utils");
+      const { target } = await utils.loadData();
+
+      expect(target).toEqual(["foo", "bar"]);
+
+      vi.doUnmock("../../reval.config");
+    });
+
+    it("should throw error for non-existent column names", async () => {
+      const csv = ["a,b,y", "1,10,foo", "2,20,bar"].join("\n");
+      const csvPath = writeTempCsv("tmp1.csv", csv);
+
+      const mockConfig = {
+        data: { path: csvPath, target: "nonexistent" },
+        run: {
+          function: async () => ({}),
+          args: () => [],
+          result: (r: any) => r,
+        },
+      } as any;
+
+      vi.doMock("../../reval.config", () => ({ default: mockConfig }));
+      vi.resetModules();
+
+      const utils = await import("../../src/utils");
+      
+      // Should throw an error for non-existent target column
+      await expect(utils.loadData()).rejects.toThrow("Target column 'nonexistent' not found in CSV");
+
+      vi.doUnmock("../../reval.config");
+    });
+
+    it("should handle valid array of strings (when path not defined)", async () => {
+      const mockConfig = {
+        data: { 
+          target: ["foo", "bar", "baz"],
+          features: [["a", "b"], ["c", "d"], ["e", "f"]]
+        },
+        run: {
+          function: async () => ({}),
+          args: () => [],
+          result: (r: any) => r,
+        },
+      } as any;
+
+      vi.doMock("../../reval.config", () => ({ default: mockConfig }));
+      vi.resetModules();
+
+      const utils = await import("../../src/utils");
+      const { target, features } = await utils.loadData();
+
+      // Now should work correctly with the bug fix
+      expect(target).toEqual(["foo", "bar", "baz"]);
+      expect(features).toEqual([["a", "b"], ["c", "d"], ["e", "f"]]);
+
+      vi.doUnmock("../../reval.config");
+    });
+
+    it("should handle missing target property (falls back to second column)", async () => {
+      const csv = ["a,b,y", "1,10,foo", "2,20,bar"].join("\n");
+      const csvPath = writeTempCsv("tmp1.csv", csv);
+
+      const mockConfig = {
+        data: { path: csvPath },
+        run: {
+          function: async () => ({}),
+          args: () => [],
+          result: (r: any) => r,
+        },
+      } as any;
+
+      vi.doMock("../../reval.config", () => ({ default: mockConfig }));
+      vi.resetModules();
+
+      const utils = await import("../../src/utils");
+      const { features, target } = await utils.loadData();
+
+      // Should fall back to using the second column as target
+      // When target is missing, no column is dropped, so all columns remain in features
+      expect(features).toEqual([{ a: "1", b: "10", y: "foo" }, { a: "2", b: "20", y: "bar" }]);
+      expect(target).toEqual(["10", "20"]);
+
+      vi.doUnmock("../../reval.config");
+    });
+
+    it("should handle empty string target (falls back to second column)", async () => {
+      const csv = ["a,b,y", "1,10,foo", "2,20,bar"].join("\n");
+      const csvPath = writeTempCsv("tmp1.csv", csv);
+
+      const mockConfig = {
+        data: { path: csvPath, target: "" },
+        run: {
+          function: async () => ({}),
+          args: () => [],
+          result: (r: any) => r,
+        },
+      } as any;
+
+      vi.doMock("../../reval.config", () => ({ default: mockConfig }));
+      vi.resetModules();
+
+      const utils = await import("../../src/utils");
+      const { target } = await utils.loadData();
+
+      // The implementation falls back to the second column when target is empty
+      // In this case, it returns column 'b' values
+      expect(target).toEqual(["10", "20"]);
+
+      vi.doUnmock("../../reval.config");
+    });
+  });
+
+  describe("1.2 data.features property", () => {
+    it("should handle valid column names that exist in CSV", async () => {
+      const csv = ["a,b,y", "1,10,foo", "2,20,bar"].join("\n");
+      const csvPath = writeTempCsv("tmp1.csv", csv);
+
+      const mockConfig = {
+        data: { path: csvPath, target: "y", features: "a" },
+        run: {
+          function: async () => ({}),
+          args: () => [],
+          result: (r: any) => r,
+        },
+      } as any;
+
+      vi.doMock("../../reval.config", () => ({ default: mockConfig }));
+      vi.resetModules();
+
+      const utils = await import("../../src/utils");
+      const { features } = await utils.loadData();
+
+      expect(features).toEqual(["1", "2"]);
+
+      vi.doUnmock("../../reval.config");
+    });
+
+    it("should throw error for non-existent column names", async () => {
+      const csv = ["a,b,y", "1,10,foo", "2,20,bar"].join("\n");
+      const csvPath = writeTempCsv("tmp1.csv", csv);
+
+      const mockConfig = {
+        data: { path: csvPath, target: "y", features: "nonexistent" },
+        run: {
+          function: async () => ({}),
+          args: () => [],
+          result: (r: any) => r,
+        },
+      } as any;
+
+      vi.doMock("../../reval.config", () => ({ default: mockConfig }));
+      vi.resetModules();
+
+      const utils = await import("../../src/utils");
+      
+      // Should throw an error for non-existent features column
+      await expect(utils.loadData()).rejects.toThrow("Features column 'nonexistent' not found in CSV");
+
+      vi.doUnmock("../../reval.config");
+    });
+
+    it("should handle valid array of strings (when path not defined)", async () => {
+      const mockConfig = {
+        data: { 
+          target: ["foo", "bar"],
+          features: [["a", "b"], ["c", "d"]]
+        },
+        run: {
+          function: async () => ({}),
+          args: () => [],
+          result: (r: any) => r,
+        },
+      } as any;
+
+      vi.doMock("../../reval.config", () => ({ default: mockConfig }));
+      vi.resetModules();
+
+      const utils = await import("../../src/utils");
+      const { features } = await utils.loadData();
+
+      // Now works correctly with the bug fix
+      expect(features).toEqual([["a", "b"], ["c", "d"]]);
+
+      vi.doUnmock("../../reval.config");
+    });
+
+    it("should handle valid object with arrays of strings (when path not defined)", async () => {
+      const mockConfig = {
+        data: { 
+          target: ["foo", "bar"],
+          features: { model: ["m1", "m2"], param: ["p1", "p2"] }
+        },
+        run: {
+          function: async () => ({}),
+          args: () => [],
+          result: (r: any) => r,
+        },
+      } as any;
+
+      vi.doMock("../../reval.config", () => ({ default: mockConfig }));
+      vi.resetModules();
+
+      const utils = await import("../../src/utils");
+      const { features } = await utils.loadData();
+
+      // Now works correctly with the bug fix
+      expect(features).toEqual({ model: ["m1", "m2"], param: ["p1", "p2"] });
+
+      vi.doUnmock("../../reval.config");
+    });
+
+    it("should handle optional property behavior when not specified", async () => {
+      const csv = ["a,b,y", "1,10,foo", "2,20,bar"].join("\n");
+      const csvPath = writeTempCsv("tmp1.csv", csv);
+
+      const mockConfig = {
+        data: { path: csvPath, target: "y" },
+        run: {
+          function: async () => ({}),
+          args: () => [],
+          result: (r: any) => r,
+        },
+      } as any;
+
+      vi.doMock("../../reval.config", () => ({ default: mockConfig }));
+      vi.resetModules();
+
+      const utils = await import("../../src/utils");
+      const { features } = await utils.loadData();
+
+      // When features is not specified, it should extract all non-target columns
+      expect(features).toEqual([{ a: "1", b: "10" }, { a: "2", b: "20" }]);
+
+      vi.doUnmock("../../reval.config");
+    });
+
+    it("should handle empty string features (falls back to all non-target columns)", async () => {
+      const csv = ["a,b,y", "1,10,foo", "2,20,bar"].join("\n");
+      const csvPath = writeTempCsv("tmp1.csv", csv);
+
+      const mockConfig = {
+        data: { path: csvPath, target: "y", features: "" },
+        run: {
+          function: async () => ({}),
+          args: () => [],
+          result: (r: any) => r,
+        },
+      } as any;
+
+      vi.doMock("../../reval.config", () => ({ default: mockConfig }));
+      vi.resetModules();
+
+      const utils = await import("../../src/utils");
+      const { features } = await utils.loadData();
+
+      // The implementation falls back to extracting all non-target columns
+      // when features is an empty string
+      expect(features).toEqual([{ a: "1", b: "10" }, { a: "2", b: "20" }]);
+
+      vi.doUnmock("../../reval.config");
+    });
+  });
+});
+
 describe("loadData with mocked configs", () => {
   it("extracts features as array of objects when multiple non-target columns exist", async () => {
     const csv = ["a,b,y", "1,10,foo", "2,20,bar"].join("\n");
