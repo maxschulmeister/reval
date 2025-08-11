@@ -12,9 +12,10 @@
     "test": "turbo run test",
     "clean": "turbo run clean",
     "reval": "turbo run reval",
+    "reval-cli": "cd packages/cli && npm run dev",
     "db-create": "turbo run db-create",
     "db-ui": "turbo run db-ui",
-    "ui": "cd packages/ui && pnpm dev"
+    "ui": "cd packages/ui && npm run dev"
   },
   "devDependencies": {
     "prettier": "^3.6.2",
@@ -24,7 +25,7 @@
   "workspaces": [
     "packages/*"
   ],
-  "packageManager": "pnpm@10.14.0",
+  "packageManager": "yarn@4.9.2",
   "engines": {
     "node": ">=18"
   },
