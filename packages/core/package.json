@@ -12,8 +12,8 @@
     "test": "vitest run",
     "lint": "tsc --noEmit",
     "clean": "rm -rf dist .reval",
-    "db-ui": "pnpm drizzle-kit studio",
-    "db-create": "rm -rf ../../.reval && pnpm drizzle-kit generate && tsx src/db/index.ts && pnpm drizzle-kit migrate"
+    "db-ui": "npx drizzle-kit studio",
+    "db-create": "rm -rf ../../.reval && npx drizzle-kit generate && npx tsx src/db/index.ts && npx drizzle-kit migrate"
   },
   "devDependencies": {
     "@eslint/js": "^9.32.0",
