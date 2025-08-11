@@ -1,3 +1,0 @@
-// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
-
-exports[`Version Command > matches snapshot 1`] = `"reval CLI v0.1.0 (core v0.1.0)"`;
