@@ -4,9 +4,9 @@
   "description": "CLI for the reval benchmark framework",
   "private": true,
   "type": "module",
-  "main": "build/cli.js",
+  "main": "dist/cli.js",
   "bin": {
-    "reval": "build/cli.js"
+    "reval": "dist/cli.js"
   },
   "scripts": {
     "build": "tsc",
@@ -16,7 +16,7 @@
     "test:coverage": "vitest run --coverage",
     "test:ui": "vitest --ui",
     "lint": "tsc --noEmit",
-    "clean": "rm -rf build"
+    "clean": "rm -rf dist"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
