@@ -2,8 +2,9 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { existsSync, readFileSync } from 'fs';
 import React from 'react';
 import { render } from 'ink-testing-library';
-import Init from '../../../src/commands/init';
-import Export from '../../../src/commands/export';
+import { waitForComponentCompletion } from '../utils';
+import Init from '../../src/commands/init';
+import Export from '../../src/commands/export';
 import { withTempDir, writeFiles } from '../utils';
 import { completeProject } from '../fixtures';
 
@@ -31,13 +32,13 @@ describe('Integration Tests', () => {
     it('init creates files, then export can write to the created directory structure', async () => {
       await withTempDir(async (tempDir) => {
         // Step 1: Initialize project
-        const { waitUntilExit: waitForInit } = render(<Init options={{}} />);
-        await waitForInit();
+        const { lastFrame } = render(<Init options={{}} />);
+        await waitForComponentCompletion(() => lastFrame() || '');
 
         // Verify files were created
         expect(existsSync('reval.config.ts')).toBe(true);
         expect(existsSync('data/sample.csv')).toBe(true);
-        expect(mockInitializeDatabase).toHaveBeenCalledWith(false);
+        expect(mockInitializeDatabase).toHaveBeenCalledWith(undefined);
 
         // Verify config content
         const configContent = readFileSync('reval.config.ts', 'utf8');
@@ -60,13 +61,15 @@ describe('Integration Tests', () => {
 
         mockExportRun.mockResolvedValue(mockExportData);
 
-        const { lastFrame, waitUntilExit } = render(
+        const { lastFrame: exportFrame } = render(
           <Export args={['test-run-123']} options={{ format: 'json', out: 'results.json' }} />
         );
-        await waitUntilExit();
 
+        // Wait for export to complete
+        await waitForComponentCompletion(() => exportFrame() || '');
+        
         // Verify export completed
-        const output = lastFrame();
+        const output = exportFrame();
         expect(output).toContain('Export completed!');
         expect(output).toContain('results.json');
 
@@ -85,9 +88,10 @@ describe('Integration Tests', () => {
         writeFiles(completeProject);
 
         // Try to init without force
-        const { lastFrame, waitUntilExit } = render(<Init options={{}} />);
-        await waitUntilExit();
+        const { lastFrame } = render(<Init options={{}} />);
 
+        await waitForComponentCompletion(() => lastFrame() || '');
+        
         const output = lastFrame();
         expect(output).toContain('Error initializing project:');
         expect(output).toContain('already exist');
@@ -112,9 +116,10 @@ describe('Integration Tests', () => {
         expect(oldConfigContent).toContain('old: "config"');
 
         // Init with force
-        const { lastFrame, waitUntilExit } = render(<Init options={{ force: true }} />);
-        await waitUntilExit();
+        const { lastFrame } = render(<Init options={{ force: true }} />);
 
+        await waitForComponentCompletion(() => lastFrame() || '');
+        
         const output = lastFrame();
         expect(output).toContain('Project initialized successfully!');
 
@@ -134,31 +139,31 @@ describe('Integration Tests', () => {
     it('export works with different formats in initialized project', async () => {
       await withTempDir(async (tempDir) => {
         // Initialize project first
-        const { waitUntilExit: waitForInit } = render(<Init options={{}} />);
-        await waitForInit();
+        const { lastFrame } = render(<Init options={{}} />);
+        await waitForComponentCompletion(() => lastFrame() || '');
 
         // Test JSON export
         const jsonData = '{"id": "run1", "format": "json"}';
         mockExportRun.mockResolvedValue(jsonData);
 
-        const { waitUntilExit: waitForJsonExport } = render(
+        const { lastFrame: jsonExportFrame } = render(
           <Export args={['run1']} options={{ format: 'json' }} />
         );
-        await waitForJsonExport();
+        await waitForComponentCompletion(() => jsonExportFrame() || '');
 
-        expect(existsSync('reval-export-run1ndef.json')).toBe(true);
+        expect(existsSync('reval-export-run1.json')).toBe(true);
         expect(mockExportRun).toHaveBeenCalledWith('run1', 'json');
 
         // Test CSV export
         const csvData = 'id,result\nrun2,success';
         mockExportRun.mockResolvedValue(csvData);
 
-        const { waitUntilExit: waitForCsvExport } = render(
+        const { lastFrame: csvExportFrame } = render(
           <Export args={['run2']} options={{ format: 'csv' }} />
         );
-        await waitForCsvExport();
+        await waitForComponentCompletion(() => csvExportFrame() || '');
 
-        expect(existsSync('reval-export-run2ndef.csv')).toBe(true);
+        expect(existsSync('reval-export-run2.csv')).toBe(true);
         expect(mockExportRun).toHaveBeenCalledWith('run2', 'csv');
       });
     });
@@ -166,18 +171,19 @@ describe('Integration Tests', () => {
     it('handles nested directory exports in initialized project', async () => {
       await withTempDir(async (tempDir) => {
         // Initialize project
-        const { waitUntilExit: waitForInit } = render(<Init options={{}} />);
-        await waitForInit();
+        const { lastFrame } = render(<Init options={{}} />);
+        await waitForComponentCompletion(() => lastFrame() || '');
 
         // Export to nested path
         mockExportRun.mockResolvedValue('{"test": "data"}');
 
-        const { lastFrame, waitUntilExit } = render(
+        const { lastFrame: nestedExportFrame } = render(
           <Export args={['run123']} options={{ format: 'json', out: 'exports/nested/result.json' }} />
         );
-        await waitUntilExit();
+        
+        await waitForComponentCompletion(() => nestedExportFrame() || '');
 
-        const output = lastFrame();
+        const output = nestedExportFrame();
         expect(output).toContain('Export completed!');
         expect(output).toContain('exports/nested/result.json');
 

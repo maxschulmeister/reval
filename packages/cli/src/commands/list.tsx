@@ -48,6 +48,10 @@ export default function List({ options }: Props) {
     return <Text color="blue">Loading runs...</Text>;
   }
 
+  if (options.json) {
+    return <Text>{JSON.stringify(runs, null, 2)}</Text>;
+  }
+
   if (runs.length === 0) {
     return (
       <Box flexDirection="column">
@@ -55,10 +59,6 @@ export default function List({ options }: Props) {
         <Text color="gray">Run 'reval run' to create your first benchmark.</Text>
       </Box>
     );
-  }
-
-  if (options.json) {
-    return <Text>{JSON.stringify(runs, null, 2)}</Text>;
   }
 
   return (

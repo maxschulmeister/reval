@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import React from 'react';
+import { waitForComponentCompletion } from '../utils';
 import { render } from 'ink-testing-library';
-import Run from '../../../src/commands/run';
+import Run from '../../src/commands/run.tsx';
 
 // Mock @reval/core
 vi.mock('@reval/core', () => ({
@@ -63,8 +64,10 @@ describe('Run Command', () => {
   it('runs benchmark with default options', async () => {
     mockRun.mockResolvedValue(mockBenchmarkResult);
     
-    const { lastFrame, waitUntilExit } = render(<Run options={{}} />);
-    await waitUntilExit();
+    const { lastFrame } = render(<Run options={{}} />);
+    
+    // Wait for async operation to complete
+    await waitForComponentCompletion(lastFrame);
     
     const output = lastFrame();
     expect(output).toContain('Benchmark completed!');
@@ -99,8 +102,7 @@ describe('Run Command', () => {
       verbose: true,
     };
     
-    const { waitUntilExit } = render(<Run options={options} />);
-    await waitUntilExit();
+    const { lastFrame } = render(<Run options={options} />);
     
     expect(mockRun).toHaveBeenCalledWith({
       configPath: './custom-config.ts',
@@ -124,8 +126,10 @@ describe('Run Command', () => {
     
     mockRun.mockResolvedValue(dryRunResult);
     
-    const { lastFrame, waitUntilExit } = render(<Run options={{ dry: true }} />);
-    await waitUntilExit();
+    const { lastFrame } = render(<Run options={{ dry: true }} />);
+    
+    // Wait for async operation to complete
+    await waitForComponentCompletion(lastFrame);
     
     const output = lastFrame();
     expect(output).toContain('Benchmark completed!');
@@ -136,8 +140,10 @@ describe('Run Command', () => {
   it('handles benchmark error', async () => {
     mockRun.mockRejectedValue(new Error('Configuration file not found'));
     
-    const { lastFrame, waitUntilExit } = render(<Run options={{}} />);
-    await waitUntilExit();
+    const { lastFrame } = render(<Run options={{}} />);
+    
+    // Wait for async operation to complete
+    await waitForComponentCompletion(lastFrame);
     
     const output = lastFrame();
     expect(output).toContain('Error running benchmark:');
@@ -156,6 +162,9 @@ describe('Run Command', () => {
     mockRun.mockImplementation(() => new Promise(() => {})); // Never resolves
     
     const { lastFrame } = render(<Run options={{ dry: true }} />);
+    
+    // Wait for async operation to complete
+    await waitForComponentCompletion(lastFrame);
     
     const output = lastFrame();
     expect(output).toContain('Running benchmark...');
@@ -187,8 +196,10 @@ describe('Run Command', () => {
     
     mockRun.mockResolvedValue(allSuccessResult);
     
-    const { lastFrame, waitUntilExit } = render(<Run options={{}} />);
-    await waitUntilExit();
+    const { lastFrame } = render(<Run options={{}} />);
+    
+    // Wait for async operation to complete
+    await waitForComponentCompletion(lastFrame);
     
     const output = lastFrame();
     expect(output).toContain('Success: 2 (100.0%)');
@@ -204,8 +215,10 @@ describe('Run Command', () => {
     
     mockRun.mockResolvedValue(noExecutionsResult);
     
-    const { lastFrame, waitUntilExit } = render(<Run options={{}} />);
-    await waitUntilExit();
+    const { lastFrame } = render(<Run options={{}} />);
+    
+    // Wait for async operation to complete
+    await waitForComponentCompletion(lastFrame);
     
     const output = lastFrame();
     expect(output).toContain('Total executions: 0');
@@ -216,8 +229,10 @@ describe('Run Command', () => {
   it('handles missing result data gracefully', async () => {
     mockRun.mockResolvedValue(null);
     
-    const { lastFrame, waitUntilExit } = render(<Run options={{}} />);
-    await waitUntilExit();
+    const { lastFrame } = render(<Run options={{}} />);
+    
+    // Wait for async operation to complete
+    await waitForComponentCompletion(lastFrame);
     
     const output = lastFrame();
     expect(output).toContain('No result data available');

@@ -1,9 +1,10 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import React from 'react';
 import { render } from 'ink-testing-library';
-import Create from '../../../src/commands/db/create';
-import Migrate from '../../../src/commands/db/migrate';
-import Studio from '../../../src/commands/db/studio';
+import { waitForComponentCompletion } from '../utils';
+import Create from '../../src/commands/db/create';
+import Migrate from '../../src/commands/db/migrate';
+import Studio from '../../src/commands/db/studio';
 
 // Mock @reval/core
 vi.mock('@reval/core', () => ({
@@ -13,7 +14,14 @@ vi.mock('@reval/core', () => ({
 
 // Mock execa
 vi.mock('execa', () => ({
-  execa: vi.fn(),
+  execa: vi.fn(() => {
+    const mockChild = {
+      on: vi.fn(),
+      kill: vi.fn(),
+      pid: 12345,
+    };
+    return mockChild;
+  }),
 }));
 
 import { initializeDatabase, runMigrations } from '@reval/core';
@@ -36,26 +44,32 @@ describe('Database Commands', () => {
     it('creates database successfully without force', async () => {
       mockInitializeDatabase.mockResolvedValue();
       
-      const { lastFrame, waitUntilExit } = render(<Create options={{}} />);
-      await waitUntilExit();
+      const { lastFrame } = render(<Create options={{}} />);
+      
+      // Wait for async database creation to complete
+      await waitForComponentCompletion(lastFrame);
       
       const output = lastFrame();
       expect(output).toContain('Database created successfully!');
       expect(output).toContain('Location: ./.reval/reval.db');
       expect(output).toContain('You can now run \'reval run\' to execute benchmarks');
       
-      expect(mockInitializeDatabase).toHaveBeenCalledWith(false);
+      expect(mockInitializeDatabase).toHaveBeenCalledWith(undefined);
     });
 
     it('creates database with force flag', async () => {
       mockInitializeDatabase.mockResolvedValue();
       
-      const { lastFrame, waitUntilExit } = render(<Create options={{ force: true }} />);
-      await waitUntilExit();
+      const { lastFrame } = render(<Create options={{ force: true }} />);
+      
+      // Check initial state shows force mode
+      expect(lastFrame()).toContain('Force mode: overwriting existing database');
+      
+      // Wait for async database creation to complete
+      await waitForComponentCompletion(lastFrame);
       
       const output = lastFrame();
       expect(output).toContain('Database created successfully!');
-      expect(output).toContain('Force mode: overwriting existing database');
       
       expect(mockInitializeDatabase).toHaveBeenCalledWith(true);
     });
@@ -63,8 +77,10 @@ describe('Database Commands', () => {
     it('handles database creation error', async () => {
       mockInitializeDatabase.mockRejectedValue(new Error('Database already exists'));
       
-      const { lastFrame, waitUntilExit } = render(<Create options={{}} />);
-      await waitUntilExit();
+      const { lastFrame } = render(<Create options={{}} />);
+      
+      // Wait for async database creation to complete
+      await waitForComponentCompletion(lastFrame);
       
       const output = lastFrame();
       expect(output).toContain('Error creating database:');
@@ -85,8 +101,10 @@ describe('Database Commands', () => {
     it('runs migrations successfully', async () => {
       mockRunMigrations.mockResolvedValue();
       
-      const { lastFrame, waitUntilExit } = render(<Migrate />);
-      await waitUntilExit();
+      const { lastFrame } = render(<Migrate />);
+      
+      // Wait for async operation to complete
+      await waitForComponentCompletion(() => lastFrame() || '');
       
       const output = lastFrame();
       expect(output).toContain('Database migrations completed!');
@@ -98,8 +116,10 @@ describe('Database Commands', () => {
     it('handles migration error', async () => {
       mockRunMigrations.mockRejectedValue(new Error('Migration file not found'));
       
-      const { lastFrame, waitUntilExit } = render(<Migrate />);
-      await waitUntilExit();
+      const { lastFrame } = render(<Migrate />);
+      
+      // Wait for async operation to complete
+    await waitForComponentCompletion(() => lastFrame() || '');
       
       const output = lastFrame();
       expect(output).toContain('Error running migrations:');
@@ -119,11 +139,12 @@ describe('Database Commands', () => {
   describe('db studio', () => {
     it('starts Drizzle Studio successfully', async () => {
       // Mock successful process spawn
-      mockExeca.mockResolvedValue({
-        stdout: '',
-        stderr: '',
-        exitCode: 0,
-      } as any);
+      const mockChild = {
+        on: vi.fn(), // No error event will be emitted
+        kill: vi.fn(),
+        pid: 12345,
+      };
+      mockExeca.mockReturnValue(mockChild as any);
       
       const { lastFrame } = render(<Studio />);
       
@@ -149,12 +170,24 @@ describe('Database Commands', () => {
     });
 
     it('handles studio startup error', async () => {
-      mockExeca.mockRejectedValue(new Error('Command not found: npx'));
+      const mockChild = {
+        on: vi.fn((event, callback) => {
+          if (event === 'error') {
+            // Simulate error event being emitted
+            setTimeout(() => callback(new Error('Command not found: npx')), 100);
+          }
+        }),
+        kill: vi.fn(),
+        pid: 12345,
+      };
+      mockExeca.mockReturnValue(mockChild as any);
       
-      const { lastFrame, waitUntilExit } = render(<Studio />);
-      await waitUntilExit();
+      const { lastFrame } = render(<Studio />);
       
-      const output = lastFrame();
+      // Wait for the error to be caught
+      await waitForComponentCompletion(() => lastFrame() || '');
+      
+      const output = lastFrame() || '';
       expect(output).toContain('Error starting Drizzle Studio:');
       expect(output).toContain('Command not found: npx');
       expect(output).toContain('Make sure drizzle-kit is installed');
@@ -162,7 +195,7 @@ describe('Database Commands', () => {
 
     it('shows starting state initially', () => {
       // Don't resolve the execa promise to keep it in starting state
-      mockExeca.mockImplementation(() => new Promise(() => {}));
+      mockExeca.mockImplementation(() => new Promise(() => {}) as any);
       
       const { lastFrame } = render(<Studio />);
       

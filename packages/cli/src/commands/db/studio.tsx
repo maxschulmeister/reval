@@ -16,11 +16,14 @@ export default function Studio() {
           detached: true,
         });
 
-        // Give it a moment to start
-        setTimeout(() => {
-          setUrl('https://local.drizzle.studio');
-          setStatus('running');
-        }, 2000);
+        // Wait for the process to start or fail
+        await new Promise((resolve, reject) => {
+          child.on('error', reject);
+          setTimeout(resolve, 2000); // Give it time to start
+        });
+
+        setUrl('https://local.drizzle.studio');
+        setStatus('running');
 
       } catch (err) {
         setError(err instanceof Error ? err.message : String(err));

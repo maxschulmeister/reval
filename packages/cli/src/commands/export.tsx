@@ -3,7 +3,8 @@ import { Text, Box } from 'ink';
 import zod from 'zod';
 import { exportRun } from '@reval/core';
 import { argument, option } from 'pastel';
-import { writeFileSync } from 'fs';
+import { writeFileSync, mkdirSync } from 'fs';
+import { dirname } from 'path';
 
 export const args = zod.tuple([
   zod.string().describe(
@@ -41,6 +42,12 @@ export default function Export({ args, options }: Props) {
         const data = await exportRun(runId, options.format);
         
         const fileName = options.out || `reval-export-${runId.slice(0, 8)}.${options.format}`;
+        
+        // Create parent directories if they don't exist
+        const dir = dirname(fileName);
+        if (dir !== '.') {
+          mkdirSync(dir, { recursive: true });
+        }
         
         writeFileSync(fileName, data, 'utf8');
         

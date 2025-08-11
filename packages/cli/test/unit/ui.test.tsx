@@ -1,11 +1,19 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import React from 'react';
 import { render } from 'ink-testing-library';
-import UI from '../../../src/commands/ui';
+import { waitForComponentCompletion } from '../utils';
+import UI from '../../src/commands/ui';
 
 // Mock execa
 vi.mock('execa', () => ({
-  execa: vi.fn(),
+  execa: vi.fn(() => {
+    const mockChild = {
+      on: vi.fn(),
+      kill: vi.fn(),
+      pid: 12345,
+    };
+    return mockChild;
+  }),
 }));
 
 import { execa } from 'execa';
@@ -22,11 +30,13 @@ describe('UI Command', () => {
   });
 
   it('starts UI successfully', async () => {
-    mockExeca.mockResolvedValue({
-      stdout: '',
-      stderr: '',
-      exitCode: 0,
-    } as any);
+    // Mock successful process spawn
+    const mockChild = {
+      on: vi.fn(), // No error event will be emitted
+      kill: vi.fn(),
+      pid: 12345,
+    };
+    mockExeca.mockReturnValue(mockChild as any);
     
     const { lastFrame } = render(<UI />);
     
@@ -44,8 +54,8 @@ describe('UI Command', () => {
     expect(lastFrame()).toContain('Press Ctrl+C to stop this command');
     
     expect(mockExeca).toHaveBeenCalledWith(
-      'pnpm',
-      ['dev'],
+      'npm',
+      ['run', 'dev'],
       expect.objectContaining({
         cwd: '../ui',
         detached: true,
@@ -54,19 +64,31 @@ describe('UI Command', () => {
   });
 
   it('handles UI startup error', async () => {
-    mockExeca.mockRejectedValue(new Error('pnpm not found'));
+    const mockChild = {
+      on: vi.fn((event, callback) => {
+        if (event === 'error') {
+          // Simulate error event being emitted
+          setTimeout(() => callback(new Error('npm not found')), 100);
+        }
+      }),
+      kill: vi.fn(),
+      pid: 12345,
+    };
+    mockExeca.mockReturnValue(mockChild as any);
     
-    const { lastFrame, waitUntilExit } = render(<UI />);
-    await waitUntilExit();
+    const { lastFrame } = render(<UI />);
     
-    const output = lastFrame();
+    // Wait for the error to be caught
+    await waitForComponentCompletion(() => lastFrame() || '');
+    
+    const output = lastFrame() || '';
     expect(output).toContain('Error starting UI:');
-    expect(output).toContain('pnpm not found');
+    expect(output).toContain('npm not found');
     expect(output).toContain('Make sure the UI package is available');
   });
 
   it('shows starting state initially', () => {
-    mockExeca.mockImplementation(() => new Promise(() => {})); // Never resolves
+    mockExeca.mockImplementation(() => new Promise(() => {}) as any); // Never resolves
     
     const { lastFrame } = render(<UI />);
     

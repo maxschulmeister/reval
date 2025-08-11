@@ -16,11 +16,14 @@ export default function UI() {
           detached: true,
         });
 
-        // Give it a moment to start
-        setTimeout(() => {
-          setUrl('http://localhost:3000');
-          setStatus('running');
-        }, 3000);
+        // Wait for the process to start or fail
+        await new Promise((resolve, reject) => {
+          child.on('error', reject);
+          setTimeout(resolve, 3000); // Give it time to start
+        });
+
+        setUrl('http://localhost:3000');
+        setStatus('running');
 
       } catch (err) {
         setError(err instanceof Error ? err.message : String(err));

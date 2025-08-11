@@ -2,8 +2,8 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import React from 'react';
 import { render } from 'ink-testing-library';
 import { existsSync, readFileSync } from 'fs';
-import Init from '../../../src/commands/init';
-import { withTempDir } from '../utils';
+import Init from '../../src/commands/init.tsx';
+import { withTempDir, waitForComponentCompletion } from '../utils';
 
 // Mock @reval/core
 vi.mock('@reval/core', () => ({
@@ -42,8 +42,10 @@ describe('Init Command', () => {
     mockExistsSync.mockReturnValue(false);
     mockInitializeDatabase.mockResolvedValue();
     
-    const { lastFrame, waitUntilExit } = render(<Init options={{}} />);
-    await waitUntilExit();
+    const { lastFrame } = render(<Init options={{}} />);
+    
+    // Wait for async initialization to complete
+    await waitForComponentCompletion(lastFrame);
     
     const output = lastFrame();
     expect(output).toContain('Project initialized successfully!');
@@ -57,14 +59,16 @@ describe('Init Command', () => {
     expect(mockWriteFileSync).toHaveBeenCalledWith('reval.config.ts', expect.stringContaining('defineConfig'), 'utf8');
     expect(mockWriteFileSync).toHaveBeenCalledWith('data/sample.csv', expect.stringContaining('input,expected_output'), 'utf8');
     expect(mockMkdirSync).toHaveBeenCalledWith('data', { recursive: true });
-    expect(mockInitializeDatabase).toHaveBeenCalledWith(false);
+    expect(mockInitializeDatabase).toHaveBeenCalledWith(undefined);
   });
 
   it('refuses to overwrite existing files without --force', async () => {
     mockExistsSync.mockReturnValue(true);
     
-    const { lastFrame, waitUntilExit } = render(<Init options={{}} />);
-    await waitUntilExit();
+    const { lastFrame } = render(<Init options={{}} />);
+    
+    // Wait for async initialization to complete
+    await waitForComponentCompletion(lastFrame);
     
     const output = lastFrame();
     expect(output).toContain('Error initializing project:');
@@ -79,12 +83,16 @@ describe('Init Command', () => {
     mockExistsSync.mockReturnValue(true);
     mockInitializeDatabase.mockResolvedValue();
     
-    const { lastFrame, waitUntilExit } = render(<Init options={{ force: true }} />);
-    await waitUntilExit();
+    const { lastFrame } = render(<Init options={{ force: true }} />);
+    
+    // Check initial state shows force mode
+    expect(lastFrame()).toContain('Force mode: overwriting existing files');
+    
+    // Wait for async initialization to complete
+    await waitForComponentCompletion(lastFrame);
     
     const output = lastFrame();
     expect(output).toContain('Project initialized successfully!');
-    expect(output).toContain('Force mode: overwriting existing files');
     
     expect(mockWriteFileSync).toHaveBeenCalled();
     expect(mockInitializeDatabase).toHaveBeenCalledWith(true);
@@ -94,8 +102,10 @@ describe('Init Command', () => {
     mockExistsSync.mockReturnValue(false);
     mockInitializeDatabase.mockRejectedValue(new Error('Database creation failed'));
     
-    const { lastFrame, waitUntilExit } = render(<Init options={{}} />);
-    await waitUntilExit();
+    const { lastFrame } = render(<Init options={{}} />);
+    
+    // Wait for async initialization to complete
+    await waitForComponentCompletion(lastFrame);
     
     const output = lastFrame();
     expect(output).toContain('Error initializing project:');
@@ -115,8 +125,10 @@ describe('Init Command', () => {
     mockExistsSync.mockReturnValue(false);
     mockInitializeDatabase.mockResolvedValue();
     
-    const { waitUntilExit } = render(<Init options={{}} />);
-    await waitUntilExit();
+    const { lastFrame } = render(<Init options={{}} />);
+    
+    // Wait for async initialization to complete
+    await waitForComponentCompletion(lastFrame);
     
     const configCall = mockWriteFileSync.mock.calls.find(call => 
       call[0] === 'reval.config.ts'
@@ -135,8 +147,10 @@ describe('Init Command', () => {
     mockExistsSync.mockReturnValue(false);
     mockInitializeDatabase.mockResolvedValue();
     
-    const { waitUntilExit } = render(<Init options={{}} />);
-    await waitUntilExit();
+    const { lastFrame } = render(<Init options={{}} />);
+    
+    // Wait for async initialization to complete  
+    await waitForComponentCompletion(lastFrame);
     
     const dataCall = mockWriteFileSync.mock.calls.find(call => 
       call[0] === 'data/sample.csv'

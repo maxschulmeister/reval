@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import React from 'react';
+import { waitForComponentCompletion } from '../utils';
 import { render } from 'ink-testing-library';
-import Show from '../../../src/commands/show';
+import Show from '../../src/commands/show.tsx';
 
 // Mock @reval/core
 vi.mock('@reval/core', () => ({
@@ -60,8 +61,10 @@ describe('Show Command', () => {
   it('renders detailed run information', async () => {
     mockGetRunDetails.mockResolvedValue(mockRunDetails);
     
-    const { lastFrame, waitUntilExit } = render(<Show args={['run123']} options={{}} />);
-    await waitUntilExit();
+    const { lastFrame } = render(<Show args={['run123']} options={{}} />);
+    
+    // Wait for async operation to complete
+    await waitForComponentCompletion(lastFrame);
     
     const output = lastFrame();
     expect(output).toContain('Run Details:');
@@ -83,8 +86,10 @@ describe('Show Command', () => {
   it('renders JSON output when --json flag is provided', async () => {
     mockGetRunDetails.mockResolvedValue(mockRunDetails);
     
-    const { lastFrame, waitUntilExit } = render(<Show args={['run123']} options={{ json: true }} />);
-    await waitUntilExit();
+    const { lastFrame } = render(<Show args={['run123']} options={{ json: true }} />);
+    
+    // Wait for async operation to complete
+    await waitForComponentCompletion(lastFrame);
     
     const output = lastFrame();
     const parsed = JSON.parse(output);
@@ -95,8 +100,10 @@ describe('Show Command', () => {
   it('handles run not found', async () => {
     mockGetRunDetails.mockResolvedValue(null);
     
-    const { lastFrame, waitUntilExit } = render(<Show args={['nonexistent']} options={{}} />);
-    await waitUntilExit();
+    const { lastFrame } = render(<Show args={['nonexistent']} options={{}} />);
+    
+    // Wait for async operation to complete
+    await waitForComponentCompletion(lastFrame);
     
     const output = lastFrame();
     expect(output).toContain('Error:');
@@ -107,8 +114,10 @@ describe('Show Command', () => {
   it('handles error from getRunDetails', async () => {
     mockGetRunDetails.mockRejectedValue(new Error('Database error'));
     
-    const { lastFrame, waitUntilExit } = render(<Show args={['run123']} options={{}} />);
-    await waitUntilExit();
+    const { lastFrame } = render(<Show args={['run123']} options={{}} />);
+    
+    // Wait for async operation to complete
+    await waitForComponentCompletion(lastFrame);
     
     const output = lastFrame();
     expect(output).toContain('Error:');
@@ -141,8 +150,10 @@ describe('Show Command', () => {
     
     mockGetRunDetails.mockResolvedValue(detailsWithManyExecutions);
     
-    const { lastFrame, waitUntilExit } = render(<Show args={['run123']} options={{}} />);
-    await waitUntilExit();
+    const { lastFrame } = render(<Show args={['run123']} options={{}} />);
+    
+    // Wait for async operation to complete
+    await waitForComponentCompletion(lastFrame);
     
     const output = lastFrame();
     expect(output).toContain('Sample Executions:');
