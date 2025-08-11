@@ -1,8 +1,8 @@
 import type { Status } from "@reval/core/src/types";
 import jsBeautify from "js-beautify";
 import { CodeDialog } from "../code-dialog";
+import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
-import { StatusBadge } from "./status-badge";
 
 export const FormattedCell = ({
   type,
@@ -31,7 +31,7 @@ export const FormattedCell = ({
       </div>
     );
   } else if (type === "status") {
-    return <StatusBadge status={value as Status} />;
+    return  <Badge variant={value as Status}>{value}</Badge>;
   } else {
     return value;
   }

@@ -1,6 +1,7 @@
 "use client";
 
 import { Status } from "@reval/core/src/types";
+import { Badge } from "../ui/badge";
 
 interface StatusBadgeProps {
   status: Status;
@@ -19,8 +20,9 @@ export const StatusBadge = ({ status }: StatusBadgeProps) => {
   };
 
   return (
-    <span className={`rounded-radius px-2 py-0.5 ${getStatusClasses(status)}`}>
-      {status}
-    </span>
+    // <span className={`rounded-radius px-2 py-0.5 ${getStatusClasses(status)}`}>
+    //   {status}
+    // </span>
+    <Badge>{status}</Badge>
   );
 };
