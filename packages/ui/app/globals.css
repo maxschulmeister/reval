@@ -88,8 +88,8 @@
   --popover-foreground: var(--sage-12); /* High-contrast text */
 
   /* Primary colors using Mint */
-  --primary: var(--mint-9); /* Solid backgrounds */
-  --primary-foreground: var(--sage-12); /* Contrasting text on primary */
+  --primary: var(--sage-12); /* Solid backgrounds */
+  --primary-foreground: var(--sage-1); /* Contrasting text on primary */
 
   /* Success colors using Grass */
   --success: var(--grass-9); /* Solid backgrounds */
@@ -105,11 +105,11 @@
 
   /* Secondary and muted colors */
   --secondary: var(--sage-3); /* UI element background */
-  --secondary-foreground: var(--mint-12); /* High-contrast text */
+  --secondary-foreground: var(--sage-12); /* High-contrast text */
   --muted: var(--sage-2); /* Subtle background */
   --muted-foreground: var(--sage-11); /* Low-contrast text */
   --accent: var(--sage-4); /* Hovered UI element background */
-  --accent-foreground: var(--mint-11); /* High-contrast text */
+  --accent-foreground: var(--sage-11); /* High-contrast text */
 
   /* Destructive (same as error) */
   --destructive: var(--tomato-9); /* Solid backgrounds */
@@ -121,16 +121,16 @@
   --ring: var(--sage-8); /* Focus rings */
 
   /* Chart colors */
-  --chart-1: var(--mint-9);
-  --chart-2: var(--mint-7);
-  --chart-3: var(--mint-4);
-  --chart-4: var(--mint-11);
-  --chart-5: var(--mint-12);
+  --chart-1: var(--sage-9);
+  --chart-2: var(--sage-7);
+  --chart-3: var(--sage-4);
+  --chart-4: var(--sage-11);
+  --chart-5: var(--sage-12);
 
   /* Sidebar colors */
   --sidebar: var(--sage-1); /* App background */
   --sidebar-foreground: var(--sage-12); /* High-contrast text */
-  --sidebar-primary: var(--mint-9); /* Solid backgrounds */
+  --sidebar-primary: var(--sage-9); /* Solid backgrounds */
   --sidebar-primary-foreground: var(--sage-1); /* Contrasting text */
   --sidebar-accent: var(--sage-3); /* UI element background */
   --sidebar-accent-foreground: var(--sage-12); /* High-contrast text */
@@ -148,7 +148,7 @@
   --popover-foreground: var(--sage-12); /* High-contrast text */
 
   /* Primary colors using Mint dark */
-  --primary: var(--mint-9); /* Solid backgrounds */
+  --primary: var(--sage-12); /* Solid backgrounds */
   --primary-foreground: var(--sage-1); /* Contrasting text on primary */
 
   /* Success colors using Grass dark */
@@ -169,7 +169,7 @@
   --muted: var(--sage-2); /* Subtle background */
   --muted-foreground: var(--sage-11); /* Low-contrast text */
   --accent: var(--sage-4); /* Hovered UI element background */
-  --accent-foreground: var(--mint-11); /* High-contrast text */
+  --accent-foreground: var(--sage-11); /* High-contrast text */
 
   /* Destructive (same as error) */
   --destructive: var(--tomato-9); /* Solid backgrounds */
@@ -181,16 +181,16 @@
   --ring: var(--sage-8); /* Focus rings */
 
   /* Chart colors */
-  --chart-1: var(--mint-9);
-  --chart-2: var(--mint-7);
-  --chart-3: var(--mint-4);
-  --chart-4: var(--mint-11);
-  --chart-5: var(--mint-12);
+  --chart-1: var(--sage-9);
+  --chart-2: var(--sage-7);
+  --chart-3: var(--sage-4);
+  --chart-4: var(--sage-11);
+  --chart-5: var(--sage-12);
 
   /* Sidebar colors */
   --sidebar: var(--sage-1); /* App background */
   --sidebar-foreground: var(--sage-12); /* High-contrast text */
-  --sidebar-primary: var(--mint-9); /* Solid backgrounds */
+  --sidebar-primary: var(--sage-9); /* Solid backgrounds */
   --sidebar-primary-foreground: var(--sage-1); /* Contrasting text */
   --sidebar-accent: var(--sage-3); /* UI element background */
   --sidebar-accent-foreground: var(--sage-12); /* High-contrast text */
