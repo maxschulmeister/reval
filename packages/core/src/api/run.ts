@@ -26,8 +26,8 @@ export interface RunOptions {
 
 export async function run(overrides: RunOptions = {}): Promise<Benchmark> {
   const timestamp = Date.now();
-  const config = await loadConfig();
-  const data = await loadData();
+  const config = await loadConfig(overrides.configPath);
+  const data = await loadData(overrides.configPath);
   
   // Apply overrides to config
   const finalConfig = {

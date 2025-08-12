@@ -27,9 +27,20 @@ export const combineArgs = (args: Array<any>) => {
   return cartesian(...args);
 };
 
-export const loadConfig = async () => {
+export const loadConfig = async (configPath?: string) => {
   try {
-    const configModule = await import("../../reval.config");
+    let configModulePath: string;
+
+    if (configPath) {
+      // Use provided config path
+      configModulePath = configPath;
+    } else {
+      // Look for reval.config.ts in current working directory
+      const path = await import("path");
+      configModulePath = path.resolve(process.cwd(), "reval.config.ts");
+    }
+
+    const configModule = await import(configModulePath);
     return configModule.default || configModule;
   } catch (error) {
     console.error("Config loading error:", error);
@@ -37,8 +48,8 @@ export const loadConfig = async () => {
   }
 };
 
-export const loadData = async () => {
-  const config = await loadConfig();
+export const loadData = async (configPath?: string) => {
+  const config = await loadConfig(configPath);
   let df: IDataFrame<number, any>;
   let dfFeatures: any;
   let dfTarget: any;
@@ -216,9 +227,6 @@ export const loadData = async () => {
     dfFeatures = config.data.features;
     dfTarget = config.data.target;
   }
-
-  console.log("dfFeatures", dfFeatures);
-  console.log("dfTarget", dfTarget);
 
   return { frame: df, features: dfFeatures, target: dfTarget };
 };
