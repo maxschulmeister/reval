@@ -2,33 +2,50 @@ import "data-forge-fs";
 import { customRandom, random, urlAlphabet } from "nanoid";
 import pQueue from "p-queue";
 import pRetry from "p-retry";
-import { saveRun } from "./db/save-run";
-import type { Benchmark, Execution } from "./types";
-import { Status } from "./types";
+import { saveRun } from "../db/save-run";
+import type { Benchmark, Config, Execution } from "../types";
+import { Status } from "../types";
 import {
   combineArgs,
   getFeatures,
   getVariant,
   loadConfig,
   loadData,
-} from "./utils";
-import { validateConfig } from "./utils/config";
+} from "../utils";
 
 const nanoid = customRandom(urlAlphabet, 24, random);
 
-const run = async () => {
+export interface RunOptions {
+  configPath?: string;
+  dataPath?: string;
+  concurrency?: number;
+  retries?: number;
+  interval?: number;
+  dryRun?: boolean;
+}
+
+export async function run(overrides: RunOptions = {}): Promise<Benchmark> {
   const timestamp = Date.now();
-  const rawConfig = await loadConfig();
-  const config = validateConfig(rawConfig);
+  const config = await loadConfig();
   const data = await loadData();
+  
+  // Apply overrides to config
+  const finalConfig = {
+    ...config,
+    concurrency: overrides.concurrency ?? config.concurrency ?? 10,
+    retries: overrides.retries ?? config.retries ?? 0,
+    interval: overrides.interval ?? config.interval ?? 1000,
+  };
+
   const context = {
-    path: config.data.path,
+    path: overrides.dataPath || finalConfig.data.path,
     features: data.features,
     target: data.target,
-    variants: config.data.variants,
+    variants: finalConfig.data.variants,
   };
-  const fnName = config.run.function.name;
-  const variants = Object.entries(config.data.variants).map(([key, value]) => {
+  
+  const fnName = finalConfig.run.function.name;
+  const variants = Object.entries(finalConfig.data.variants).map(([key, value]) => {
     if (Array.isArray(value)) {
       return `${value.length}_${key}`;
     }
@@ -39,31 +56,49 @@ const run = async () => {
   const name = `${fnName}-${variants.join("-")}-${timestamp}`;
   const runId = nanoid();
 
+  // If dry run, return early with validation results
+  if (overrides.dryRun) {
+    const benchmark: Benchmark = {
+      run: {
+        id: runId,
+        name: `[DRY RUN] ${name}`,
+        notes: "Dry run - no execution performed",
+        function: finalConfig.run.function.toString(),
+        features: context.features,
+        target: context.target,
+        variants: context.variants,
+        timestamp,
+      },
+      executions: [],
+    };
+    return benchmark;
+  }
+
   // Create queue with concurrency control and interval
   const queue = new pQueue({
-    concurrency: config.concurrency,
-    interval: config.interval,
+    concurrency: finalConfig.concurrency,
+    interval: finalConfig.interval,
     intervalCap: 1,
   });
 
   // Add all tasks to the queue
-  const args = combineArgs(config.run.args(context));
+  const args = combineArgs(finalConfig.run.args(context));
   const promises = args.map((arg) =>
     queue.add(async () => {
       let retryCount = 0;
       let startTime: number = Date.now();
       let status: Status = Status.Success;
-      let response: Awaited<ReturnType<typeof config.run.function>> | null;
+      let response: Awaited<ReturnType<typeof finalConfig.run.function>> | null;
       let error: any;
 
       try {
         response = await pRetry(
           async () => {
             startTime = Date.now();
-            return await config.run.function.apply(null, arg);
+            return await finalConfig.run.function.apply(null, arg);
           },
           {
-            retries: config.retries,
+            retries: finalConfig.retries,
             onFailedAttempt: (attemptError) => {
               retryCount = attemptError.attemptNumber - 1;
               console.log(
@@ -85,7 +120,7 @@ const run = async () => {
       const endTime = Date.now();
       const executionTime = endTime - startTime;
 
-      const variant = getVariant(arg, config.data.variants);
+      const variant = getVariant(arg, finalConfig.data.variants);
       const features = getFeatures(arg, context.features);
 
       const index = context.features.indexOf(features);
@@ -95,15 +130,15 @@ const run = async () => {
         runId,
         features, //TODO: check if works with multiple features
         target: context.target[index],
-        result: response ? config.run.result(response) : null,
+        result: response ? finalConfig.run.result(response) : null,
         time: executionTime,
         retries:
-          config.run.result["retries" as keyof typeof config.run.result] ||
+          finalConfig.run.result["retries" as keyof typeof finalConfig.run.result] ||
           retryCount,
         // TODO:
-        // cost: config.run.result["cost" as keyof typeof config.run.result] || 0,
+        // cost: finalConfig.run.result["cost" as keyof typeof finalConfig.run.result] || 0,
         // accuracy:
-        //   config.run.result["accuracy" as keyof typeof config.run.result] || 0,
+        //   finalConfig.run.result["accuracy" as keyof typeof finalConfig.run.result] || 0,
         status,
         variant,
       };
@@ -115,27 +150,25 @@ const run = async () => {
   const executions = (await Promise.all(promises)) as unknown as Execution[];
 
   // Build run object
-  const run = {
+  const runData = {
     id: runId,
     name,
     notes: "",
-    function: config.run.function.toString(),
+    function: finalConfig.run.function.toString(),
     features: context.features,
     target: context.target,
     variants: context.variants,
     timestamp,
   };
+  
   // Wait for all promises to complete
   const benchmark: Benchmark = {
-    run,
+    run: runData,
     executions,
   };
 
   // Save to db
-  await saveRun(run, executions);
+  await saveRun(runData, executions);
 
   return benchmark;
-};
-
-// Execute with default options for backward compatibility
-run();
+}

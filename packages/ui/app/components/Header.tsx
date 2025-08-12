@@ -40,7 +40,7 @@ export const Header = ({
             <H3 as="h1">{currentRunName || "Select a run"}</H3>
           </SelectTrigger>
           <SelectContent className="border-border rounded-radius bg-popover border shadow-none">
-            {runs.map((run) => (
+            {[...runs].reverse().map((run) => (
               <SelectItem key={run.id} value={run.id}>
                 {run.name}
               </SelectItem>
