@@ -42,4 +42,5 @@ bun.*
 .yarn/
 
 # example
-example/
+example/**/*.ts
+example/**/*.json

@@ -1,4 +1,5 @@
 import { Box, Text } from "ink";
+import React from "react";
 import zod from "zod";
 
 export const options = zod.object({});

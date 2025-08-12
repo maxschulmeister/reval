@@ -28,26 +28,6 @@ const getDefaultConfig = () => {
   }
 };
 
-const createPackageJson = () => {
-  return `{
-  "name": "my-reval-project",
-  "version": "1.0.0",
-  "description": "Benchmark project using reval",
-  "type": "module",
-  "scripts": {
-    "benchmark": "reval run",
-    "explore": "reval ui"
-  },
-  "dependencies": {
-    "@reval/core": "^0.1.0"
-  },
-  "devDependencies": {
-    "drizzle-kit": "^0.31.4"
-  }
-}
-`;
-};
-
 const getSampleData = () => {
   const currentDir = path.dirname(new URL(import.meta.url).pathname);
   const sampleDataPath = path.join(currentDir, "../sample.csv");
@@ -74,7 +54,6 @@ export default function Init({ options }: Props) {
         // Check for existing files
         const configExists = existsSync("reval.config.ts");
         const drizzleConfigExists = existsSync("drizzle.config.ts");
-        const packageJsonExists = existsSync("package.json");
         const dataDir = "data";
         const dataDirExists = existsSync(dataDir);
 
@@ -82,13 +61,6 @@ export default function Init({ options }: Props) {
           throw new Error(
             "Configuration file already exists. Use --force to overwrite.",
           );
-        }
-
-        // Create package.json if it doesn't exist
-        if (!packageJsonExists || options.force) {
-          const packageJsonContent = createPackageJson();
-          writeFileSync("package.json", packageJsonContent, "utf8");
-          files.push("package.json");
         }
 
         // Create config file
@@ -165,17 +137,14 @@ export default function Init({ options }: Props) {
       <Text></Text>
       <Text bold>Next steps:</Text>
       <Text color="blue">
-        1. Install dependencies: npm install
+        1. Edit reval.config.ts to customize your benchmark
+      </Text>
+      <Text color="blue">2. Update data/sample.csv with your test data</Text>
+      <Text color="blue">
+        3. Run 'reval run' to execute your first benchmark
       </Text>
       <Text color="blue">
-        2. Edit reval.config.ts to customize your benchmark
-      </Text>
-      <Text color="blue">3. Update data/sample.csv with your test data</Text>
-      <Text color="blue">
-        4. Run 'reval run' to execute your first benchmark
-      </Text>
-      <Text color="blue">
-        5. Use 'reval ui' to explore results in the web interface
+        4. Use 'reval ui' to explore results in the web interface
       </Text>
       <Text></Text>
       <Text color="gray">Happy benchmarking! 🎯</Text>

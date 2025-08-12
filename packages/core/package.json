@@ -4,16 +4,16 @@
   "description": "A benchmark framework for evaluating LLM applications",
   "private": true,
   "type": "module",
-  "main": "src/index.ts",
+  "main": "dist/index.js",
   "types": "src/index.ts",
   "exports": {
     ".": {
       "types": "./src/index.ts",
-      "default": "./src/index.ts"
+      "default": "./dist/index.js"
     },
     "./types": {
       "types": "./src/types/index.ts",
-      "default": "./src/types/index.ts"
+      "default": "./dist/types/index.js"
     }
   },
   "scripts": {
