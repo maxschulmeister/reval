@@ -8,16 +8,10 @@ interface RunDataTableProps {
   sortedExecutions: Execution[];
 }
 
-export const RunDataTable = ({
-  run,
-  sortedExecutions,
-}: RunDataTableProps) => {
+export const RunDataTable = ({ run, sortedExecutions }: RunDataTableProps) => {
   return (
     <div className="mt-8">
-      <DataTable
-        run={run}
-        executions={sortedExecutions}
-      />
+      <DataTable run={run} executions={sortedExecutions} />
     </div>
   );
 };

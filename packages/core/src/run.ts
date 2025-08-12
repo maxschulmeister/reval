@@ -1,4 +1,3 @@
-import "data-forge-fs";
 import { customRandom, random, urlAlphabet } from "nanoid";
 import pQueue from "p-queue";
 import pRetry from "p-retry";

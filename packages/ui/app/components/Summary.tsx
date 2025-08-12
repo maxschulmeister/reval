@@ -10,7 +10,7 @@ import { H5, Small } from "./ui/typography";
 
 export const Summary = ({ run, executions }: Benchmark) => {
   return (
-    <Cell className="border-border border-b">
+    <Cell className="border-b border-border">
       {/* Function summary */}
       <dl className="flex items-center gap-x-2">
         <H5 as="dt">Function</H5>
@@ -25,7 +25,7 @@ export const Summary = ({ run, executions }: Benchmark) => {
               <Button
                 variant="outline"
                 size="sm"
-                className="rounded-radius border-border hover:bg-accent hover:text-accent-foreground ml-2 shadow-none"
+                className="rounded-radius ml-2 border-border shadow-none hover:bg-accent hover:text-accent-foreground"
               >
                 Show Code
               </Button>

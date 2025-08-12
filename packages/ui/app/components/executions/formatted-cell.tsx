@@ -31,7 +31,7 @@ export const FormattedCell = ({
       </div>
     );
   } else if (type === "status") {
-    return  <Badge variant={value as Status}>{value}</Badge>;
+    return <Badge variant={value as Status}>{value}</Badge>;
   } else {
     return value;
   }

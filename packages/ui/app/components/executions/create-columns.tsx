@@ -51,13 +51,13 @@ const createColumn = (
       <Button
         variant="ghost"
         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        className="p-0! h-auto text-sm font-medium hover:bg-transparent"
+        className="h-auto p-0! text-sm font-medium hover:bg-transparent"
       >
         {titleCase(title)}
         {column.getIsSorted() === "asc" ? (
-          <ArrowUp className="text-accent-foreground size-3" />
+          <ArrowUp className="size-3 text-accent-foreground" />
         ) : column.getIsSorted() === "desc" ? (
-          <ArrowDown className="text-accent-foreground size-3" />
+          <ArrowDown className="size-3 text-accent-foreground" />
         ) : (
           <ArrowDown className="size-3" />
         )}
@@ -166,7 +166,8 @@ export const createColumns = (
   expandedColumns.forEach((column) => {
     const keys = column.accessorKey.split(".");
     const sampleValue = keys.reduce(
-      (obj: Record<string, unknown>, key: string) => obj[key] as Record<string, unknown>,
+      (obj: Record<string, unknown>, key: string) =>
+        obj[key] as Record<string, unknown>,
       executions[0] as Record<string, unknown>,
     );
     let type: ColumnMetaType = "";

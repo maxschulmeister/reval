@@ -1,9 +1,8 @@
-import "data-forge-fs";
 import { customRandom, random, urlAlphabet } from "nanoid";
 import pQueue from "p-queue";
 import pRetry from "p-retry";
 import { saveRun } from "../db/save-run";
-import type { Benchmark, Config, Execution } from "../types";
+import type { Benchmark, Execution } from "../types";
 import { Status } from "../types";
 import {
   combineArgs,
@@ -28,7 +27,7 @@ export async function run(overrides: RunOptions = {}): Promise<Benchmark> {
   const timestamp = Date.now();
   const config = await loadConfig(overrides.configPath);
   const data = await loadData(overrides.configPath);
-  
+
   // Apply overrides to config
   const finalConfig = {
     ...config,
@@ -43,14 +42,16 @@ export async function run(overrides: RunOptions = {}): Promise<Benchmark> {
     target: data.target,
     variants: finalConfig.data.variants,
   };
-  
+
   const fnName = finalConfig.run.function.name;
-  const variants = Object.entries(finalConfig.data.variants).map(([key, value]) => {
-    if (Array.isArray(value)) {
-      return `${value.length}_${key}`;
-    }
-    return `${key}`;
-  });
+  const variants = Object.entries(finalConfig.data.variants).map(
+    ([key, value]) => {
+      if (Array.isArray(value)) {
+        return `${value.length}_${key}`;
+      }
+      return `${key}`;
+    },
+  );
 
   // Generate a name based on the function name, variants (and lengths) and timestamp
   const name = `${fnName}-${variants.join("-")}-${timestamp}`;
@@ -133,8 +134,9 @@ export async function run(overrides: RunOptions = {}): Promise<Benchmark> {
         result: response ? finalConfig.run.result(response) : null,
         time: executionTime,
         retries:
-          finalConfig.run.result["retries" as keyof typeof finalConfig.run.result] ||
-          retryCount,
+          finalConfig.run.result[
+            "retries" as keyof typeof finalConfig.run.result
+          ] || retryCount,
         // TODO:
         // cost: finalConfig.run.result["cost" as keyof typeof finalConfig.run.result] || 0,
         // accuracy:
@@ -160,7 +162,7 @@ export async function run(overrides: RunOptions = {}): Promise<Benchmark> {
     variants: context.variants,
     timestamp,
   };
-  
+
   // Wait for all promises to complete
   const benchmark: Benchmark = {
     run: runData,

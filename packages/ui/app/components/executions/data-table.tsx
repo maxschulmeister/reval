@@ -10,7 +10,6 @@ import {
 } from "@/app/components/ui/table";
 import type { Benchmark } from "@reval/core/src/types";
 import {
-  ColumnDef,
   flexRender,
   getCoreRowModel,
   getSortedRowModel,

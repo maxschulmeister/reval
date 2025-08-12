@@ -39,8 +39,17 @@ export const DataFilter = <TData,>({
     const configs: FilterConfig[] = [];
 
     // Helper function to get nested value from object
-    const getNestedValue = (obj: Record<string, unknown>, path: string): unknown => {
-      return path.split(".").reduce((current: unknown, key) => (current as Record<string, unknown>)?.[key], obj);
+    const getNestedValue = (
+      obj: Record<string, unknown>,
+      path: string,
+    ): unknown => {
+      return path
+        .split(".")
+        .reduce(
+          (current: unknown, key) =>
+            (current as Record<string, unknown>)?.[key],
+          obj,
+        );
     };
 
     // Check each column for filter eligibility
@@ -51,7 +60,10 @@ export const DataFilter = <TData,>({
       // Get all unique values for this column
       const values = data
         .map((row) => {
-          const value = getNestedValue(row as Record<string, unknown>, accessorKey);
+          const value = getNestedValue(
+            row as Record<string, unknown>,
+            accessorKey,
+          );
           return String(value ?? "");
         })
         .filter(Boolean);
@@ -114,11 +126,22 @@ export const filterData = <TData,>(
     return Object.entries(columnFilters).every(([columnId, selectedValues]) => {
       if (selectedValues.length === 0) return true;
 
-      const getNestedValue = (obj: Record<string, unknown>, path: string): unknown => {
-        return path.split(".").reduce((current: unknown, key) => (current as Record<string, unknown>)?.[key], obj);
+      const getNestedValue = (
+        obj: Record<string, unknown>,
+        path: string,
+      ): unknown => {
+        return path
+          .split(".")
+          .reduce(
+            (current: unknown, key) =>
+              (current as Record<string, unknown>)?.[key],
+            obj,
+          );
       };
 
-      const cellValue = String(getNestedValue(row as Record<string, unknown>, columnId) ?? "");
+      const cellValue = String(
+        getNestedValue(row as Record<string, unknown>, columnId) ?? "",
+      );
       return selectedValues.includes(cellValue);
     });
   });

@@ -30,7 +30,7 @@ export const Header = ({
   };
 
   return (
-    <div className="border-border flex items-center justify-between border-b">
+    <div className="flex items-center justify-between border-b border-border">
       <Cell borderRight>
         <Select value={currentRunId} onValueChange={handleRunChange}>
           <SelectTrigger
@@ -39,7 +39,7 @@ export const Header = ({
           >
             <H3 as="h1">{currentRunName || "Select a run"}</H3>
           </SelectTrigger>
-          <SelectContent className="border-border rounded-radius bg-popover border shadow-none">
+          <SelectContent className="rounded-radius border border-border bg-popover shadow-none">
             {[...runs].reverse().map((run) => (
               <SelectItem key={run.id} value={run.id}>
                 {run.name}
@@ -57,13 +57,13 @@ export const Header = ({
           <Button
             variant="outline"
             onClick={() => window.open("https://www.github.com", "_blank")}
-            className="rounded-radius border-border hover:text-primary shadow-none"
+            className="rounded-radius border-border shadow-none hover:text-primary"
           >
             GitHub
           </Button>
           <Button
             onClick={() => window.open("https://www.google.com", "_blank")}
-            className="rounded-radius bg-primary hover:bg-primary/90 text-primary-foreground shadow-none"
+            className="rounded-radius bg-primary text-primary-foreground shadow-none hover:bg-primary/90"
           >
             Documentation
           </Button>

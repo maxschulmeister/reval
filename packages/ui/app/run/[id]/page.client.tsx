@@ -19,10 +19,8 @@ export const RunPageClient = ({
 }: RunPageClientProps) => {
   const { theme, setTheme } = useTheme();
 
-
-
   return (
-    <div className="bg-background text-foreground min-h-screen">
+    <div className="min-h-screen bg-background text-foreground">
       <div className="w-full">
         <Header
           runs={runs}
@@ -35,8 +33,6 @@ export const RunPageClient = ({
         <Summary {...runData} />
 
         <DataTable {...runData} />
-
-        
       </div>
     </div>
   );
