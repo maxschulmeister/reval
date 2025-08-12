@@ -39,7 +39,10 @@ describe('Run Command', () => {
         runId: 'run123',
         status: 'success',
         time: 120,
+        features: 'What is 1+1?',
         target: '2',
+        retries: 0,
+        variant: { model: 'gpt-4' },
         result: { prediction: '1+1 equals 2', tokens: { in: 10, out: 5 } },
       },
       {
@@ -47,7 +50,10 @@ describe('Run Command', () => {
         runId: 'run123',
         status: 'success',
         time: 180,
+        features: 'What is the capital?',
         target: 'Paris',
+        retries: 0,
+        variant: { model: 'gpt-3.5' },
         result: { prediction: 'Paris is the capital', tokens: { in: 15, out: 8 } },
       },
       {
@@ -55,7 +61,10 @@ describe('Run Command', () => {
         runId: 'run123',
         status: 'error',
         time: 0,
+        features: 'Error case',
         target: 'Error case',
+        retries: 1,
+        variant: { model: 'gpt-4' },
         result: null,
       },
     ],
@@ -144,7 +153,7 @@ describe('Run Command', () => {
     const { lastFrame } = render(<Run options={{}} />);
     
     // Wait for async operation to complete
-    await waitForComponentCompletion(lastFrame);
+    await waitForComponentCompletion(() => lastFrame() || '');
     
     const output = lastFrame();
     expect(output).toContain('Error running benchmark:');
@@ -196,7 +205,7 @@ describe('Run Command', () => {
     const { lastFrame } = render(<Run options={{}} />);
     
     // Wait for async operation to complete
-    await waitForComponentCompletion(lastFrame);
+    await waitForComponentCompletion(() => lastFrame() || '');
     
     const output = lastFrame();
     expect(output).toContain('Success: 2 (100.0%)');
@@ -229,7 +238,7 @@ describe('Run Command', () => {
     const { lastFrame } = render(<Run options={{}} />);
     
     // Wait for async operation to complete
-    await waitForComponentCompletion(lastFrame);
+    await waitForComponentCompletion(() => lastFrame() || '');
     
     const output = lastFrame();
     expect(output).toContain('No result data available');

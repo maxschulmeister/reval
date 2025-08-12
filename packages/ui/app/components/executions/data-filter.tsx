@@ -16,7 +16,7 @@ type FilterConfig = {
 interface DataFilterProps<TData> {
   data: TData[];
   run: Run;
-  columns: ColumnDef<TData, any>[];
+  columns: ColumnDef<TData, unknown>[];
   columnFilters: Record<string, string[]>;
   onFilterChange: (columnId: string, values: string[]) => void;
 }
@@ -39,19 +39,19 @@ export const DataFilter = <TData,>({
     const configs: FilterConfig[] = [];
 
     // Helper function to get nested value from object
-    const getNestedValue = (obj: any, path: string): any => {
-      return path.split(".").reduce((current, key) => current?.[key], obj);
+    const getNestedValue = (obj: Record<string, unknown>, path: string): unknown => {
+      return path.split(".").reduce((current: unknown, key) => (current as Record<string, unknown>)?.[key], obj);
     };
 
     // Check each column for filter eligibility
     columns.forEach((column) => {
-      const accessorKey = (column as any).accessorKey;
+      const accessorKey = (column as { accessorKey?: string }).accessorKey;
       const type = column.meta?.type;
       if (!accessorKey || (type !== "string" && type !== "status")) return;
       // Get all unique values for this column
       const values = data
         .map((row) => {
-          const value = getNestedValue(row, accessorKey);
+          const value = getNestedValue(row as Record<string, unknown>, accessorKey);
           return String(value ?? "");
         })
         .filter(Boolean);
@@ -114,11 +114,11 @@ export const filterData = <TData,>(
     return Object.entries(columnFilters).every(([columnId, selectedValues]) => {
       if (selectedValues.length === 0) return true;
 
-      const getNestedValue = (obj: any, path: string): any => {
-        return path.split(".").reduce((current, key) => current?.[key], obj);
+      const getNestedValue = (obj: Record<string, unknown>, path: string): unknown => {
+        return path.split(".").reduce((current: unknown, key) => (current as Record<string, unknown>)?.[key], obj);
       };
 
-      const cellValue = String(getNestedValue(row, columnId) ?? "");
+      const cellValue = String(getNestedValue(row as Record<string, unknown>, columnId) ?? "");
       return selectedValues.includes(cellValue);
     });
   });

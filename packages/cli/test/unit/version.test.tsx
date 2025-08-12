@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import React from 'react';
 import { render } from 'ink-testing-library';
-import Version from '../../src/commands/version.tsx';
+import Version from '../../src/commands/version';
 
 describe('Version Command', () => {
   it('renders version information correctly', () => {

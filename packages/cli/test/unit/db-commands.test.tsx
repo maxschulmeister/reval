@@ -47,7 +47,7 @@ describe('Database Commands', () => {
       const { lastFrame } = render(<Create options={{}} />);
       
       // Wait for async database creation to complete
-      await waitForComponentCompletion(lastFrame);
+      await waitForComponentCompletion(() => lastFrame() || '');
       
       const output = lastFrame();
       expect(output).toContain('Database created successfully!');
@@ -66,7 +66,7 @@ describe('Database Commands', () => {
       expect(lastFrame()).toContain('Force mode: overwriting existing database');
       
       // Wait for async database creation to complete
-      await waitForComponentCompletion(lastFrame);
+      await waitForComponentCompletion(() => lastFrame() || '');
       
       const output = lastFrame();
       expect(output).toContain('Database created successfully!');
@@ -80,7 +80,7 @@ describe('Database Commands', () => {
       const { lastFrame } = render(<Create options={{}} />);
       
       // Wait for async database creation to complete
-      await waitForComponentCompletion(lastFrame);
+      await waitForComponentCompletion(() => lastFrame() || '');
       
       const output = lastFrame();
       expect(output).toContain('Error creating database:');

@@ -13,7 +13,7 @@ export default defineConfig({
     },
   },
   run: {
-    function: async ({ input, model }) => {
+    function: async ({ input, model }: { input: any; model: any }) => {
       // Simple test function
       return {
         choices: [{
@@ -27,7 +27,11 @@ export default defineConfig({
         }
       };
     },
-    result: (response) => ({
+    args: (context) => [{
+      input: context.features,
+      model: context.variants.model,
+    }],
+    result: (response: any) => ({
       prediction: response.choices[0].message.content,
       tokens: {
         in: response.usage.prompt_tokens,

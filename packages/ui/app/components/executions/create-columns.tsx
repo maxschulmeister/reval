@@ -21,7 +21,7 @@ export type ColumnMetaType =
   | "";
 
 declare module "@tanstack/react-table" {
-  export interface ColumnMeta<TData extends RowData, TValue> {
+  export interface ColumnMeta<TData extends RowData, TValue = unknown> {
     type: ColumnMetaType;
   }
 }
@@ -166,8 +166,8 @@ export const createColumns = (
   expandedColumns.forEach((column) => {
     const keys = column.accessorKey.split(".");
     const sampleValue = keys.reduce(
-      (obj: any, key: string) => obj[key],
-      executions[0],
+      (obj: Record<string, unknown>, key: string) => obj[key] as Record<string, unknown>,
+      executions[0] as Record<string, unknown>,
     );
     let type: ColumnMetaType = "";
     if (isString(sampleValue)) {
@@ -202,7 +202,7 @@ export const isJson = (value: unknown): value is string => {
   try {
     JSON.parse(value);
     return true;
-  } catch (e) {
+  } catch {
     return false;
   }
 };

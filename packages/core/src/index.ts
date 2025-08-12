@@ -5,5 +5,8 @@ export { executions, runs } from "./db/schema";
 // Core API for programmatic access
 export * from "./api";
 
+// Utils
+export { defineConfig } from "./utils";
+
 // Types
 export * from "./types";

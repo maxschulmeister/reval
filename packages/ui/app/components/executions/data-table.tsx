@@ -22,11 +22,6 @@ import { createColumns } from "./create-columns";
 import { DataFilter, filterData } from "./data-filter";
 import { FormattedCell } from "./formatted-cell";
 
-interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[];
-  data: TData[];
-}
-
 export const DataTable = ({ run, executions }: Benchmark) => {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<Record<string, string[]>>(

@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import React from 'react';
 import { waitForComponentCompletion } from '../utils';
 import { render } from 'ink-testing-library';
-import Show from '../../src/commands/show.tsx';
+import Show from '../../src/commands/show';
 
 // Mock @reval/core
 vi.mock('@reval/core', () => ({
@@ -37,6 +37,10 @@ describe('Show Command', () => {
       name: 'test-function-1-model-1234567890',
       timestamp: 1640995200000,
       notes: 'Test run notes',
+      function: 'async function testFunction() { return "test"; }',
+      features: ['input1', 'input2'],
+      target: ['output1', 'output2'],
+      variants: { model: ['test-model-1', 'test-model-2'] },
     },
     executions: [
       {
@@ -44,7 +48,10 @@ describe('Show Command', () => {
         runId: 'run123',
         status: 'success',
         time: 120,
-        target: { expected: 'test result' },
+        features: 'input1',
+        target: 'output1',
+        retries: 0,
+        variant: { model: 'test-model-1' },
         result: { prediction: 'actual result', tokens: { in: 10, out: 5 } },
       },
       {
@@ -52,7 +59,10 @@ describe('Show Command', () => {
         runId: 'run123',
         status: 'error',
         time: 0,
-        target: { expected: 'another result' },
+        features: 'input2',
+        target: 'output2',
+        retries: 1,
+        variant: { model: 'test-model-2' },
         result: null,
       },
     ],
@@ -64,7 +74,7 @@ describe('Show Command', () => {
     const { lastFrame } = render(<Show args={['run123']} options={{}} />);
     
     // Wait for async operation to complete
-    await waitForComponentCompletion(lastFrame);
+    await waitForComponentCompletion(() => lastFrame() || '');
     
     const output = lastFrame();
     expect(output).toContain('Run Details:');
@@ -89,10 +99,10 @@ describe('Show Command', () => {
     const { lastFrame } = render(<Show args={['run123']} options={{ json: true }} />);
     
     // Wait for async operation to complete
-    await waitForComponentCompletion(lastFrame);
+    await waitForComponentCompletion(() => lastFrame() || '');
     
     const output = lastFrame();
-    const parsed = JSON.parse(output);
+    const parsed = JSON.parse(output || '{}');
     
     expect(parsed).toEqual(mockRunDetails);
   });
@@ -103,7 +113,7 @@ describe('Show Command', () => {
     const { lastFrame } = render(<Show args={['nonexistent']} options={{}} />);
     
     // Wait for async operation to complete
-    await waitForComponentCompletion(lastFrame);
+    await waitForComponentCompletion(() => lastFrame() || '');
     
     const output = lastFrame();
     expect(output).toContain('Error:');
@@ -117,7 +127,7 @@ describe('Show Command', () => {
     const { lastFrame } = render(<Show args={['run123']} options={{}} />);
     
     // Wait for async operation to complete
-    await waitForComponentCompletion(lastFrame);
+    await waitForComponentCompletion(() => lastFrame() || '');
     
     const output = lastFrame();
     expect(output).toContain('Error:');
@@ -142,7 +152,10 @@ describe('Show Command', () => {
           runId: 'run123',
           status: 'success',
           time: 100 + i,
-          target: { expected: `result ${i}` },
+          features: `input${i}`,
+          target: `result ${i}`,
+          retries: 0,
+          variant: { model: 'test-model-1' },
           result: { prediction: `prediction ${i}` },
         })),
       ],
@@ -153,7 +166,7 @@ describe('Show Command', () => {
     const { lastFrame } = render(<Show args={['run123']} options={{}} />);
     
     // Wait for async operation to complete
-    await waitForComponentCompletion(lastFrame);
+    await waitForComponentCompletion(() => lastFrame() || '');
     
     const output = lastFrame();
     expect(output).toContain('Sample Executions:');

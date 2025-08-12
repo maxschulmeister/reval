@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import React from 'react';
 import { render } from 'ink-testing-library';
-import Index from '../../src/commands/index.tsx';
+import Index from '../../src/commands/index';
 
 describe('Index (Help) Command', () => {
   it('renders main help screen with commands list', () => {

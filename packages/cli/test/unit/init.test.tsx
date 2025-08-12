@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import React from 'react';
 import { render } from 'ink-testing-library';
 import { existsSync, readFileSync } from 'fs';
-import Init from '../../src/commands/init.tsx';
+import Init from '../../src/commands/init';
 import { withTempDir, waitForComponentCompletion } from '../utils';
 
 // Mock @reval/core
@@ -45,7 +45,7 @@ describe('Init Command', () => {
     const { lastFrame } = render(<Init options={{}} />);
     
     // Wait for async initialization to complete
-    await waitForComponentCompletion(lastFrame);
+    await waitForComponentCompletion(() => lastFrame() || '');
     
     const output = lastFrame();
     expect(output).toContain('Project initialized successfully!');
@@ -68,7 +68,7 @@ describe('Init Command', () => {
     const { lastFrame } = render(<Init options={{}} />);
     
     // Wait for async initialization to complete
-    await waitForComponentCompletion(lastFrame);
+    await waitForComponentCompletion(() => lastFrame() || '');
     
     const output = lastFrame();
     expect(output).toContain('Error initializing project:');
@@ -89,7 +89,7 @@ describe('Init Command', () => {
     expect(lastFrame()).toContain('Force mode: overwriting existing files');
     
     // Wait for async initialization to complete
-    await waitForComponentCompletion(lastFrame);
+    await waitForComponentCompletion(() => lastFrame() || '');
     
     const output = lastFrame();
     expect(output).toContain('Project initialized successfully!');
@@ -105,7 +105,7 @@ describe('Init Command', () => {
     const { lastFrame } = render(<Init options={{}} />);
     
     // Wait for async initialization to complete
-    await waitForComponentCompletion(lastFrame);
+    await waitForComponentCompletion(() => lastFrame() || '');
     
     const output = lastFrame();
     expect(output).toContain('Error initializing project:');
@@ -128,7 +128,7 @@ describe('Init Command', () => {
     const { lastFrame } = render(<Init options={{}} />);
     
     // Wait for async initialization to complete
-    await waitForComponentCompletion(lastFrame);
+    await waitForComponentCompletion(() => lastFrame() || '');
     
     const configCall = mockWriteFileSync.mock.calls.find(call => 
       call[0] === 'reval.config.ts'
@@ -150,7 +150,7 @@ describe('Init Command', () => {
     const { lastFrame } = render(<Init options={{}} />);
     
     // Wait for async initialization to complete  
-    await waitForComponentCompletion(lastFrame);
+    await waitForComponentCompletion(() => lastFrame() || '');
     
     const dataCall = mockWriteFileSync.mock.calls.find(call => 
       call[0] === 'data/sample.csv'
