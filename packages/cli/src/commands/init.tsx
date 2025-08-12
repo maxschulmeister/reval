@@ -2,8 +2,9 @@ import { initializeDatabase } from "@reval/core";
 import fs, { existsSync, mkdirSync, writeFileSync } from "fs";
 import { Box, Text } from "ink";
 import path from "path";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import zod from "zod";
+import { createDrizzleConfig } from "../utils/drizzle-config";
 
 export const options = zod.object({
   force: zod
@@ -25,6 +26,26 @@ const getDefaultConfig = () => {
     // Fallback to inline config if file doesn't exist
     throw new Error(`Failed to read default config file: ${defaultConfigPath}`);
   }
+};
+
+const createPackageJson = () => {
+  return `{
+  "name": "my-reval-project",
+  "version": "1.0.0",
+  "description": "Benchmark project using reval",
+  "type": "module",
+  "scripts": {
+    "benchmark": "reval run",
+    "explore": "reval ui"
+  },
+  "dependencies": {
+    "@reval/core": "^0.1.0"
+  },
+  "devDependencies": {
+    "drizzle-kit": "^0.31.4"
+  }
+}
+`;
 };
 
 const getSampleData = () => {
@@ -52,9 +73,10 @@ export default function Init({ options }: Props) {
 
         // Check for existing files
         const configExists = existsSync("reval.config.ts");
+        const drizzleConfigExists = existsSync("drizzle.config.ts");
+        const packageJsonExists = existsSync("package.json");
         const dataDir = "data";
         const dataDirExists = existsSync(dataDir);
-        const dataFileExists = existsSync("data/sample.csv");
 
         if (configExists && !options.force) {
           throw new Error(
@@ -62,11 +84,25 @@ export default function Init({ options }: Props) {
           );
         }
 
+        // Create package.json if it doesn't exist
+        if (!packageJsonExists || options.force) {
+          const packageJsonContent = createPackageJson();
+          writeFileSync("package.json", packageJsonContent, "utf8");
+          files.push("package.json");
+        }
+
         // Create config file
         if (!configExists || options.force) {
           const configContent = getDefaultConfig();
           writeFileSync("reval.config.ts", configContent, "utf8");
           files.push("reval.config.ts");
+        }
+
+        // Create drizzle config file
+        if (!drizzleConfigExists || options.force) {
+          const drizzleConfigContent = createDrizzleConfig();
+          writeFileSync("drizzle.config.ts", drizzleConfigContent, "utf8");
+          files.push("drizzle.config.ts");
         }
 
         // Create data directory and sample data
@@ -129,14 +165,17 @@ export default function Init({ options }: Props) {
       <Text></Text>
       <Text bold>Next steps:</Text>
       <Text color="blue">
-        1. Edit reval.config.ts to customize your benchmark
-      </Text>
-      <Text color="blue">2. Update data/sample.csv with your test data</Text>
-      <Text color="blue">
-        3. Run 'reval run' to execute your first benchmark
+        1. Install dependencies: npm install
       </Text>
       <Text color="blue">
-        4. Use 'reval ui' to explore results in the web interface
+        2. Edit reval.config.ts to customize your benchmark
+      </Text>
+      <Text color="blue">3. Update data/sample.csv with your test data</Text>
+      <Text color="blue">
+        4. Run 'reval run' to execute your first benchmark
+      </Text>
+      <Text color="blue">
+        5. Use 'reval ui' to explore results in the web interface
       </Text>
       <Text></Text>
       <Text color="gray">Happy benchmarking! 🎯</Text>

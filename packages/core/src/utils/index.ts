@@ -33,19 +33,33 @@ export const loadConfig = async (configPath?: string) => {
     let configModulePath: string;
 
     if (configPath) {
-      // Use provided config path
-      configModulePath = configPath;
-    } else {
-      // Look for reval.config.ts in current working directory
+      // Use provided config path (must be absolute or relative to current directory)
       const path = await import("path");
+      configModulePath = path.resolve(process.cwd(), configPath);
+    } else {
+      // Look for reval.config.ts in current working directory ONLY (no fallbacks)
+      const path = await import("path");
+      const fs = await import("fs");
       configModulePath = path.resolve(process.cwd(), "reval.config.ts");
+      
+      // Check if config exists in current directory - no fallback to parent directories
+      if (!fs.existsSync(configModulePath)) {
+        throw new Error(
+          `Configuration file not found: ${configModulePath}\n` +
+          `Please ensure 'reval.config.ts' exists in the current directory.\n` +
+          `Run 'reval init' to create a new project structure.`
+        );
+      }
     }
 
     const configModule = await import(configModulePath);
     return configModule.default || configModule;
   } catch (error) {
+    if (error instanceof Error && error.message.includes("Configuration file not found")) {
+      throw error;
+    }
     console.error("Config loading error:", error);
-    throw new Error(`Failed to load config: ${error}`);
+    throw new Error(`Failed to load config from ${configPath || './reval.config.ts'}: ${error}`);
   }
 };
 

@@ -40,3 +40,6 @@ bun.*
 
 # yarn
 .yarn/
+
+# example
+example/

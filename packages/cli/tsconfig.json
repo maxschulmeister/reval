@@ -10,7 +10,7 @@
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "jsx": "react-jsx",
-    "types": ["vitest/globals"]
+    "types": ["vitest/globals"], "noEmit": false
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]
