@@ -4,8 +4,8 @@ import { quantile } from "simple-statistics";
 export type GroupCategory = 1 | 2 | 3;
 
 /**
- * Groups numeric values into 3 categories: 1, 2, 3
- * Uses quantiles to divide into thirds (bottom third = 1, middle = 2, top = 3)
+ * Groups numeric values into 3 categories: 1 (bad), 2 (ok), 3 (good)
+ * Uses quantiles to divide into thirds (bottom third '1', middle '2', top '3')
  * @param values Array of numeric values
  * @param value The specific value to categorize
  * @returns The category for the given value (1=bad, 2=ok, 3=good)
@@ -40,9 +40,9 @@ export const categorizeValue = (
  */
 export const groupValues = (values: number[]) => {
   const result = {
-    1: [] as number[],
-    2: [] as number[],
-    3: [] as number[],
+    1: [] as number[], // bad
+    2: [] as number[], // ok
+    3: [] as number[], // good
   };
 
   values.forEach((value) => {
