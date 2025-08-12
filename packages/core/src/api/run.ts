@@ -11,6 +11,7 @@ import {
   loadConfig,
   loadData,
 } from "../utils";
+import { validateConfig } from "../utils/config";
 
 const nanoid = customRandom(urlAlphabet, 24, random);
 
@@ -25,16 +26,18 @@ export interface RunOptions {
 
 export async function run(overrides: RunOptions = {}): Promise<Benchmark> {
   const timestamp = Date.now();
-  const config = await loadConfig(overrides.configPath);
+  const rawConfig = await loadConfig(overrides.configPath);
   const data = await loadData(overrides.configPath);
 
-  // Apply overrides to config
-  const finalConfig = {
-    ...config,
-    concurrency: overrides.concurrency ?? config.concurrency ?? 10,
-    retries: overrides.retries ?? config.retries ?? 0,
-    interval: overrides.interval ?? config.interval ?? 1000,
+  // Apply overrides to config and validate
+  const configWithOverrides = {
+    ...rawConfig,
+    concurrency: overrides.concurrency ?? rawConfig.concurrency,
+    retries: overrides.retries ?? rawConfig.retries,
+    interval: overrides.interval ?? rawConfig.interval,
   };
+  
+  const finalConfig = validateConfig(configWithOverrides);
 
   const context = {
     path: overrides.dataPath || finalConfig.data.path,

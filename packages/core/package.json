@@ -7,9 +7,9 @@
   "main": "src/index.ts",
   "types": "src/index.ts",
   "scripts": {
-    "reval": "tsx src/run.ts",
+    "reval": "tsx src/api/run.ts",
     "build": "vite build",
-    "dev": "tsx watch src/run.ts",
+    "dev": "tsx watch src/api/run.ts",
     "test": "vitest run",
     "lint": "tsc --noEmit",
     "clean": "rm -rf dist .reval",

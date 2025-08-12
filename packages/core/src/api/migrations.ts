@@ -4,23 +4,8 @@ import path from "path";
 import config from "../../drizzle.config";
 import { db } from "../db";
 
-// TODO: Do we need both?
-export async function runMigrations(): Promise<void> {
-  const migrationsPath = config.out ?? "../../.reval";
-  const migrationsDir = path.resolve(migrationsPath);
-
-  // Ensure migration directory exists
-  if (!fs.existsSync(migrationsDir)) {
-    throw new Error(`Migration directory does not exist: ${migrationsDir}`);
-  }
-
-  try {
-    await migrate(db, { migrationsFolder: migrationsDir });
-    console.log("Database migrations completed successfully");
-  } catch (error) {
-    console.error("Failed to run database migrations:", error);
-    throw error;
-  }
+export async function runMigrations(customPath?: string): Promise<void> {
+  return runMigrationsAtPath(customPath);
 }
 
 export async function runMigrationsAtPath(customPath?: string): Promise<void> {
@@ -118,16 +103,8 @@ export async function runMigrationsAtPath(customPath?: string): Promise<void> {
   }
 }
 
-// TODO: Do we need both?
-export function createDatabase(): void {
-  const dbPath = path.resolve("../../.reval/reval.db");
-  const dbDir = path.dirname(dbPath);
-
-  // Create database directory if it doesn't exist
-  fs.mkdirSync(dbDir, { recursive: true });
-
-  console.log(`Database directory ensured at: ${dbDir}`);
-  console.log(`Database will be created at: ${dbPath}`);
+export function createDatabase(customPath?: string): void {
+  return createDatabaseAtPath(customPath);
 }
 
 export function createDatabaseAtPath(customPath?: string): void {

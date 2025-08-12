@@ -11,7 +11,7 @@ import type { Config } from "../types/config";
  * @returns Valid concurrency value or default (10) if undefined
  * @throws Error if value is invalid
  */
-export const validateConcurrency = (value: number | undefined): number => {
+const validateConcurrency = (value: number | undefined): number => {
   if (value === undefined) return 10; // Default when not specified
   if (typeof value !== 'number') {
     throw new Error(`Invalid concurrency: expected number, got ${typeof value}`);
@@ -31,7 +31,7 @@ export const validateConcurrency = (value: number | undefined): number => {
  * @returns Valid interval value or default (1000) if undefined
  * @throws Error if value is invalid
  */
-export const validateInterval = (value: number | undefined): number => {
+const validateInterval = (value: number | undefined): number => {
   if (value === undefined) return 1000; // Default when not specified
   if (typeof value !== 'number') {
     throw new Error(`Invalid interval: expected number, got ${typeof value}`);
@@ -51,7 +51,7 @@ export const validateInterval = (value: number | undefined): number => {
  * @returns Valid retries value or default (0) if undefined
  * @throws Error if value is invalid
  */
-export const validateRetries = (value: number | undefined): number => {
+const validateRetries = (value: number | undefined): number => {
   if (value === undefined) return 0; // Default when not specified
   if (typeof value !== 'number') {
     throw new Error(`Invalid retries: expected number, got ${typeof value}`);

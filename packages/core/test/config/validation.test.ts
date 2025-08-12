@@ -1,47 +1,12 @@
 import { describe, expect, it } from "vitest";
-import {
-  validateConcurrency,
-  validateConfig,
-  validateInterval,
-  validateRetries,
-} from "../../src/utils/config";
+import { validateConfig } from "../../src/utils/config";
 
 describe("Config Validation Unit Tests", () => {
-  // Using validation functions from utils/config.ts
-
-  describe("validateConcurrency", () => {
-    it("should throw errors for invalid values", () => {
-      expect(() => validateConcurrency(0)).toThrow(
-        "Invalid concurrency: expected positive integer, got 0"
-      );
-      expect(() => validateConcurrency(-1)).toThrow(
-        "Invalid concurrency: expected positive integer, got -1"
-      );
-      expect(() => validateConcurrency(1.5)).toThrow(
-        "Invalid concurrency: expected integer, got 1.5"
-      );
-      expect(() => validateConcurrency("5" as any)).toThrow(
-        "Invalid concurrency: expected number, got string"
-      );
-      expect(() => validateConcurrency(null as any)).toThrow(
-        "Invalid concurrency: expected number, got object"
-      );
-    });
-
-    it("should return default for undefined", () => {
-      expect(validateConcurrency(undefined)).toBe(10);
-    });
-
-    it("should return valid values as-is", () => {
-      expect(validateConcurrency(1)).toBe(1);
-      expect(validateConcurrency(5)).toBe(5);
-      expect(validateConcurrency(100)).toBe(100);
-    });
-  });
+  // Using validateConfig function from utils/config.ts
 
   describe("validateConfig", () => {
     const mockFunction = async () => ({});
-    const mockArgs = () => [];
+    const mockArgs = () => [] as [];
     const mockResult = (r: any) => r;
 
     const baseConfig = {
@@ -153,81 +118,72 @@ describe("Config Validation Unit Tests", () => {
     });
   });
 
-  describe("validateInterval", () => {
-    it("should throw errors for invalid values", () => {
-      expect(() => validateInterval(-1)).toThrow(
-        "Invalid interval: expected non-negative integer, got -1"
-      );
-      expect(() => validateInterval(1.5)).toThrow(
-        "Invalid interval: expected integer, got 1.5"
-      );
-      expect(() => validateInterval("1000" as any)).toThrow(
-        "Invalid interval: expected number, got string"
-      );
-      expect(() => validateInterval(null as any)).toThrow(
-        "Invalid interval: expected number, got object"
-      );
-    });
+  describe("validateConfig with invalid values", () => {
+    const mockFunction = async () => ({});
+    const mockArgs = () => [] as [];
+    const mockResult = (r: any) => r;
 
-    it("should return default for undefined", () => {
-      expect(validateInterval(undefined)).toBe(1000);
-    });
+    const baseConfig = {
+      data: { 
+        path: "/tmp/test.csv", 
+        target: "y",
+        variants: { model: ["test-model"] }
+      },
+      run: {
+        function: mockFunction,
+        args: mockArgs,
+        result: mockResult,
+      },
+    };
 
-    it("should allow 0 for interval (valid case)", () => {
-      expect(validateInterval(0)).toBe(0); // 0 is valid for interval
-    });
-
-    it("should return valid values as-is", () => {
-      expect(validateInterval(100)).toBe(100);
-      expect(validateInterval(1000)).toBe(1000);
-    });
-  });
-
-  describe("validateRetries", () => {
-    it("should throw errors for invalid values", () => {
-      expect(() => validateRetries(-1)).toThrow(
-        "Invalid retries: expected non-negative integer, got -1"
-      );
-      expect(() => validateRetries(1.5)).toThrow(
-        "Invalid retries: expected integer, got 1.5"
-      );
-      expect(() => validateRetries("3" as any)).toThrow(
-        "Invalid retries: expected number, got string"
-      );
-      expect(() => validateRetries(null as any)).toThrow(
-        "Invalid retries: expected number, got object"
-      );
-    });
-
-    it("should return default for undefined", () => {
-      expect(validateRetries(undefined)).toBe(0);
-    });
-
-    it("should allow 0 for retries (valid case)", () => {
-      expect(validateRetries(0)).toBe(0); // 0 is valid for retries
-    });
-
-    it("should return valid values as-is", () => {
-      expect(validateRetries(3)).toBe(3);
-      expect(validateRetries(10)).toBe(10);
-    });
-  });
-
-  describe("Comparison with old nullish coalescing", () => {
-    it("demonstrates the improvement over nullish coalescing", () => {
-      // Old problematic behavior with nullish coalescing
-      const zeroValue = 0;
-      const negativeValue = -1;
-      expect(zeroValue ?? 10).toBe(0); // Problem: 0 is falsy but not nullish
-      expect(negativeValue ?? 10).toBe(-1); // Problem: -1 is truthy
-
-      // New behavior: proper validation with clear error messages
-      expect(() => validateConcurrency(0)).toThrow(
+    it("should throw errors for invalid concurrency values", () => {
+      expect(() => validateConfig({ ...baseConfig, concurrency: 0 })).toThrow(
         "Invalid concurrency: expected positive integer, got 0"
       );
-      expect(() => validateConcurrency(-1)).toThrow(
+      expect(() => validateConfig({ ...baseConfig, concurrency: -1 })).toThrow(
         "Invalid concurrency: expected positive integer, got -1"
       );
+      expect(() => validateConfig({ ...baseConfig, concurrency: 1.5 })).toThrow(
+        "Invalid concurrency: expected integer, got 1.5"
+      );
+    });
+
+    it("should throw errors for invalid interval values", () => {
+      expect(() => validateConfig({ ...baseConfig, interval: -1 })).toThrow(
+        "Invalid interval: expected non-negative integer, got -1"
+      );
+      expect(() => validateConfig({ ...baseConfig, interval: 1.5 })).toThrow(
+        "Invalid interval: expected integer, got 1.5"
+      );
+    });
+
+    it("should throw errors for invalid retries values", () => {
+      expect(() => validateConfig({ ...baseConfig, retries: -1 })).toThrow(
+        "Invalid retries: expected non-negative integer, got -1"
+      );
+      expect(() => validateConfig({ ...baseConfig, retries: 1.5 })).toThrow(
+        "Invalid retries: expected integer, got 1.5"
+      );
+    });
+
+    it("should apply defaults for undefined values", () => {
+      const result = validateConfig(baseConfig);
+      expect(result.concurrency).toBe(10);
+      expect(result.interval).toBe(1000);
+      expect(result.retries).toBe(0);
+    });
+
+    it("should preserve valid values", () => {
+      const configWithValues = {
+        ...baseConfig,
+        concurrency: 5,
+        interval: 500,
+        retries: 3,
+      };
+      const result = validateConfig(configWithValues);
+      expect(result.concurrency).toBe(5);
+      expect(result.interval).toBe(500);
+      expect(result.retries).toBe(3);
     });
   });
 });
