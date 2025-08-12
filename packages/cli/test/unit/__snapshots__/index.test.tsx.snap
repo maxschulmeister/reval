@@ -1,0 +1,29 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Index (Help) Command > help screen matches snapshot 1`] = `
+"🎯 reval CLI v0.1.0
+A benchmark framework for evaluating LLM applications
+Commands:
+  run     Execute a benchmark run
+  list    List recent benchmark runs
+  show    Show details for a specific run
+  export  Export run results to file
+  init    Initialize a new reval project
+  ui      Start the web interface
+  version Show version information
+Database Commands:
+  db create  Create a new database
+  db migrate Run database migrations
+  db studio  Open Drizzle Studio
+Quick Start:
+1. reval init
+# Initialize project
+2. reval run
+# Run your first benchmark
+3. reval list
+# View results
+4. reval ui
+# Explore in web interface
+Run 'reval <command> --help' for detailed command usage
+Documentation: https://github.com/your-org/reval"
+`;
