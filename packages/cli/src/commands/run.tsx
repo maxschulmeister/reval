@@ -56,6 +56,7 @@ export default function Run({ options }: Props) {
           concurrency: options.concurrency,
           retries: options.retries,
           dryRun: options.dry,
+          customPath: process.cwd(),
         };
 
         const benchmark = await run(runOptions);

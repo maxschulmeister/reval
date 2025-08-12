@@ -1,6 +1,6 @@
 "use client";
 
-import type { Execution, Run } from "@reval/core/src/types";
+import type { Execution, Run } from "@reval/core/types";
 import { DataTable } from "./executions/data-table";
 
 interface RunDataTableProps {

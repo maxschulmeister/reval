@@ -1,6 +1,6 @@
 "use client";
 
-import type { Benchmark } from "@reval/core/src/types";
+import type { Benchmark } from "@reval/core/types";
 import jsBeautify from "js-beautify";
 import { calculateAverageTime, calculateSuccessRate } from "../lib/grouping";
 import { CodeDialog } from "./code-dialog";

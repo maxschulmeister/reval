@@ -39,7 +39,7 @@ export default function Export({ args, options }: Props) {
   useEffect(() => {
     const performExport = async () => {
       try {
-        const data = await exportRun(runId, options.format);
+        const data = await exportRun(runId, options.format, process.cwd());
         
         const fileName = options.out || `reval-export-${runId.slice(0, 8)}.${options.format}`;
         

@@ -25,7 +25,7 @@ export default function List({ options }: Props) {
   useEffect(() => {
     const fetchRuns = async () => {
       try {
-        const runsData = await listRuns(options.limit);
+        const runsData = await listRuns(options.limit, process.cwd());
         setRuns(runsData);
       } catch (err) {
         setError(err instanceof Error ? err.message : String(err));

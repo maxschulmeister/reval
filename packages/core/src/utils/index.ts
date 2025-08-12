@@ -1,7 +1,8 @@
-import type { IDataFrame } from "data-forge";
 import * as dataForge from "data-forge";
-import { readFileSync } from "data-forge-fs";
-import type { ArgsContext, Config } from "../types/config";
+import fs from "fs";
+import type { ArgsContext } from "../types/config";
+
+export * from "./config";
 
 export const combineArgs = (args: Array<any>) => {
   if (args.length === 0) return [];
@@ -50,7 +51,7 @@ export const loadConfig = async (configPath?: string) => {
 
 export const loadData = async (configPath?: string) => {
   const config = await loadConfig(configPath);
-  let df: IDataFrame<number, any>;
+  let df: dataForge.IDataFrame<number, any>;
   let dfFeatures: any;
   let dfTarget: any;
 
@@ -87,7 +88,8 @@ export const loadData = async (configPath?: string) => {
     }
 
     try {
-      df = readFileSync(config.data.path).parseCSV();
+      const csvContent = fs.readFileSync(config.data.path, "utf-8");
+      df = dataForge.fromCSV(csvContent);
     } catch (error) {
       throw new Error(`Failed to read CSV file: ${error}`);
     }
@@ -321,9 +323,3 @@ export const getVariant = (
 
   return variantValues;
 };
-
-export function defineConfig<F extends (args: any) => Promise<any>>(
-  config: Config<F>,
-) {
-  return config;
-}

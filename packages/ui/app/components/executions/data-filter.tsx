@@ -1,6 +1,6 @@
 "use client";
 
-import type { Run } from "@reval/core/src/types";
+import type { Run } from "@reval/core/types";
 import { ColumnDef } from "@tanstack/react-table";
 import { useMemo } from "react";
 import { Cell } from "../ui/cell";

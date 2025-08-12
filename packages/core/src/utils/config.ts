@@ -13,14 +13,18 @@ import type { Config } from "../types/config";
  */
 const validateConcurrency = (value: number | undefined): number => {
   if (value === undefined) return 10; // Default when not specified
-  if (typeof value !== 'number') {
-    throw new Error(`Invalid concurrency: expected number, got ${typeof value}`);
+  if (typeof value !== "number") {
+    throw new Error(
+      `Invalid concurrency: expected number, got ${typeof value}`,
+    );
   }
   if (!Number.isInteger(value)) {
     throw new Error(`Invalid concurrency: expected integer, got ${value}`);
   }
   if (value <= 0) {
-    throw new Error(`Invalid concurrency: expected positive integer, got ${value}`);
+    throw new Error(
+      `Invalid concurrency: expected positive integer, got ${value}`,
+    );
   }
   return value;
 };
@@ -33,14 +37,16 @@ const validateConcurrency = (value: number | undefined): number => {
  */
 const validateInterval = (value: number | undefined): number => {
   if (value === undefined) return 1000; // Default when not specified
-  if (typeof value !== 'number') {
+  if (typeof value !== "number") {
     throw new Error(`Invalid interval: expected number, got ${typeof value}`);
   }
   if (!Number.isInteger(value)) {
     throw new Error(`Invalid interval: expected integer, got ${value}`);
   }
   if (value < 0) {
-    throw new Error(`Invalid interval: expected non-negative integer, got ${value}`);
+    throw new Error(
+      `Invalid interval: expected non-negative integer, got ${value}`,
+    );
   }
   return value;
 };
@@ -53,14 +59,16 @@ const validateInterval = (value: number | undefined): number => {
  */
 const validateRetries = (value: number | undefined): number => {
   if (value === undefined) return 0; // Default when not specified
-  if (typeof value !== 'number') {
+  if (typeof value !== "number") {
     throw new Error(`Invalid retries: expected number, got ${typeof value}`);
   }
   if (!Number.isInteger(value)) {
     throw new Error(`Invalid retries: expected integer, got ${value}`);
   }
   if (value < 0) {
-    throw new Error(`Invalid retries: expected non-negative integer, got ${value}`);
+    throw new Error(
+      `Invalid retries: expected non-negative integer, got ${value}`,
+    );
   }
   return value;
 };
@@ -72,7 +80,7 @@ const validateRetries = (value: number | undefined): number => {
  * @throws Error if any config property is invalid
  */
 export const validateConfig = <F extends (...args: any[]) => Promise<any>>(
-  config: Config<F>
+  config: Config<F>,
 ): Config<F> => {
   // Validate top-level properties
   const validatedConcurrency = validateConcurrency(config.concurrency);
@@ -87,3 +95,14 @@ export const validateConfig = <F extends (...args: any[]) => Promise<any>>(
     interval: validatedInterval,
   };
 };
+
+/**
+ * Type-safe config definition helper
+ * @param config - The configuration object to validate and return
+ * @returns The same config object with proper typing
+ */
+export function defineConfig<F extends (args: any) => Promise<any>>(
+  config: Config<F>,
+) {
+  return config;
+}

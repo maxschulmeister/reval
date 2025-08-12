@@ -1,13 +1,11 @@
 // Main exports for @reval/core package
-export { db } from "./db/index";
-export { executions, runs } from "./db/schema";
+export * from "./db";
 
-// Core API for programmatic access
+// Core API for programmatic access (server-side only)
 export * from "./api";
-export { initializeDatabase, runMigrations, createDatabase } from "./api/migrations";
 
 // Utils
-export { defineConfig } from "./utils";
+export * from "./utils";
 
 // Types
 export * from "./types";

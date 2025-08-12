@@ -2,7 +2,7 @@
 
 import { DataTable } from "@/app/components/executions/data-table";
 import { Summary } from "@/app/components/summary";
-import type { Benchmark, Run } from "@reval/core/src/types";
+import type { Benchmark, Run } from "@reval/core/types";
 import { useTheme } from "next-themes";
 import { Header } from "../../components/header";
 

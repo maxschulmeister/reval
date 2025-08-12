@@ -1,7 +1,7 @@
 "use client";
 
-import type { Execution } from "@reval/core/src/types";
-import { Status } from "@reval/core/src/types";
+import type { Execution } from "@reval/core/types";
+import { Status } from "@reval/core/types";
 import "@tanstack/react-table";
 import type {
   AccessorKeyColumnDef,

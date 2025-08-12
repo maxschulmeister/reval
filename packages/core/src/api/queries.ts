@@ -1,5 +1,5 @@
 import { eq, desc, sql } from "drizzle-orm";
-import { db } from "../db";
+import { db, setDatabasePath } from "../db";
 import { executions, runs } from "../db/schema";
 import type { Run, Execution } from "../types";
 
@@ -20,7 +20,12 @@ export interface RunDetails extends RunSummary {
   executions: Execution[];
 }
 
-export async function listRuns(limit = 20): Promise<RunSummary[]> {
+export async function listRuns(limit = 20, customPath?: string): Promise<RunSummary[]> {
+  // Set database path if provided
+  if (customPath) {
+    setDatabasePath(customPath);
+  }
+  
   const runsData = await db
     .select({
       id: runs.id,
@@ -105,7 +110,12 @@ export async function getRunSummary(runId: string): Promise<RunSummary | null> {
   };
 }
 
-export async function getRunDetails(runId: string): Promise<RunDetails | null> {
+export async function getRunDetails(runId: string, customPath?: string): Promise<RunDetails | null> {
+  // Set database path if provided
+  if (customPath) {
+    setDatabasePath(customPath);
+  }
+  
   const runData = await db
     .select()
     .from(runs)
@@ -143,8 +153,8 @@ export async function getRunDetails(runId: string): Promise<RunDetails | null> {
   };
 }
 
-export async function exportRun(runId: string, format: 'json' | 'csv' = 'json'): Promise<string> {
-  const details = await getRunDetails(runId);
+export async function exportRun(runId: string, format: 'json' | 'csv' = 'json', customPath?: string): Promise<string> {
+  const details = await getRunDetails(runId, customPath);
   
   if (!details) {
     throw new Error(`Run with id ${runId} not found`);

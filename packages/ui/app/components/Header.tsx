@@ -1,6 +1,6 @@
 "use client";
 
-import type { Run } from "@reval/core/src/types";
+import type { Run } from "@reval/core/types";
 import { useRouter } from "next/navigation";
 import { ThemeSwitcher, type ThemeSwitcherProps } from "./theme-switcher";
 import { Button } from "./ui/button";

@@ -8,7 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/app/components/ui/table";
-import type { Benchmark } from "@reval/core/src/types";
+import type { Benchmark } from "@reval/core/types";
 import {
   flexRender,
   getCoreRowModel,

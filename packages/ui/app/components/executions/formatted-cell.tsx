@@ -1,4 +1,4 @@
-import type { Status } from "@reval/core/src/types";
+import type { Status } from "@reval/core/types";
 import jsBeautify from "js-beautify";
 import { CodeDialog } from "../code-dialog";
 import { Badge } from "../ui/badge";

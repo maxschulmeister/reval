@@ -30,7 +30,7 @@ export default function Show({ args, options }: Props) {
   useEffect(() => {
     const fetchDetails = async () => {
       try {
-        const runDetails = await getRunDetails(runId);
+        const runDetails = await getRunDetails(runId, process.cwd());
         if (!runDetails) {
           setError(`Run with ID '${runId}' not found`);
           return;

@@ -1,7 +1,7 @@
 import { customRandom, random, urlAlphabet } from "nanoid";
 import pQueue from "p-queue";
 import pRetry from "p-retry";
-import { saveRun } from "../db/save-run";
+import { saveRun, setDatabasePath } from "../db";
 import type { Benchmark, Execution } from "../types";
 import { Status } from "../types";
 import {
@@ -22,9 +22,15 @@ export interface RunOptions {
   retries?: number;
   interval?: number;
   dryRun?: boolean;
+  customPath?: string;
 }
 
 export async function run(overrides: RunOptions = {}): Promise<Benchmark> {
+  // Set database path if provided
+  if (overrides.customPath) {
+    setDatabasePath(overrides.customPath);
+  }
+  
   const timestamp = Date.now();
   const rawConfig = await loadConfig(overrides.configPath);
   const data = await loadData(overrides.configPath);
