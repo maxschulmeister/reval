@@ -4,6 +4,7 @@ export { executions, runs } from "./db/schema";
 
 // Core API for programmatic access
 export * from "./api";
+export { initializeDatabase, runMigrations, createDatabase } from "./api/migrations";
 
 // Utils
 export { defineConfig } from "./utils";

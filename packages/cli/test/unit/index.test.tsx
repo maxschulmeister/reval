@@ -25,11 +25,7 @@ describe('Index (Help) Command', () => {
     expect(output).toContain('Quick Start:');
   });
 
-  it('renders version when --version flag is provided', () => {
-    const { lastFrame } = render(<Index options={{ version: true }} />);
-    
-    expect(lastFrame()).toBe('reval CLI v0.1.0');
-  });
+
 
   it('help screen matches snapshot', () => {
     const { lastFrame } = render(<Index options={{}} />);

@@ -1,5 +1,6 @@
+import type { IDataFrame } from "data-forge";
 import * as dataForge from "data-forge";
-import "data-forge-fs";
+import { readFileSync } from "data-forge-fs";
 import type { ArgsContext, Config } from "../types/config";
 
 export const combineArgs = (args: Array<any>) => {
@@ -38,7 +39,7 @@ export const loadConfig = async () => {
 
 export const loadData = async () => {
   const config = await loadConfig();
-  let df: dataForge.IDataFrame<number, any>;
+  let df: IDataFrame<number, any>;
   let dfFeatures: any;
   let dfTarget: any;
 
@@ -50,22 +51,32 @@ export const loadData = async () => {
   // Path-based data loading (CSV files)
   if (config.data.path) {
     // Validate file extension
-    if (!config.data.path.toLowerCase().endsWith('.csv')) {
-      throw new Error("Only CSV files are supported. Please provide a file with .csv extension.");
+    if (!config.data.path.toLowerCase().endsWith(".csv")) {
+      throw new Error(
+        "Only CSV files are supported. Please provide a file with .csv extension.",
+      );
     }
 
     // Validate target is required when path is provided (allow empty string as fallback)
-    if (config.data.target === undefined || config.data.target === null || typeof config.data.target !== "string") {
-      throw new Error("Target column name is required when using path-based data loading");
+    if (
+      config.data.target === undefined ||
+      config.data.target === null ||
+      typeof config.data.target !== "string"
+    ) {
+      throw new Error(
+        "Target column name is required when using path-based data loading",
+      );
     }
 
     // Validate target is not an array when path is provided
     if (Array.isArray(config.data.target)) {
-      throw new Error("Target must be a string column name when using path-based data loading, not an array");
+      throw new Error(
+        "Target must be a string column name when using path-based data loading, not an array",
+      );
     }
 
     try {
-      df = dataForge.readFileSync(config.data.path).parseCSV();
+      df = readFileSync(config.data.path).parseCSV();
     } catch (error) {
       throw new Error(`Failed to read CSV file: ${error}`);
     }
@@ -77,27 +88,43 @@ export const loadData = async () => {
 
     // Validate target column exists (skip validation for empty string as it's a fallback case)
     const columnNames = df.getColumnNames();
-    if (config.data.target !== "" && !columnNames.includes(config.data.target)) {
-      throw new Error(`Target column '${config.data.target}' does not exist in CSV. Available columns: ${columnNames.join(', ')}`);
+    if (
+      config.data.target !== "" &&
+      !columnNames.includes(config.data.target)
+    ) {
+      throw new Error(
+        `Target column '${config.data.target}' does not exist in CSV. Available columns: ${columnNames.join(", ")}`,
+      );
     }
 
     // Validate features column exists if specified
-    if (config.data.features && typeof config.data.features === "string" && config.data.features !== "") {
+    if (
+      config.data.features &&
+      typeof config.data.features === "string" &&
+      config.data.features !== ""
+    ) {
       if (!columnNames.includes(config.data.features)) {
-        throw new Error(`Features column '${config.data.features}' does not exist in CSV. Available columns: ${columnNames.join(', ')}`);
+        throw new Error(
+          `Features column '${config.data.features}' does not exist in CSV. Available columns: ${columnNames.join(", ")}`,
+        );
       }
     }
 
     // Validate and apply trim if specified
     if (config.data.trim !== undefined) {
-      if (typeof config.data.trim !== "number" || !Number.isInteger(config.data.trim)) {
+      if (
+        typeof config.data.trim !== "number" ||
+        !Number.isInteger(config.data.trim)
+      ) {
         throw new Error("Trim value must be an integer");
       }
       if (config.data.trim < 0) {
         throw new Error("Trim value cannot be negative");
       }
       if (config.data.trim > df.count()) {
-        throw new Error(`Trim value (${config.data.trim}) cannot be larger than dataset size (${df.count()})`);
+        throw new Error(
+          `Trim value (${config.data.trim}) cannot be larger than dataset size (${df.count()})`,
+        );
       }
       if (config.data.trim > 0) {
         df = df.take(config.data.trim);
@@ -120,42 +147,60 @@ export const loadData = async () => {
     } else {
       dfTarget = df.getSeries(df.getColumnNames()[1]).toArray();
     }
-  } 
+  }
   // Direct data arrays (no path)
   else {
     // Validate target is required
     if (!config.data.target) {
-      throw new Error("Target is required when not using path-based data loading");
+      throw new Error(
+        "Target is required when not using path-based data loading",
+      );
     }
 
     // Validate features is required
     if (!config.data.features) {
-      throw new Error("Features is required when not using path-based data loading");
+      throw new Error(
+        "Features is required when not using path-based data loading",
+      );
     }
 
     // Validate target is an array
     if (!Array.isArray(config.data.target)) {
-      throw new Error("Target must be an array when not using path-based data loading");
+      throw new Error(
+        "Target must be an array when not using path-based data loading",
+      );
     }
 
     // Validate features is an array or object
-    if (!Array.isArray(config.data.features) && typeof config.data.features !== "object") {
-      throw new Error("Features must be an array or object when not using path-based data loading");
+    if (
+      !Array.isArray(config.data.features) &&
+      typeof config.data.features !== "object"
+    ) {
+      throw new Error(
+        "Features must be an array or object when not using path-based data loading",
+      );
     }
 
     // Validate variants when using direct data
     if (!config.data.variants) {
-      throw new Error("Variants property is required when not using path-based data loading");
+      throw new Error(
+        "Variants property is required when not using path-based data loading",
+      );
     }
 
-    if (typeof config.data.variants !== "object" || Array.isArray(config.data.variants)) {
+    if (
+      typeof config.data.variants !== "object" ||
+      Array.isArray(config.data.variants)
+    ) {
       throw new Error("Variants must be an object with array values");
     }
 
     // Validate each variant has array values and is not empty
     for (const [key, value] of Object.entries(config.data.variants)) {
       if (!Array.isArray(value)) {
-        throw new Error(`Variant '${key}' must be an array, got ${typeof value}`);
+        throw new Error(
+          `Variant '${key}' must be an array, got ${typeof value}`,
+        );
       }
       if (value.length === 0) {
         throw new Error(`Variant '${key}' cannot be an empty array`);
@@ -167,7 +212,7 @@ export const loadData = async () => {
       features: config.data.features,
       target: config.data.target,
     });
-    
+
     dfFeatures = config.data.features;
     dfTarget = config.data.target;
   }

@@ -4,9 +4,17 @@ import fs from "fs";
 import path from "path";
 import config from "../../drizzle.config";
 
-const out = config.out ?? "";
-// Create database directory if it doesn't exist
-fs.mkdirSync(path.join(out), { recursive: true });
+let _db: ReturnType<typeof drizzle> | null = null;
 
-const sqlite = new Database(path.join(out, "reval.db"));
-export const db = drizzle(sqlite);
+export const db = new Proxy({} as ReturnType<typeof drizzle>, {
+  get(target, prop) {
+    if (!_db) {
+      const out = config.out ?? "";
+      // Create database directory if it doesn't exist
+      fs.mkdirSync(path.join(out), { recursive: true });
+      const sqlite = new Database(path.join(out, "reval.db"));
+      _db = drizzle(sqlite);
+    }
+    return (_db as any)[prop];
+  }
+});
