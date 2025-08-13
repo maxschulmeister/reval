@@ -10,9 +10,10 @@ export async function runMigrations() {
   const sqlite = new Database(dbPath);
   const db = drizzle(sqlite);
 
+  // Use the drizzle config from this package (core)
   const currentFileUrl = new URL(import.meta.url);
   const currentDir = path.dirname(currentFileUrl.pathname);
-  const corePackageRootDir = path.resolve(currentDir, "../");
+  const corePackageRootDir = path.resolve(currentDir, "../../");
   const configPath = path.join(corePackageRootDir, "drizzle.config.ts");
 
   await execa("npx", ["drizzle-kit", "generate", `--config=${configPath}`]);

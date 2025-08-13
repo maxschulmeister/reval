@@ -1,9 +1,7 @@
 import type { ResultPromise } from "execa";
 import { execa } from "execa";
 import { useEffect, useRef } from "react";
-import { dbPath } from "@reval/core";
-import fs from "fs";
-import path from "path";
+import { drizzleConfigPath } from "@reval/core";
 
 export default function Studio() {
   const childProcessRef = useRef<ResultPromise | null>(null);
@@ -11,26 +9,10 @@ export default function Studio() {
   useEffect(() => {
     const startStudio = async () => {
       try {
-        // Create a temporary drizzle config file in the current working directory
-        const configPath = path.join(process.cwd(), `drizzle.config.temp.${Date.now()}.cjs`);
-        
-        const configContent = `
-const { defineConfig } = require("drizzle-kit");
-
-module.exports = defineConfig({
-  dialect: "sqlite",
-  dbCredentials: {
-    url: "${dbPath}",
-  },
-});
-`;
-
-        fs.writeFileSync(configPath, configContent);
-
-        // Launch Drizzle Studio and inherit stdio to pipe all output
+        // Use the drizzle config path exported from core
         const child = execa(
           "npx",
-          ["drizzle-kit", "studio", `--config=${configPath}`],
+          ["drizzle-kit", "studio", `--config=${drizzleConfigPath}`],
           {
             cwd: process.cwd(),
             stdio: "inherit",
@@ -38,15 +20,6 @@ module.exports = defineConfig({
         );
 
         childProcessRef.current = child;
-
-        // Clean up temp file after a delay
-        setTimeout(() => {
-          try {
-            fs.unlinkSync(configPath);
-          } catch (e) {
-            // Ignore cleanup errors
-          }
-        }, 5000);
 
         // Wait for the process to complete
         await child;
