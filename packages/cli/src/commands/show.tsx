@@ -1,4 +1,4 @@
-import { getRunDetails } from "@reval/core";
+import { getRunDetails, getObjectPaths, isObject, type FlattenedPath } from "@reval/core";
 import { Box, Text } from "ink";
 import { argument } from "pastel";
 import { useEffect, useState } from "react";
@@ -21,6 +21,46 @@ interface Props {
   args: zod.infer<typeof args>;
   options: zod.infer<typeof options>;
 }
+
+/**
+ * Helper function to render object properties in an expanded format
+ */
+const renderObjectProperties = (obj: any, label: string, maxLength = 200) => {
+  if (!isObject(obj)) {
+    const stringified = JSON.stringify(obj);
+    return (
+      <Text color="gray">
+        {" "}
+        {label}: {stringified.length > maxLength 
+          ? `${stringified.slice(0, maxLength)}...` 
+          : stringified}
+      </Text>
+    );
+  }
+
+  const paths = getObjectPaths(obj);
+  if (paths.length === 0) {
+    return <Text color="gray"> {label}: {"{}"}</Text>;
+  }
+
+  return (
+    <>
+      <Text color="gray"> {label}:</Text>
+      {paths.slice(0, 5).map((pathObj: FlattenedPath, idx: number) => (
+        <Text key={idx} color="dim">
+          {"    "}{pathObj.title}: {JSON.stringify(pathObj.value).length > 50 
+            ? `${JSON.stringify(pathObj.value).slice(0, 50)}...` 
+            : JSON.stringify(pathObj.value)}
+        </Text>
+      ))}
+      {paths.length > 5 && (
+        <Text color="dim">
+          {"    "}... and {paths.length - 5} more properties
+        </Text>
+      )}
+    </>
+  );
+};
 
 export default function Show({ args, options }: Props) {
   const [details, setDetails] = useState<any | null>(null);
@@ -115,13 +155,8 @@ export default function Show({ args, options }: Props) {
             </Text>{" "}
             <Text>({execution.time}ms)</Text>
           </Text>
-          <Text color="gray"> Target: {JSON.stringify(execution.target)}</Text>
-          {execution.result && (
-            <Text color="gray">
-              {" "}
-              Result: {JSON.stringify(execution.result).slice(0, 100)}...
-            </Text>
-          )}
+          {renderObjectProperties(execution.target, "Target")}
+          {execution.result && renderObjectProperties(execution.result, "Result")}
         </Box>
       ))}
 

@@ -7,6 +7,7 @@ export default defineConfig({
       entry: {
         index: resolve(__dirname, "src/index.ts"),
         "types/index": resolve(__dirname, "src/types/index.ts"),
+        client: resolve(__dirname, "src/client.ts"),
       },
       name: "RevalCore",
       fileName: (format, entryName) => {

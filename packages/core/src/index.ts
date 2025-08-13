@@ -4,7 +4,7 @@ export * from "./db";
 // Core API for programmatic access (server-side only)
 export * from "./api";
 
-// Utils
+// Utils (including object expansion utilities)
 export * from "./utils";
 
 // Types

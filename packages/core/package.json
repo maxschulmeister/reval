@@ -14,6 +14,10 @@
     "./types": {
       "types": "./src/types/index.ts",
       "default": "./dist/types/index.js"
+    },
+    "./client": {
+      "types": "./src/client.ts",
+      "default": "./dist/client.js"
     }
   },
   "scripts": {

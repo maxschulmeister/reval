@@ -2,6 +2,7 @@
 
 import type { Execution } from "@reval/core/types";
 import { Status } from "@reval/core/types";
+import { getObjectPaths, isObject, getValueByPath } from "@reval/core/client";
 import "@tanstack/react-table";
 import type {
   AccessorKeyColumnDef,
@@ -118,27 +119,18 @@ const expandObjectColumns = (
   columns: AccessorKeyColumnDef<Execution>[],
   executions: Execution[],
 ): AccessorKeyColumnDef<Execution>[] => {
-  const flattenObject = (
-    obj: { [key: string]: unknown },
-    prefix = "",
-  ): AccessorKeyColumnDef<Execution>[] => {
-    return Object.keys(obj).flatMap((key) => {
-      const path = prefix ? `${prefix}.${key}` : key;
-      const value = obj[key];
-
-      const title = path.split(".").slice(1).join(" ");
-
-      return isObject(value)
-        ? flattenObject(value, path)
-        : createColumn(path, title);
-    });
-  };
+  if (executions.length === 0) return columns;
 
   return columns.flatMap((column) => {
     const sampleValue = executions[0][column.accessorKey as keyof Execution];
-    return isObject(sampleValue)
-      ? flattenObject(sampleValue, String(column.accessorKey))
-      : [column];
+    
+    if (isObject(sampleValue)) {
+      // Use the core utility to get object paths
+      const paths = getObjectPaths(sampleValue, String(column.accessorKey));
+      return paths.map((pathObj) => createColumn(pathObj.path, pathObj.title));
+    }
+    
+    return [column];
   });
 };
 
@@ -164,26 +156,27 @@ export const createColumns = (
 
   // Classify columns
   expandedColumns.forEach((column) => {
-    const keys = column.accessorKey.split(".");
-    const sampleValue = keys.reduce(
-      (obj: Record<string, unknown>, key: string) =>
-        obj[key] as Record<string, unknown>,
-      executions[0] as Record<string, unknown>,
+    const sampleValue = getValueByPath(
+      executions[0] as Record<string, unknown>, 
+      String(column.accessorKey)
     );
     let type: ColumnMetaType = "";
-    if (isString(sampleValue)) {
+    if (typeof sampleValue === "string") {
       type = "string";
-      if (isJson(sampleValue)) {
+      try {
+        JSON.parse(sampleValue);
         type = "json";
+      } catch {
+        // Not JSON, keep as string
       }
       if (isStatus(sampleValue)) {
         type = "status";
       }
     }
-    if (isNumber(sampleValue)) {
+    if (typeof sampleValue === "number") {
       type = "number";
     }
-    if (isBoolean(sampleValue)) {
+    if (typeof sampleValue === "boolean") {
       type = "boolean";
     }
 
@@ -191,33 +184,6 @@ export const createColumns = (
   });
 
   return expandedColumns;
-};
-
-export const isObject = (value: unknown): value is Record<string, unknown> =>
-  Object.prototype.toString.call(value) === "[object Object]";
-
-export const isJson = (value: unknown): value is string => {
-  if (typeof value !== "string") {
-    return false;
-  }
-  try {
-    JSON.parse(value);
-    return true;
-  } catch {
-    return false;
-  }
-};
-
-export const isString = (value: unknown): value is string => {
-  return typeof value === "string";
-};
-
-export const isNumber = (value: unknown): value is number => {
-  return typeof value === "number";
-};
-
-export const isBoolean = (value: unknown): value is boolean => {
-  return typeof value === "boolean";
 };
 
 export const isStatus = (value: unknown): value is Status => {
