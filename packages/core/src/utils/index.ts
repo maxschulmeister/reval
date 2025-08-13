@@ -1,67 +1,9 @@
 import * as dataForge from "data-forge";
 import fs from "fs";
 import type { ArgsContext } from "../types/config";
+import { loadConfig } from "./config";
 
 export * from "./config";
-
-export const combineArgs = (args: Array<any>) => {
-  if (args.length === 0) return [];
-
-  const cartesian = (...arrays: any[][]) => {
-    return arrays.reduce(
-      (acc, curr) => acc.flatMap((x) => curr.map((y) => [...x, y])),
-      [[]],
-    );
-  };
-
-  // Handle array of objects with array values
-  if (typeof args[0] === "object" && !Array.isArray(args[0])) {
-    const keys = Object.keys(args[0]);
-    const values = keys.map((key) => args[0][key]);
-    const combinations = cartesian(...values);
-    return combinations.map((combo) => [
-      keys.reduce((obj, key, index) => ({ ...obj, [key]: combo[index] }), {}),
-    ]);
-  }
-
-  // Handle array of arrays
-  return cartesian(...args);
-};
-
-export const loadConfig = async (configPath?: string) => {
-  try {
-    let configModulePath: string;
-
-    if (configPath) {
-      // Use provided config path (must be absolute or relative to current directory)
-      const path = await import("path");
-      configModulePath = path.resolve(process.cwd(), configPath);
-    } else {
-      // Look for reval.config.ts in current working directory ONLY (no fallbacks)
-      const path = await import("path");
-      const fs = await import("fs");
-      configModulePath = path.resolve(process.cwd(), "reval.config.ts");
-      
-      // Check if config exists in current directory - no fallback to parent directories
-      if (!fs.existsSync(configModulePath)) {
-        throw new Error(
-          `Configuration file not found: ${configModulePath}\n` +
-          `Please ensure 'reval.config.ts' exists in the current directory.\n` +
-          `Run 'reval init' to create a new project structure.`
-        );
-      }
-    }
-
-    const configModule = await import(configModulePath);
-    return configModule.default || configModule;
-  } catch (error) {
-    if (error instanceof Error && error.message.includes("Configuration file not found")) {
-      throw error;
-    }
-    console.error("Config loading error:", error);
-    throw new Error(`Failed to load config from ${configPath || './reval.config.ts'}: ${error}`);
-  }
-};
 
 export const loadData = async (configPath?: string) => {
   const config = await loadConfig(configPath);
@@ -336,4 +278,28 @@ export const getVariant = (
   });
 
   return variantValues;
+};
+
+export const combineArgs = (args: Array<any>) => {
+  if (args.length === 0) return [];
+
+  const cartesian = (...arrays: any[][]) => {
+    return arrays.reduce(
+      (acc, curr) => acc.flatMap((x) => curr.map((y) => [...x, y])),
+      [[]],
+    );
+  };
+
+  // Handle array of objects with array values
+  if (typeof args[0] === "object" && !Array.isArray(args[0])) {
+    const keys = Object.keys(args[0]);
+    const values = keys.map((key) => args[0][key]);
+    const combinations = cartesian(...values);
+    return combinations.map((combo) => [
+      keys.reduce((obj, key, index) => ({ ...obj, [key]: combo[index] }), {}),
+    ]);
+  }
+
+  // Handle array of arrays
+  return cartesian(...args);
 };

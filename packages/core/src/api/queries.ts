@@ -1,7 +1,7 @@
-import { eq, desc, sql } from "drizzle-orm";
-import { db, setDatabasePath } from "../db";
+import { desc, eq } from "drizzle-orm";
+import { getDb } from "../db";
 import { executions, runs } from "../db/schema";
-import type { Run, Execution } from "../types";
+import type { Execution, Run } from "../types";
 
 export interface RunSummary {
   id: string;
@@ -20,12 +20,8 @@ export interface RunDetails extends RunSummary {
   executions: Execution[];
 }
 
-export async function listRuns(limit = 20, customPath?: string): Promise<RunSummary[]> {
-  // Set database path if provided
-  if (customPath) {
-    setDatabasePath(customPath);
-  }
-  
+export async function listRuns(limit = 20): Promise<RunSummary[]> {
+  const db = getDb();
   const runsData = await db
     .select({
       id: runs.id,
@@ -48,11 +44,16 @@ export async function listRuns(limit = 20, customPath?: string): Promise<RunSumm
         .where(eq(executions.runId, run.id));
 
       const totalExecutions = executionsData.length;
-      const successCount = executionsData.filter(e => e.status === 'success').length;
+      const successCount = executionsData.filter(
+        (e) => e.status === "success",
+      ).length;
       const errorCount = totalExecutions - successCount;
-      const successRate = totalExecutions > 0 ? (successCount / totalExecutions) * 100 : 0;
-      const avgTime = totalExecutions > 0 ? 
-        executionsData.reduce((sum, e) => sum + e.time, 0) / totalExecutions : 0;
+      const successRate =
+        totalExecutions > 0 ? (successCount / totalExecutions) * 100 : 0;
+      const avgTime =
+        totalExecutions > 0
+          ? executionsData.reduce((sum, e) => sum + e.time, 0) / totalExecutions
+          : 0;
 
       return {
         id: run.id,
@@ -65,18 +66,15 @@ export async function listRuns(limit = 20, customPath?: string): Promise<RunSumm
         avgTime,
         notes: run.notes || undefined,
       };
-    })
+    }),
   );
 
   return runSummaries;
 }
 
 export async function getRunSummary(runId: string): Promise<RunSummary | null> {
-  const run = await db
-    .select()
-    .from(runs)
-    .where(eq(runs.id, runId))
-    .limit(1);
+  const db = getDb();
+  const run = await db.select().from(runs).where(eq(runs.id, runId)).limit(1);
 
   if (run.length === 0) {
     return null;
@@ -91,11 +89,16 @@ export async function getRunSummary(runId: string): Promise<RunSummary | null> {
     .where(eq(executions.runId, runId));
 
   const totalExecutions = executionsData.length;
-  const successCount = executionsData.filter(e => e.status === 'success').length;
+  const successCount = executionsData.filter(
+    (e) => e.status === "success",
+  ).length;
   const errorCount = totalExecutions - successCount;
-  const successRate = totalExecutions > 0 ? (successCount / totalExecutions) * 100 : 0;
-  const avgTime = totalExecutions > 0 ? 
-    executionsData.reduce((sum, e) => sum + e.time, 0) / totalExecutions : 0;
+  const successRate =
+    totalExecutions > 0 ? (successCount / totalExecutions) * 100 : 0;
+  const avgTime =
+    totalExecutions > 0
+      ? executionsData.reduce((sum, e) => sum + e.time, 0) / totalExecutions
+      : 0;
 
   return {
     id: run[0].id,
@@ -110,12 +113,8 @@ export async function getRunSummary(runId: string): Promise<RunSummary | null> {
   };
 }
 
-export async function getRunDetails(runId: string, customPath?: string): Promise<RunDetails | null> {
-  // Set database path if provided
-  if (customPath) {
-    setDatabasePath(customPath);
-  }
-  
+export async function getRunDetails(runId: string): Promise<RunDetails | null> {
+  const db = getDb();
   const runData = await db
     .select()
     .from(runs)
@@ -132,11 +131,16 @@ export async function getRunDetails(runId: string, customPath?: string): Promise
     .where(eq(executions.runId, runId));
 
   const totalExecutions = executionsData.length;
-  const successCount = executionsData.filter(e => e.status === 'success').length;
+  const successCount = executionsData.filter(
+    (e) => e.status === "success",
+  ).length;
   const errorCount = totalExecutions - successCount;
-  const successRate = totalExecutions > 0 ? (successCount / totalExecutions) * 100 : 0;
-  const avgTime = totalExecutions > 0 ? 
-    executionsData.reduce((sum, e) => sum + e.time, 0) / totalExecutions : 0;
+  const successRate =
+    totalExecutions > 0 ? (successCount / totalExecutions) * 100 : 0;
+  const avgTime =
+    totalExecutions > 0
+      ? executionsData.reduce((sum, e) => sum + e.time, 0) / totalExecutions
+      : 0;
 
   return {
     id: runData[0].id,
@@ -153,24 +157,37 @@ export async function getRunDetails(runId: string, customPath?: string): Promise
   };
 }
 
-export async function exportRun(runId: string, format: 'json' | 'csv' = 'json', customPath?: string): Promise<string> {
-  const details = await getRunDetails(runId, customPath);
-  
+export async function exportRun(
+  runId: string,
+  format: "json" | "csv" = "json",
+): Promise<string> {
+  const details = await getRunDetails(runId);
+
   if (!details) {
     throw new Error(`Run with id ${runId} not found`);
   }
 
-  if (format === 'json') {
+  if (format === "json") {
     return JSON.stringify(details, null, 2);
   }
 
   // CSV format
   if (details.executions.length === 0) {
-    return 'id,runId,features,target,result,time,retries,status,variant\n';
+    return "id,runId,features,target,result,time,retries,status,variant\n";
   }
 
-  const headers = ['id', 'runId', 'features', 'target', 'result', 'time', 'retries', 'status', 'variant'];
-  const rows = details.executions.map(execution => [
+  const headers = [
+    "id",
+    "runId",
+    "features",
+    "target",
+    "result",
+    "time",
+    "retries",
+    "status",
+    "variant",
+  ];
+  const rows = details.executions.map((execution) => [
     execution.id,
     execution.runId,
     JSON.stringify(execution.features),
@@ -182,8 +199,5 @@ export async function exportRun(runId: string, format: 'json' | 'csv' = 'json', 
     JSON.stringify(execution.variant),
   ]);
 
-  return [
-    headers.join(','),
-    ...rows.map(row => row.join(',')),
-  ].join('\n');
+  return [headers.join(","), ...rows.map((row) => row.join(","))].join("\n");
 }

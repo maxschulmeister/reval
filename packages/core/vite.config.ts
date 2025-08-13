@@ -4,9 +4,15 @@ import { defineConfig } from "vite";
 export default defineConfig({
   build: {
     lib: {
-      entry: resolve(__dirname, "src/index.ts"),
+      entry: {
+        index: resolve(__dirname, "src/index.ts"),
+        "types/index": resolve(__dirname, "src/types/index.ts"),
+      },
       name: "RevalCore",
-      fileName: "index",
+      fileName: (format, entryName) => {
+        const ext = format === "cjs" ? "cjs" : "js";
+        return `${entryName}.${ext}`;
+      },
       formats: ["es", "cjs"],
     },
     rollupOptions: {
@@ -17,6 +23,13 @@ export default defineConfig({
         "nanoid",
         "p-queue",
         "p-retry",
+        "execa",
+        "fs",
+        "node:fs",
+        "url",
+        "node:path",
+        "node:crypto",
+        "path",
       ],
     },
     target: "node18",
