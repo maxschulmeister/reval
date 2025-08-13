@@ -24,11 +24,13 @@
     "lint": "tsc --noEmit",
     "clean": "rm -rf dist .reval",
     "db-ui": "npx drizzle-kit studio",
-    "db-create": "rm -rf ../../.reval && npx drizzle-kit generate && npx tsx src/db/index.ts && npx drizzle-kit migrate"
+    "db-create": "tsx src/db/index.ts"
   },
   "devDependencies": {
     "@eslint/js": "^9.32.0",
+    "@types/better-sqlite3": "^7.6.11",
     "@types/node": "^20.0.0",
+    "@types/p-queue": "^3.2.1",
     "drizzle-kit": "^0.31.4",
     "tsx": "^4.0.0",
     "typescript": "^5.9.2",
@@ -43,6 +45,7 @@
     "better-sqlite3": "^12.2.0",
     "data-forge": "^1.10.4",
     "drizzle-orm": "^0.44.4",
+    "execa": "^9.6.0",
     "nanoid": "^5.1.5",
     "p-queue": "^8.1.0",
     "p-retry": "^6.2.1"
