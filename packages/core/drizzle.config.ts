@@ -1,8 +1,11 @@
 import { defineConfig } from "drizzle-kit";
 import path from "path";
 
-export const dbOut = path.resolve(process.cwd(), ".reval");
 export const dbName = "reval.db";
+export const dbOut = path.resolve(
+  process.env.REVAL_PROJECT_ROOT || process.cwd(),
+  ".reval",
+);
 export const dbPath = path.join(dbOut, dbName);
 
 const currentFileUrl = new URL(import.meta.url);

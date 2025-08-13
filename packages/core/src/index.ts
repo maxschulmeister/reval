@@ -9,3 +9,6 @@ export * from "./utils";
 
 // Types
 export * from "./types";
+
+// Database config
+export { dbPath, dbOut } from "../drizzle.config";
