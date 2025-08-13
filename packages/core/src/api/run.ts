@@ -1,9 +1,8 @@
-import "data-forge-fs";
 import { customRandom, random, urlAlphabet } from "nanoid";
 import pQueue from "p-queue";
 import pRetry from "p-retry";
-import { saveRun } from "../db/save-run";
-import type { Benchmark, Config, Execution } from "../types";
+import { saveRun } from "../db";
+import type { Benchmark, Execution } from "../types";
 import { Status } from "../types";
 import {
   combineArgs,
@@ -12,6 +11,7 @@ import {
   loadConfig,
   loadData,
 } from "../utils";
+import { validateConfig } from "../utils/config";
 
 const nanoid = customRandom(urlAlphabet, 24, random);
 
@@ -26,16 +26,18 @@ export interface RunOptions {
 
 export async function run(overrides: RunOptions = {}): Promise<Benchmark> {
   const timestamp = Date.now();
-  const config = await loadConfig();
-  const data = await loadData();
-  
-  // Apply overrides to config
-  const finalConfig = {
-    ...config,
-    concurrency: overrides.concurrency ?? config.concurrency ?? 10,
-    retries: overrides.retries ?? config.retries ?? 0,
-    interval: overrides.interval ?? config.interval ?? 1000,
+  const rawConfig = await loadConfig(overrides.configPath);
+  const data = await loadData(overrides.configPath);
+
+  // Apply overrides to config and validate
+  const configWithOverrides = {
+    ...rawConfig,
+    concurrency: overrides.concurrency ?? rawConfig.concurrency,
+    retries: overrides.retries ?? rawConfig.retries,
+    interval: overrides.interval ?? rawConfig.interval,
   };
+
+  const finalConfig = validateConfig(configWithOverrides);
 
   const context = {
     path: overrides.dataPath || finalConfig.data.path,
@@ -43,14 +45,16 @@ export async function run(overrides: RunOptions = {}): Promise<Benchmark> {
     target: data.target,
     variants: finalConfig.data.variants,
   };
-  
+
   const fnName = finalConfig.run.function.name;
-  const variants = Object.entries(finalConfig.data.variants).map(([key, value]) => {
-    if (Array.isArray(value)) {
-      return `${value.length}_${key}`;
-    }
-    return `${key}`;
-  });
+  const variants = Object.entries(finalConfig.data.variants).map(
+    ([key, value]) => {
+      if (Array.isArray(value)) {
+        return `${value.length}_${key}`;
+      }
+      return `${key}`;
+    },
+  );
 
   // Generate a name based on the function name, variants (and lengths) and timestamp
   const name = `${fnName}-${variants.join("-")}-${timestamp}`;
@@ -90,6 +94,7 @@ export async function run(overrides: RunOptions = {}): Promise<Benchmark> {
       let status: Status = Status.Success;
       let response: Awaited<ReturnType<typeof finalConfig.run.function>> | null;
       let error: any;
+      error;
 
       try {
         response = await pRetry(
@@ -133,8 +138,9 @@ export async function run(overrides: RunOptions = {}): Promise<Benchmark> {
         result: response ? finalConfig.run.result(response) : null,
         time: executionTime,
         retries:
-          finalConfig.run.result["retries" as keyof typeof finalConfig.run.result] ||
-          retryCount,
+          finalConfig.run.result[
+            "retries" as keyof typeof finalConfig.run.result
+          ] || retryCount,
         // TODO:
         // cost: finalConfig.run.result["cost" as keyof typeof finalConfig.run.result] || 0,
         // accuracy:
@@ -160,7 +166,7 @@ export async function run(overrides: RunOptions = {}): Promise<Benchmark> {
     variants: context.variants,
     timestamp,
   };
-  
+
   // Wait for all promises to complete
   const benchmark: Benchmark = {
     run: runData,

@@ -1,7 +1,7 @@
 "use client";
 
-import type { Execution } from "@reval/core/src/types";
-import { Status } from "@reval/core/src/types";
+import type { Execution } from "@reval/core/types";
+import { Status } from "@reval/core/types";
 import "@tanstack/react-table";
 import type {
   AccessorKeyColumnDef,
@@ -21,7 +21,7 @@ export type ColumnMetaType =
   | "";
 
 declare module "@tanstack/react-table" {
-  export interface ColumnMeta<TData extends RowData, TValue> {
+  export interface ColumnMeta<TData extends RowData, TValue = unknown> {
     type: ColumnMetaType;
   }
 }
@@ -51,13 +51,13 @@ const createColumn = (
       <Button
         variant="ghost"
         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        className="p-0! h-auto text-sm font-medium hover:bg-transparent"
+        className="h-auto p-0! text-sm font-medium hover:bg-transparent"
       >
         {titleCase(title)}
         {column.getIsSorted() === "asc" ? (
-          <ArrowUp className="text-accent-foreground size-3" />
+          <ArrowUp className="size-3 text-accent-foreground" />
         ) : column.getIsSorted() === "desc" ? (
-          <ArrowDown className="text-accent-foreground size-3" />
+          <ArrowDown className="size-3 text-accent-foreground" />
         ) : (
           <ArrowDown className="size-3" />
         )}
@@ -166,8 +166,9 @@ export const createColumns = (
   expandedColumns.forEach((column) => {
     const keys = column.accessorKey.split(".");
     const sampleValue = keys.reduce(
-      (obj: any, key: string) => obj[key],
-      executions[0],
+      (obj: Record<string, unknown>, key: string) =>
+        obj[key] as Record<string, unknown>,
+      executions[0] as Record<string, unknown>,
     );
     let type: ColumnMetaType = "";
     if (isString(sampleValue)) {
@@ -202,7 +203,7 @@ export const isJson = (value: unknown): value is string => {
   try {
     JSON.parse(value);
     return true;
-  } catch (e) {
+  } catch {
     return false;
   }
 };

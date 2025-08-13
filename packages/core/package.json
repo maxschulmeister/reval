@@ -3,21 +3,34 @@
   "version": "0.1.0",
   "description": "A benchmark framework for evaluating LLM applications",
   "private": true,
-  "main": "src/index.ts",
+  "type": "module",
+  "main": "dist/index.js",
   "types": "src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./dist/index.js"
+    },
+    "./types": {
+      "types": "./src/types/index.ts",
+      "default": "./dist/types/index.js"
+    }
+  },
   "scripts": {
-    "reval": "tsx src/run.ts",
+    "reval": "tsx src/api/run.ts",
     "build": "vite build",
-    "dev": "tsx watch src/run.ts",
+    "dev": "tsx watch src/api/run.ts",
     "test": "vitest run",
     "lint": "tsc --noEmit",
     "clean": "rm -rf dist .reval",
     "db-ui": "npx drizzle-kit studio",
-    "db-create": "rm -rf ../../.reval && npx drizzle-kit generate && npx tsx src/db/index.ts && npx drizzle-kit migrate"
+    "db-create": "tsx src/db/index.ts"
   },
   "devDependencies": {
     "@eslint/js": "^9.32.0",
+    "@types/better-sqlite3": "^7.6.11",
     "@types/node": "^20.0.0",
+    "@types/p-queue": "^3.2.1",
     "drizzle-kit": "^0.31.4",
     "tsx": "^4.0.0",
     "typescript": "^5.9.2",
@@ -31,8 +44,8 @@
   "dependencies": {
     "better-sqlite3": "^12.2.0",
     "data-forge": "^1.10.4",
-    "data-forge-fs": "^0.0.9",
     "drizzle-orm": "^0.44.4",
+    "execa": "^9.6.0",
     "nanoid": "^5.1.5",
     "p-queue": "^8.1.0",
     "p-retry": "^6.2.1"

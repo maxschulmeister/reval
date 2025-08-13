@@ -1,4 +1,4 @@
-import { db, executions, runs } from "@reval/core";
+import { getDb, executions, runs } from "@reval/core";
 import { eq } from "drizzle-orm";
 import { notFound, redirect } from "next/navigation";
 import { RunPageClient } from "./page.client";
@@ -9,6 +9,7 @@ interface RunPageProps {
 
 async function getAllRuns() {
   try {
+    const db = getDb();
     return await db.select().from(runs).orderBy(runs.timestamp);
   } catch (error) {
     console.error("Error fetching runs:", error);
@@ -18,6 +19,7 @@ async function getAllRuns() {
 
 async function getRunData(runId: string) {
   try {
+    const db = getDb();
     // Get the run details
     const run = await db.select().from(runs).where(eq(runs.id, runId)).limit(1);
 

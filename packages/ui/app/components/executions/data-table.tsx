@@ -8,9 +8,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/app/components/ui/table";
-import type { Benchmark } from "@reval/core/src/types";
+import type { Benchmark } from "@reval/core/types";
 import {
-  ColumnDef,
   flexRender,
   getCoreRowModel,
   getSortedRowModel,
@@ -21,11 +20,6 @@ import { useMemo, useState } from "react";
 import { createColumns } from "./create-columns";
 import { DataFilter, filterData } from "./data-filter";
 import { FormattedCell } from "./formatted-cell";
-
-interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[];
-  data: TData[];
-}
 
 export const DataTable = ({ run, executions }: Benchmark) => {
   const [sorting, setSorting] = useState<SortingState>([]);

@@ -1,4 +1,4 @@
-import { db, executions, runs } from "@reval/core";
+import { getDb, executions, runs } from "@reval/core";
 import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 
@@ -8,6 +8,7 @@ export async function GET(
 ) {
   try {
     const { id: runId } = await params;
+    const db = getDb();
 
     // Get the run details
     const run = await db.select().from(runs).where(eq(runs.id, runId)).limit(1);

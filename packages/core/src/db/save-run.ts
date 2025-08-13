@@ -1,8 +1,9 @@
-import { db } from ".";
+import { getDb } from ".";
 import type { Execution, Run } from "../types/db";
 import { executions, runs } from "./schema";
 
 export const saveRun = async (run: Run, allExecutions: Execution[]) => {
+  const db = getDb();
   try {
     await db.insert(runs).values(run);
     console.debug(`Saved run ${run.id} to database`);
