@@ -1,15 +1,9 @@
 import type { ResultPromise } from "execa";
 import { execa } from "execa";
-import { Box, Text } from "ink";
 import path from "path";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 
 export default function UI() {
-  const [status, setStatus] = useState<"starting" | "running" | "error">(
-    "starting",
-  );
-  const [error, setError] = useState<string | null>(null);
-  const [url, setUrl] = useState<string | null>(null);
   const childProcessRef = useRef<ResultPromise | null>(null);
 
   useEffect(() => {
@@ -19,40 +13,27 @@ export default function UI() {
         const currentDir = path.dirname(new URL(import.meta.url).pathname);
         const uiPath = path.resolve(currentDir, "../../../ui");
 
-        // Start the UI dev server
+        console.log("CWD", process.cwd());
+
+        // Start the UI dev server and inherit stdio to pipe all output
         const child = execa("npm", ["run", "dev"], {
           cwd: uiPath,
-          stdio: ["ignore", "pipe", "pipe"],
+          stdio: "inherit",
+          env: {
+            ...process.env,
+            REVAL_PROJECT_ROOT: process.cwd(),
+          },
         });
 
         childProcessRef.current = child;
 
-        // Wait for the process to start
-        await new Promise((resolve, reject) => {
-          const timeout = setTimeout(() => {
-            resolve(undefined);
-          }, 5000);
-
-          child.on("error", (err) => {
-            clearTimeout(timeout);
-            reject(err);
-          });
-
-          // Listen for output that indicates the server is ready
-          child.stdout?.on("data", (data) => {
-            const output = data.toString();
-            if (output.includes("Ready in") || output.includes("Local:")) {
-              clearTimeout(timeout);
-              resolve(undefined);
-            }
-          });
-        });
-
-        setUrl("http://localhost:3000");
-        setStatus("running");
-      } catch (err) {
-        setError(err instanceof Error ? err.message : String(err));
-        setStatus("error");
+        // Wait for the process to complete
+        await child;
+      } catch (err: any) {
+        // Process was likely killed, which is expected
+        if (err.signal !== "SIGTERM" && err.signal !== "SIGINT") {
+          console.error("Error starting UI:", err);
+        }
       }
     };
 
@@ -78,42 +59,6 @@ export default function UI() {
     };
   }, []);
 
-  if (status === "starting") {
-    return (
-      <Box flexDirection="column">
-        <Text color="blue">Starting reval UI...</Text>
-        <Text color="gray">This may take a moment...</Text>
-      </Box>
-    );
-  }
-
-  if (status === "error") {
-    return (
-      <Box flexDirection="column">
-        <Text color="red">Error starting UI:</Text>
-        <Text>{error}</Text>
-        <Text></Text>
-        <Text color="gray">
-          Make sure the UI package is available and dependencies are installed
-        </Text>
-      </Box>
-    );
-  }
-
-  return (
-    <Box flexDirection="column">
-      <Text color="green">reval UI started!</Text>
-      <Text></Text>
-      <Text>
-        <Text bold>URL:</Text> {url}
-      </Text>
-      <Text></Text>
-      <Text color="gray">
-        Open this URL in your browser to explore benchmark results
-      </Text>
-      <Text color="yellow">
-        Server is running... Press Ctrl+C to stop the server and exit
-      </Text>
-    </Box>
-  );
+  // Return null since we're not rendering anything - output is inherited
+  return null;
 }

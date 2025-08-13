@@ -1,77 +1,85 @@
+import type { ResultPromise } from "execa";
 import { execa } from "execa";
-import { Box, Text } from "ink";
-import { useEffect, useState } from "react";
+import { useEffect, useRef } from "react";
+import { dbPath } from "@reval/core";
+import fs from "fs";
+import path from "path";
 
 export default function Studio() {
-  const [status, setStatus] = useState<"starting" | "running" | "error">(
-    "starting",
-  );
-  const [error, setError] = useState<string | null>(null);
-  const [url, setUrl] = useState<string | null>(null);
-
-  const configPath = require.resolve("@reval/core/drizzle.config.ts");
+  const childProcessRef = useRef<ResultPromise | null>(null);
 
   useEffect(() => {
     const startStudio = async () => {
       try {
-        // Launch Drizzle Studio for the local database
+        // Create a temporary drizzle config file in the current working directory
+        const configPath = path.join(process.cwd(), `drizzle.config.temp.${Date.now()}.cjs`);
+        
+        const configContent = `
+const { defineConfig } = require("drizzle-kit");
+
+module.exports = defineConfig({
+  dialect: "sqlite",
+  dbCredentials: {
+    url: "${dbPath}",
+  },
+});
+`;
+
+        fs.writeFileSync(configPath, configContent);
+
+        // Launch Drizzle Studio and inherit stdio to pipe all output
         const child = execa(
           "npx",
           ["drizzle-kit", "studio", `--config=${configPath}`],
           {
             cwd: process.cwd(),
-            detached: true,
+            stdio: "inherit",
           },
         );
 
-        // Wait for the process to start or fail
-        await new Promise((resolve, reject) => {
-          child.on("error", reject);
-          setTimeout(resolve, 2000); // Give it time to start
-        });
+        childProcessRef.current = child;
 
-        setUrl("https://local.drizzle.studio");
-        setStatus("running");
-      } catch (err) {
-        setError(err instanceof Error ? err.message : String(err));
-        setStatus("error");
+        // Clean up temp file after a delay
+        setTimeout(() => {
+          try {
+            fs.unlinkSync(configPath);
+          } catch (e) {
+            // Ignore cleanup errors
+          }
+        }, 5000);
+
+        // Wait for the process to complete
+        await child;
+      } catch (err: any) {
+        // Process was likely killed, which is expected
+        if (err.signal !== "SIGTERM" && err.signal !== "SIGINT") {
+          console.error("Error starting Drizzle Studio:", err);
+        }
       }
     };
 
+    // Cleanup function to kill the process when component unmounts
+    const cleanup = () => {
+      if (childProcessRef.current && !childProcessRef.current.killed) {
+        childProcessRef.current.kill("SIGTERM");
+      }
+    };
+
+    // Handle process termination signals
+    process.on("SIGINT", cleanup);
+    process.on("SIGTERM", cleanup);
+    process.on("exit", cleanup);
+
     startStudio();
+
+    return () => {
+      cleanup();
+      process.off("SIGINT", cleanup);
+      process.off("SIGTERM", cleanup);
+      process.off("exit", cleanup);
+    };
   }, []);
 
-  if (status === "starting") {
-    return (
-      <Box flexDirection="column">
-        <Text color="blue">Starting Drizzle Studio...</Text>
-      </Box>
-    );
-  }
-
-  if (status === "error") {
-    return (
-      <Box flexDirection="column">
-        <Text color="red">Error starting Drizzle Studio:</Text>
-        <Text>{error}</Text>
-        <Text></Text>
-        <Text color="gray">Make sure drizzle-kit is installed</Text>
-      </Box>
-    );
-  }
-
-  return (
-    <Box flexDirection="column">
-      <Text color="green">Drizzle Studio started!</Text>
-      <Text></Text>
-      <Text>
-        <Text bold>URL:</Text> {url}
-      </Text>
-      <Text></Text>
-      <Text color="gray">Studio is running in the background</Text>
-      <Text color="gray">
-        Press Ctrl+C to stop this command (Studio will continue running)
-      </Text>
-    </Box>
-  );
+  // Return null since we're not rendering anything - output is inherited
+  return null;
 }
