@@ -1,10 +1,10 @@
-import { initializeDatabase } from "@reval/core";
+import { createDatabase } from "@reval/core";
 import fs, { existsSync, mkdirSync, writeFileSync } from "fs";
 import { Box, Text } from "ink";
 import path from "path";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import zod from "zod";
-import { createDrizzleConfig } from "../utils/drizzle-config";
+import { DEFAULT_SAMPLE_CSV } from "../utils/index.js";
 
 export const options = zod.object({
   force: zod
@@ -19,7 +19,8 @@ interface Props {
 
 const getDefaultConfig = () => {
   const currentDir = path.dirname(new URL(import.meta.url).pathname);
-  const defaultConfigPath = path.join(currentDir, "../reval.config.default.ts");
+  // When compiled, we need to look for the .js file, not .ts
+  const defaultConfigPath = path.join(currentDir, "../reval.config.default.js");
   try {
     return fs.readFileSync(defaultConfigPath, "utf8");
   } catch (error) {
@@ -29,14 +30,7 @@ const getDefaultConfig = () => {
 };
 
 const getSampleData = () => {
-  const currentDir = path.dirname(new URL(import.meta.url).pathname);
-  const sampleDataPath = path.join(currentDir, "../sample.csv");
-  try {
-    return fs.readFileSync(sampleDataPath, "utf8");
-  } catch (error) {
-    // Fallback to inline data if file doesn't exist
-    throw new Error(`Failed to read sample data file: ${sampleDataPath}`);
-  }
+  return DEFAULT_SAMPLE_CSV;
 };
 
 export default function Init({ options }: Props) {
@@ -53,7 +47,6 @@ export default function Init({ options }: Props) {
 
         // Check for existing files
         const configExists = existsSync("reval.config.ts");
-        const drizzleConfigExists = existsSync("drizzle.config.ts");
         const dataDir = "data";
         const dataDirExists = existsSync(dataDir);
 
@@ -70,13 +63,6 @@ export default function Init({ options }: Props) {
           files.push("reval.config.ts");
         }
 
-        // Create drizzle config file
-        if (!drizzleConfigExists || options.force) {
-          const drizzleConfigContent = createDrizzleConfig();
-          writeFileSync("drizzle.config.ts", drizzleConfigContent, "utf8");
-          files.push("drizzle.config.ts");
-        }
-
         // Create data directory and sample data
         if (!dataDirExists) {
           mkdirSync(dataDir, { recursive: true });
@@ -87,7 +73,7 @@ export default function Init({ options }: Props) {
         files.push("data/sample.csv");
 
         // Initialize database in current working directory
-        await initializeDatabase(options.force, process.cwd());
+        await createDatabase(options.force);
         files.push(".reval/reval.db (database)");
 
         setCreatedFiles(files);

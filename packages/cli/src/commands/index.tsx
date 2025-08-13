@@ -1,14 +1,6 @@
 import { Box, Text } from "ink";
-import React from "react";
-import zod from "zod";
 
-export const options = zod.object({});
-
-interface Props {
-  options: zod.infer<typeof options>;
-}
-
-export default function Index({ options }: Props) {
+export default function Index() {
   return (
     <Box flexDirection="column">
       <Text color="blue" bold>

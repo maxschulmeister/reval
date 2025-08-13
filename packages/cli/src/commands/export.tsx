@@ -1,28 +1,31 @@
-import React, { useState, useEffect } from 'react';
-import { Text, Box } from 'ink';
-import zod from 'zod';
-import { exportRun } from '@reval/core';
-import { argument, option } from 'pastel';
-import { writeFileSync, mkdirSync } from 'fs';
-import { dirname } from 'path';
+import { exportRun } from "@reval/core";
+import { mkdirSync, writeFileSync } from "fs";
+import { Box, Text } from "ink";
+import { argument, option } from "pastel";
+import { dirname } from "path";
+import { useEffect, useState } from "react";
+import zod from "zod";
 
 export const args = zod.tuple([
   zod.string().describe(
     argument({
-      name: 'runId',
-      description: 'ID of the run to export',
-    })
+      name: "runId",
+      description: "ID of the run to export",
+    }),
   ),
 ]);
 
 export const options = zod.object({
-  format: zod.enum(['json', 'csv']).default('json').describe('Export format'),
-  out: zod.string().optional().describe(
-    option({
-      description: 'Output file path',
-      alias: 'o',
-    })
-  ),
+  format: zod.enum(["json", "csv"]).default("json").describe("Export format"),
+  out: zod
+    .string()
+    .optional()
+    .describe(
+      option({
+        description: "Output file path",
+        alias: "o",
+      }),
+    ),
 });
 
 interface Props {
@@ -31,7 +34,9 @@ interface Props {
 }
 
 export default function Export({ args, options }: Props) {
-  const [status, setStatus] = useState<'exporting' | 'completed' | 'error'>('exporting');
+  const [status, setStatus] = useState<"exporting" | "completed" | "error">(
+    "exporting",
+  );
   const [error, setError] = useState<string | null>(null);
   const [outputPath, setOutputPath] = useState<string | null>(null);
   const [runId] = args;
@@ -39,30 +44,31 @@ export default function Export({ args, options }: Props) {
   useEffect(() => {
     const performExport = async () => {
       try {
-        const data = await exportRun(runId, options.format, process.cwd());
-        
-        const fileName = options.out || `reval-export-${runId.slice(0, 8)}.${options.format}`;
-        
+        const data = await exportRun(runId, options.format);
+
+        const fileName =
+          options.out || `reval-export-${runId.slice(0, 8)}.${options.format}`;
+
         // Create parent directories if they don't exist
         const dir = dirname(fileName);
-        if (dir !== '.') {
+        if (dir !== ".") {
           mkdirSync(dir, { recursive: true });
         }
-        
-        writeFileSync(fileName, data, 'utf8');
-        
+
+        writeFileSync(fileName, data, "utf8");
+
         setOutputPath(fileName);
-        setStatus('completed');
+        setStatus("completed");
       } catch (err) {
         setError(err instanceof Error ? err.message : String(err));
-        setStatus('error');
+        setStatus("error");
       }
     };
 
     performExport();
   }, [runId, options.format, options.out]);
 
-  if (status === 'exporting') {
+  if (status === "exporting") {
     return (
       <Box flexDirection="column">
         <Text color="blue">Exporting run {runId}...</Text>
@@ -71,7 +77,7 @@ export default function Export({ args, options }: Props) {
     );
   }
 
-  if (status === 'error') {
+  if (status === "error") {
     return (
       <Box flexDirection="column">
         <Text color="red">Error exporting run:</Text>
@@ -86,9 +92,15 @@ export default function Export({ args, options }: Props) {
     <Box flexDirection="column">
       <Text color="green">Export completed!</Text>
       <Text></Text>
-      <Text><Text bold>Run ID:</Text> {runId}</Text>
-      <Text><Text bold>Format:</Text> {options.format.toUpperCase()}</Text>
-      <Text><Text bold>Output file:</Text> {outputPath}</Text>
+      <Text>
+        <Text bold>Run ID:</Text> {runId}
+      </Text>
+      <Text>
+        <Text bold>Format:</Text> {options.format.toUpperCase()}
+      </Text>
+      <Text>
+        <Text bold>Output file:</Text> {outputPath}
+      </Text>
       <Text></Text>
       <Text color="gray">File saved successfully</Text>
     </Box>

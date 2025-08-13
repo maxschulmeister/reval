@@ -1,41 +1,60 @@
-import React, { useState, useEffect } from 'react';
-import { Text, Box } from 'ink';
-import zod from 'zod';
-import { run, RunOptions } from '@reval/core';
-import { option } from 'pastel';
+import type { RunOptions } from "@reval/core";
+import { run } from "@reval/core";
+import { Box, Text } from "ink";
+import { option } from "pastel";
+import { useEffect, useState } from "react";
+import zod from "zod";
 
 export const options = zod.object({
-  config: zod.string().optional().describe(
-    option({
-      description: 'Path to a reval config file',
-      alias: 'c',
-    })
-  ),
-  data: zod.string().optional().describe(
-    option({
-      description: 'Path to a CSV file or directory',
-      alias: 'd',
-    })
-  ),
-  concurrency: zod.number().optional().describe(
-    option({
-      description: 'Parallelism for test execution',
-      alias: 'j',
-    })
-  ),
-  retries: zod.number().optional().describe(
-    option({
-      description: 'Retries for flaky executions',
-      alias: 'r',
-    })
-  ),
-  dry: zod.boolean().optional().describe('Validate config and inputs without executing'),
-  verbose: zod.boolean().optional().describe(
-    option({
-      description: 'Increase log verbosity',
-      alias: 'v',
-    })
-  ),
+  config: zod
+    .string()
+    .optional()
+    .describe(
+      option({
+        description: "Path to a reval config file",
+        alias: "c",
+      }),
+    ),
+  data: zod
+    .string()
+    .optional()
+    .describe(
+      option({
+        description: "Path to a CSV file or directory",
+        alias: "d",
+      }),
+    ),
+  concurrency: zod
+    .number()
+    .optional()
+    .describe(
+      option({
+        description: "Parallelism for test execution",
+        alias: "j",
+      }),
+    ),
+  retries: zod
+    .number()
+    .optional()
+    .describe(
+      option({
+        description: "Retries for flaky executions",
+        alias: "r",
+      }),
+    ),
+  dry: zod
+    .boolean()
+    .optional()
+    .describe("Validate config and inputs without executing"),
+  verbose: zod
+    .boolean()
+    .optional()
+    .describe(
+      option({
+        description: "Increase log verbosity",
+        alias: "v",
+      }),
+    ),
 });
 
 interface Props {
@@ -43,7 +62,9 @@ interface Props {
 }
 
 export default function Run({ options }: Props) {
-  const [status, setStatus] = useState<'running' | 'completed' | 'error'>('running');
+  const [status, setStatus] = useState<"running" | "completed" | "error">(
+    "running",
+  );
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -56,22 +77,21 @@ export default function Run({ options }: Props) {
           concurrency: options.concurrency,
           retries: options.retries,
           dryRun: options.dry,
-          customPath: process.cwd(),
         };
 
         const benchmark = await run(runOptions);
         setResult(benchmark);
-        setStatus('completed');
+        setStatus("completed");
       } catch (err) {
         setError(err instanceof Error ? err.message : String(err));
-        setStatus('error');
+        setStatus("error");
       }
     };
 
     runBenchmark();
   }, [options]);
 
-  if (status === 'running') {
+  if (status === "running") {
     return (
       <Box flexDirection="column">
         <Text color="blue">Running benchmark...</Text>
@@ -80,7 +100,7 @@ export default function Run({ options }: Props) {
     );
   }
 
-  if (status === 'error') {
+  if (status === "error") {
     return (
       <Box flexDirection="column">
         <Text color="red">Error running benchmark:</Text>
@@ -97,27 +117,39 @@ export default function Run({ options }: Props) {
     runId: result.run.id,
     name: result.run.name,
     totalExecutions: result.executions.length,
-    successCount: result.executions.filter((e: any) => e.status === 'success').length,
-    errorCount: result.executions.filter((e: any) => e.status === 'error').length,
-    avgTime: result.executions.reduce((sum: number, e: any) => sum + e.time, 0) / result.executions.length,
+    successCount: result.executions.filter((e: any) => e.status === "success")
+      .length,
+    errorCount: result.executions.filter((e: any) => e.status === "error")
+      .length,
+    avgTime:
+      result.executions.reduce((sum: number, e: any) => sum + e.time, 0) /
+      result.executions.length,
   };
 
-  const successRate = summary.totalExecutions > 0 ? (summary.successCount / summary.totalExecutions) * 100 : 0;
+  const successRate =
+    summary.totalExecutions > 0
+      ? (summary.successCount / summary.totalExecutions) * 100
+      : 0;
 
   return (
     <Box flexDirection="column">
       <Text color="green">Benchmark completed!</Text>
       <Text></Text>
       <Text color="blue">Run Summary:</Text>
-      <Text>  ID: {summary.runId}</Text>
-      <Text>  Name: {summary.name}</Text>
-      <Text>  Total executions: {summary.totalExecutions}</Text>
-      <Text>  Success: {summary.successCount} ({successRate.toFixed(1)}%)</Text>
-      <Text>  Errors: {summary.errorCount}</Text>
-      <Text>  Average time: {summary.avgTime.toFixed(2)}ms</Text>
+      <Text> ID: {summary.runId}</Text>
+      <Text> Name: {summary.name}</Text>
+      <Text> Total executions: {summary.totalExecutions}</Text>
+      <Text>
+        {" "}
+        Success: {summary.successCount} ({successRate.toFixed(1)}%)
+      </Text>
+      <Text> Errors: {summary.errorCount}</Text>
+      <Text> Average time: {summary.avgTime.toFixed(2)}ms</Text>
       <Text></Text>
       <Text color="gray">Results saved to database at: ./.reval/reval.db</Text>
-      <Text color="gray">Use 'reval show {summary.runId}' to view detailed results</Text>
+      <Text color="gray">
+        Use 'reval show {summary.runId}' to view detailed results
+      </Text>
     </Box>
   );
 }

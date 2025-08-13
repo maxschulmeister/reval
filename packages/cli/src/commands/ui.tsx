@@ -2,7 +2,7 @@ import type { ResultPromise } from "execa";
 import { execa } from "execa";
 import { Box, Text } from "ink";
 import path from "path";
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export default function UI() {
   const [status, setStatus] = useState<"starting" | "running" | "error">(
