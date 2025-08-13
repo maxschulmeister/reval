@@ -30,7 +30,7 @@ temp/
 data/
 
 # Reval directory
-.reval/
+*/.reval/*
 
 # Turborepo
 .turbo/
@@ -44,3 +44,6 @@ bun.*
 # example
 example/**/*.ts
 example/**/*.json
+
+#Typescript buildinfo
+*.tsbuildinfo
