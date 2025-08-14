@@ -32,7 +32,7 @@ interface Props {
   args: zod.infer<typeof args>;
   options: zod.infer<typeof options>;
 }
-
+// TODO: Add overwrite protection
 export default function Export({ args, options }: Props) {
   const [status, setStatus] = useState<"exporting" | "completed" | "error">(
     "exporting",
