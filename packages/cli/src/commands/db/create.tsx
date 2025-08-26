@@ -80,7 +80,7 @@ export default function Create({ options }: Props) {
         You can now run 'reval run' to execute benchmarks
       </Text>
       <Text color="gray">
-        Use 'reval db studio' to explore the database in Drizzle Studio
+        Use 'reval db studio' to explore the database in Prisma Studio
       </Text>
     </Box>
   );

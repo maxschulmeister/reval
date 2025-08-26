@@ -13,7 +13,7 @@ export default defineConfig({
     },
   },
   run: {
-    function: async ({ input, model }) => {
+    function: async ({ input, model }: { input: any, model: any }) => {
       // Your function implementation here
       // This is a sample that returns the input with the model name
       return {
@@ -28,11 +28,11 @@ export default defineConfig({
         }
       };
     },
-    args: (context) => [{
+    args: (context: any) => [{
       input: context.features,
       model: context.variants.model
     }],
-    result: (response) => ({
+    result: (response: any) => ({
       prediction: response.choices[0].message.content,
       tokens: {
         in: response.usage.prompt_tokens,

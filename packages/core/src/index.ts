@@ -11,10 +11,17 @@ export * from "./utils";
 export * from "./types";
 
 // Database config
-export { dbPath, dbOut } from "../drizzle.config";
+export { dbOut, dbPath, prismaSchemaPath } from "../drizzle.config";
 
-// Drizzle config path for CLI tools
+// Prisma schema path for CLI tools (keeping drizzleConfigPath for compatibility)
 import path from "path";
 const currentFileUrl = new URL(import.meta.url);
 const currentDir = path.dirname(currentFileUrl.pathname);
-export const drizzleConfigPath = path.resolve(currentDir, "../drizzle.config.ts");
+export const drizzleConfigPath = path.resolve(
+  currentDir,
+  "../drizzle.config.ts",
+);
+export const prismaConfigPath = path.resolve(
+  currentDir,
+  "../schema.prisma",
+);

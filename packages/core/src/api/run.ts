@@ -5,11 +5,11 @@ import { saveRun } from "../db";
 import type { Benchmark, Execution } from "../types";
 import { Status } from "../types";
 import {
-  combineArgs,
-  getFeatures,
-  getVariant,
-  loadConfig,
-  loadData,
+    combineArgs,
+    getFeatures,
+    getVariant,
+    loadConfig,
+    loadData,
 } from "../utils";
 import { validateConfig } from "../utils/config";
 

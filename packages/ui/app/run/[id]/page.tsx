@@ -1,5 +1,5 @@
-import { getDb, executions, runs } from "@reval/core";
-import { eq } from "drizzle-orm";
+import { getRunDetails, listRuns } from "@reval/core";
+import type { Run } from "@reval/core/types";
 import { notFound, redirect } from "next/navigation";
 import { RunPageClient } from "./page.client";
 
@@ -7,10 +7,17 @@ interface RunPageProps {
   params: Promise<{ id: string }>;
 }
 
-async function getAllRuns() {
+async function getAllRuns(): Promise<Run[]> {
   try {
-    const db = getDb();
-    return await db.select().from(runs).orderBy(runs.timestamp);
+    const runs = await listRuns(100); // Get more runs for navigation
+    // Get full run details for each run to match the Run type
+    const fullRuns = await Promise.all(
+      runs.map(async (runSummary) => {
+        const fullRun = await getRunDetails(runSummary.id);
+        return fullRun ? fullRun.run : null;
+      })
+    );
+    return fullRuns.filter((run): run is Run => run !== null);
   } catch (error) {
     console.error("Error fetching runs:", error);
     return [];
@@ -19,24 +26,7 @@ async function getAllRuns() {
 
 async function getRunData(runId: string) {
   try {
-    const db = getDb();
-    // Get the run details
-    const run = await db.select().from(runs).where(eq(runs.id, runId)).limit(1);
-
-    if (run.length === 0) {
-      return null;
-    }
-
-    // Get all Executions for this run
-    const runExecutions = await db
-      .select()
-      .from(executions)
-      .where(eq(executions.runId, runId));
-
-    return {
-      run: run[0],
-      executions: runExecutions,
-    };
+    return await getRunDetails(runId);
   } catch (error) {
     console.error("Error fetching run data:", error);
     return null;

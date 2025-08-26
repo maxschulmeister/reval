@@ -1,3 +1,4 @@
+import { copyFileSync } from "fs";
 import { resolve } from "path";
 import { defineConfig } from "vite";
 
@@ -17,8 +18,7 @@ export default defineConfig({
     },
     rollupOptions: {
       external: [
-        "better-sqlite3",
-        "drizzle-orm",
+        "@prisma/client",
         "data-forge",
         "nanoid",
         "p-queue",
@@ -30,10 +30,23 @@ export default defineConfig({
         "node:path",
         "node:crypto",
         "path",
+        "crypto",
       ],
     },
     target: "node18",
   },
+  plugins: [
+    {
+      name: "copy-prisma-schema",
+      writeBundle() {
+        // Copy schema.prisma to dist directory
+        copyFileSync(
+          resolve(__dirname, "schema.prisma"),
+          resolve(__dirname, "dist/schema.prisma")
+        );
+      },
+    },
+  ],
   resolve: {
     alias: {
       "@": resolve(__dirname, "src"),

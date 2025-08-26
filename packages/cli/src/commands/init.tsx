@@ -56,6 +56,8 @@ export default function Init({ options }: Props) {
           );
         }
 
+
+
         // Create config file
         if (!configExists || options.force) {
           const configContent = getDefaultConfig();

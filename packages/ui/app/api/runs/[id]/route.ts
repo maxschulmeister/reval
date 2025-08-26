@@ -1,5 +1,4 @@
-import { getDb, executions, runs } from "@reval/core";
-import { eq } from "drizzle-orm";
+import { getRunDetails } from "@reval/core";
 import { NextResponse } from "next/server";
 
 export async function GET(
@@ -8,24 +7,17 @@ export async function GET(
 ) {
   try {
     const { id: runId } = await params;
-    const db = getDb();
 
-    // Get the run details
-    const run = await db.select().from(runs).where(eq(runs.id, runId)).limit(1);
+    // Use the existing query function from core
+    const runData = await getRunDetails(runId);
 
-    if (run.length === 0) {
+    if (!runData) {
       return NextResponse.json({ error: "Run not found" }, { status: 404 });
     }
 
-    // Get all Executions for this run
-    const runExecutions = await db
-      .select()
-      .from(executions)
-      .where(eq(executions.runId, runId));
-
     return NextResponse.json({
-      run: run[0],
-      executions: runExecutions,
+      run: runData.run,
+      executions: runData.executions,
     });
   } catch (error) {
     console.error("Error fetching run:", error);
