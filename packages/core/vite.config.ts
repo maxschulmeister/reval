@@ -24,6 +24,8 @@ export default defineConfig({
         "p-queue",
         "p-retry",
         "execa",
+        "jiti",
+        "tsconfig-paths",
         "fs",
         "node:fs",
         "url",
@@ -42,7 +44,7 @@ export default defineConfig({
         // Copy schema.prisma to dist directory
         copyFileSync(
           resolve(__dirname, "schema.prisma"),
-          resolve(__dirname, "dist/schema.prisma")
+          resolve(__dirname, "dist/schema.prisma"),
         );
       },
     },

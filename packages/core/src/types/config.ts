@@ -1,7 +1,10 @@
 /**
  * Specifies the data source for the benchmark.
  */
-export interface Config<F extends (...args: any[]) => Promise<any>> {
+export interface Config<
+  F extends (...args: any[]) => Promise<any>,
+  Features extends string | readonly string[] = string | string[],
+> {
   /**
    * Maximum number of concurrent Executions to run in parallel.
    * Defaults to the number of CPU cores available.
@@ -17,7 +20,7 @@ export interface Config<F extends (...args: any[]) => Promise<any>> {
    * Useful for rate limiting API calls. Defaults to 0 (no delay).
    */
   interval?: number;
-  data: ConfigData;
+  data: ConfigData & { features?: Features };
   /**
    * Configures the function to be executed for the benchmark.
    */
@@ -41,7 +44,7 @@ export interface Config<F extends (...args: any[]) => Promise<any>> {
      *     },
      *   ],
      */
-    args: (context: ArgsContext) => ParametersToArrays<Parameters<F>>;
+    args: (context: ArgsContext<ConfigData & { features?: Features }>) => any;
 
     /**
      * Object to map metrics directly to properties of the return type of the function that ran.
@@ -80,9 +83,11 @@ export interface ConfigData {
    */
   path?: string;
   /**
-   * The column name for the input data. Defaults to the first column.
+   * The column name(s) for the input data. Can be a single column name or an array of column names.
+   * When an array is provided, features will be accessible as an object in the context.
+   * Defaults to the first column.
    */
-  features?: string;
+  features?: string | string[];
   /**
    * The column name for the expected output. All others are treated as features.
    */
@@ -116,9 +121,32 @@ export interface ConfigData {
   trim?: number;
 }
 
+// Helper type to extract features type from a config
+type ExtractFeatures<T> = T extends { data: { features: infer F } } ? F : never;
+
+// Helper type to create the proper features context type
+type FeaturesContextType<F> = F extends readonly string[]
+  ? Record<F[number], any[]> // Object for array of feature names with exact keys
+  : F extends string
+    ? any[] // Array for single feature name
+    : Record<string, any[]>; // Default to object for other cases
+
+// Helper type to create ArgsContext from a full config
+export type ArgsContextFromConfig<T> = T extends { data: infer D }
+  ? D extends ConfigData
+    ? Omit<D, "features" | "target"> & {
+        features: FeaturesContextType<ExtractFeatures<T>>;
+        target: any[];
+      }
+    : never
+  : never;
+
 // this includes the resolved data, so we now have array instead of strings.
-export type ArgsContext = Omit<ConfigData, "features" | "target"> & {
-  features: any[];
+export type ArgsContext<T extends ConfigData = ConfigData> = Omit<
+  T,
+  "features" | "target"
+> & {
+  features: FeaturesContextType<T["features"]>;
   target: any[];
 };
 
