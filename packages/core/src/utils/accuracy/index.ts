@@ -2,4 +2,4 @@
 export { calculateAccuracy } from "./calculate";
 export { calculateStringAccuracy } from "./text";
 export { calculateNumberAccuracy } from "./number";
-export { calculateJsonAccuracy, tryParseJson } from "./json";
+export { calculateJsonAccuracy, calculateJsonDiffAccuracy, tryParseJson } from "./json";
