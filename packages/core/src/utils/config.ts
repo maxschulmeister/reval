@@ -94,9 +94,16 @@ const validateRetries = (value: number | undefined): number => {
  * @returns The validated config with proper defaults applied
  * @throws Error if any config property is invalid
  */
-export const validateConfig = <F extends (...args: any[]) => Promise<any>>(
-  config: Config<F>,
-): Config<F> => {
+export const validateConfig = <
+  F extends (...args: any[]) => Promise<any>,
+  Ft extends string | readonly string[] = string | readonly string[],
+  Vt extends Record<string, readonly unknown[]> = Record<
+    string,
+    readonly unknown[]
+  >,
+>(
+  config: Config<F, Ft, Vt>,
+): Config<F, Ft, Vt> => {
   // Validate top-level properties
   const validatedConcurrency = validateConcurrency(config.concurrency);
   const validatedRetries = validateRetries(config.retries);
@@ -119,7 +126,11 @@ export const validateConfig = <F extends (...args: any[]) => Promise<any>>(
 export function defineConfig<
   F extends (...args: any[]) => Promise<any>,
   const Features extends string | readonly string[] = string | string[],
->(config: Config<F, Features>) {
+  const Variants extends Record<string, readonly unknown[]> = Record<
+    string,
+    readonly unknown[]
+  >,
+>(config: Config<F, Features, Variants>) {
   return config;
 }
 

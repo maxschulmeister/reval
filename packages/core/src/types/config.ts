@@ -6,7 +6,11 @@ import type { JsonObject, JsonValue } from "@prisma/client/runtime/library";
 export interface Config<
   // We're assuming csv can only include strings, if the function needs other inputs this ensures the user will be prompted to handle it.
   Fn extends (...args: string[]) => Promise<unknown>,
-  Ft extends string | readonly string[] = string | string[],
+  Ft extends string | readonly string[] = string | readonly string[],
+  Vt extends Record<string, readonly unknown[]> = Record<
+    string,
+    readonly unknown[]
+  >,
 > {
   /**
    * Maximum number of concurrent Executions to run in parallel.
@@ -23,7 +27,7 @@ export interface Config<
    * Useful for rate limiting API calls. Defaults to 0 (no delay).
    */
   interval?: number;
-  data: ConfigData & { features?: Ft };
+  data: ConfigData & { features?: Ft; variants: Vt };
   /**
    * Configures the function to be executed for the benchmark.
    */
@@ -48,7 +52,7 @@ export interface Config<
      *   ],
      */
     args: (
-      context: ArgsContext<ConfigData & { features?: Ft }>,
+      context: ArgsContext<ConfigData & { features?: Ft; variants: Vt }>,
     ) => Array<JsonObject | JsonValue>;
 
     /**
@@ -121,31 +125,38 @@ export interface ConfigData {
   trim?: number;
 }
 
-// Helper type to extract features type from a config
-type ExtractFeatures<T> = T extends { data: { features: infer F } } ? F : never;
-
-// Helper type to create the proper features context type
-type FeaturesContextType<F> = F extends readonly string[]
-  ? Record<F[number], string[]> // Object for array of feature names with exact keys
+// Normalizes the features context based on the input form
+type FeaturesContext<F> = F extends readonly (infer K extends string)[]
+  ? Record<K, string[]>
   : F extends string
-    ? string[] // Array for single feature name
-    : Record<string, string[]>; // Default to object for other cases
+    ? string[]
+    : Record<string, string[]>;
 
-// Helper type to create ArgsContext from a full config
-export type ArgsContextFromConfig<T> = T extends { data: infer D }
-  ? D extends ConfigData
-    ? Omit<D, "features" | "target"> & {
-        features: FeaturesContextType<ExtractFeatures<T>>;
-        target: any[];
-      }
-    : never
+// Infers the selected variant value type for each key
+type VariantsContext<V> = {
+  [K in keyof V]: V[K] extends readonly (infer U)[]
+    ? U
+    : V[K] extends (infer U)[]
+      ? U
+      : never;
+};
+
+// Resolved data form used at execution time (arrays for features/target)
+type ResolvedData<D extends ConfigData> = Omit<
+  D,
+  "features" | "target" | "variants"
+> & {
+  features: FeaturesContext<D["features"]>;
+  target: unknown[];
+  variants: VariantsContext<D["variants"]>;
+};
+
+// Create ArgsContext from a full config object
+export type ArgsContextFromConfig<T> = T extends {
+  data: infer D extends ConfigData;
+}
+  ? ResolvedData<D>
   : never;
 
-// this includes the resolved data, so we now have array instead of strings.
-export type ArgsContext<T extends ConfigData = ConfigData> = Omit<
-  T,
-  "features" | "target"
-> & {
-  features: FeaturesContextType<T["features"]>;
-  target: any[];
-};
+// Resolved ArgsContext directly from ConfigData
+export type ArgsContext<T extends ConfigData = ConfigData> = ResolvedData<T>;
