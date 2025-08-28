@@ -12,6 +12,7 @@ import {
   loadData,
 } from "../utils";
 import { validateConfig } from "../utils/config";
+import { calculateAccuracy } from "../utils/accuracy";
 
 const nanoid = customRandom(urlAlphabet, 24, random);
 
@@ -160,10 +161,12 @@ export async function run(overrides: RunOptions = {}): Promise<Benchmark> {
           finalConfig.run.result[
             "retries" as keyof typeof finalConfig.run.result
           ] || retryCount,
+        accuracy: response ? calculateAccuracy(
+          context.target[index],
+          finalConfig.run.result(response).output
+        ) ?? 0 : 0,
         // TODO:
         // cost: finalConfig.run.result["cost" as keyof typeof finalConfig.run.result] || 0,
-        // accuracy:
-        //   finalConfig.run.result["accuracy" as keyof typeof finalConfig.run.result] || 0,
         status,
         variant,
       };

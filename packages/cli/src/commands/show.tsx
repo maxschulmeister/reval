@@ -114,6 +114,7 @@ export default function Show({ args, options }: Props) {
               {execution.status.toUpperCase()}
             </Text>{" "}
             <Text>({execution.time}ms)</Text>
+            <Text>(accuracy: {execution.accuracy})</Text>
           </Text>
           <Text color="gray"> Target: {JSON.stringify(execution.target)}</Text>
           {execution.result && (

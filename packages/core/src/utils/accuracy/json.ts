@@ -1,0 +1,93 @@
+import { diff } from "json-diff";
+
+/**
+ * Calculates accuracy between two JSON objects using structural diff
+ * @param target - The expected JSON object
+ * @param result - The actual JSON object
+ * @returns Accuracy as a percentage (0-100)
+ */
+export function calculateJsonAccuracy(
+  target: any,
+  result: any,
+): number {
+  // If objects are exactly the same, return 100% accuracy
+  if (JSON.stringify(target) === JSON.stringify(result)) {
+    return 100;
+  }
+
+  // Calculate structural diff
+  const diffResult = diff(target, result);
+  
+  // If no diff, objects are structurally identical
+  if (!diffResult) {
+    return 100;
+  }
+
+  // Count total properties in both objects to establish baseline
+  const countProperties = (obj: any): number => {
+    if (obj === null || obj === undefined) return 0;
+    if (typeof obj !== 'object') return 1;
+    if (Array.isArray(obj)) {
+      return obj.reduce((sum, item) => sum + countProperties(item), 0);
+    }
+    return Object.keys(obj).reduce((sum, key) => sum + countProperties(obj[key]), Object.keys(obj).length);
+  };
+
+  // Count differences in the diff result
+  const countDifferences = (diffObj: any): number => {
+    if (!diffObj || typeof diffObj !== 'object') return 0;
+    
+    let differences = 0;
+    
+    for (const key in diffObj) {
+      const value = diffObj[key];
+      
+      // Handle special diff markers
+      if (key.endsWith('__added') || key.endsWith('__deleted')) {
+        differences += countProperties(value);
+      } else if (value && typeof value === 'object') {
+        // Handle __old/__new pattern
+        if (value.__old !== undefined && value.__new !== undefined) {
+          differences += 1;
+        } else if (Array.isArray(value)) {
+          // Handle array diffs
+          differences += value.filter(item => 
+            Array.isArray(item) && item.length === 2 && 
+            (item[0] === '+' || item[0] === '-' || item[0] === '~')
+          ).length;
+        } else {
+          // Recursively count nested differences
+          differences += countDifferences(value);
+        }
+      }
+    }
+    
+    return differences;
+  };
+
+  const totalProperties = Math.max(
+    countProperties(target),
+    countProperties(result),
+    1 // Avoid division by zero
+  );
+  
+  const differences = countDifferences(diffResult);
+  
+  // Calculate accuracy as percentage of unchanged properties
+  const accuracy = Math.max(0, (1 - differences / totalProperties) * 100);
+  
+  return Math.round(accuracy * 100) / 100; // Round to 2 decimal places
+}
+
+/**
+ * Attempts to parse a string as JSON
+ * @param str - String to parse
+ * @returns Parsed JSON object or null if parsing fails
+ */
+export function tryParseJson(str: string): any | null {
+  try {
+    return JSON.parse(str);
+  } catch {
+    return null;
+  }
+}

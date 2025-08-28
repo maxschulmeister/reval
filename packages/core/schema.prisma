@@ -33,6 +33,7 @@ model Execution {
   result   String? // JSON string
   time     Float   @map("execution_time") // in milliseconds
   retries  Int
+  accuracy Float   @default(0) // accuracy score
   status   String  // "success" or "error"
   variant  String  // JSON string
   

@@ -19,6 +19,7 @@ export type Execution = {
   result?: any | null; // JSON data
   time: number; // in milliseconds
   retries: number;
+  accuracy: number; // accuracy score
   status: string; // "success" or "error"
   variant: any; // JSON data
 };

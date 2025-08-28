@@ -135,6 +135,9 @@ export default function Run({ options }: Props) {
     avgTime:
       result.executions.reduce((sum: number, e: any) => sum + e.time, 0) /
       result.executions.length,
+    avgAccuracy:
+      result.executions.reduce((sum: number, e: any) => sum + e.accuracy, 0) /
+      result.executions.length,
   };
 
   const successRate =
@@ -156,6 +159,7 @@ export default function Run({ options }: Props) {
       </Text>
       <Text> Errors: {summary.errorCount}</Text>
       <Text> Average time: {summary.avgTime.toFixed(2)}ms</Text>
+      <Text> Average accuracy: {summary.avgAccuracy.toFixed(2)}</Text>
       <Text></Text>
       <Text color="gray">Results saved to database at: ./.reval/reval.db</Text>
       <Text color="gray">

@@ -4,6 +4,7 @@ import type { ArgsContext } from "../types/config";
 import { loadConfig } from "./config";
 
 export * from "./config";
+export * from "./accuracy";
 
 export const loadData = async (configPath?: string) => {
   const config = await loadConfig(configPath);

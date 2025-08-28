@@ -151,6 +151,7 @@ export async function getRunDetails(runId: string): Promise<RunDetails | null> {
     result: exec.result ? JSON.parse(exec.result as string) : null,
     time: exec.time,
     retries: exec.retries,
+    accuracy: exec.accuracy ?? 0,
     status: exec.status,
     variant: JSON.parse(exec.variant as string),
   }));
@@ -198,7 +199,7 @@ export async function exportRun(
 
   // CSV format
   if (details.executions.length === 0) {
-    return "id,runId,features,target,result,time,retries,status,variant,error\n";
+    return "id,runId,features,target,result,time,retries,accuracy,status,variant,error\n";
   }
 
   const headers = [
@@ -209,6 +210,7 @@ export async function exportRun(
     "result",
     "time",
     "retries",
+    "accuracy",
     "status",
     "variant",
     "error",
@@ -221,6 +223,7 @@ export async function exportRun(
     JSON.stringify(execution.result),
     execution.time,
     execution.retries,
+    execution.accuracy,
     execution.status,
     JSON.stringify(execution.variant),
     execution.status === "error" && execution.result?.error

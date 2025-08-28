@@ -36,6 +36,7 @@ export const saveRun = async (run: Run, allExecutions: Execution[]) => {
               : undefined,
             time: execution.time,
             retries: execution.retries,
+            accuracy: execution.accuracy,
             status: execution.status,
             variant: JSON.stringify(execution.variant),
           },
