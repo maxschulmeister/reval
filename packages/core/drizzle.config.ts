@@ -1,4 +1,4 @@
-import { defineConfig } from "drizzle-kit";
+// This file is kept for compatibility with existing code that imports dbPath, dbOut, etc.
 import path from "path";
 
 export const dbName = "reval.db";
@@ -8,15 +8,7 @@ export const dbOut = path.resolve(
 );
 export const dbPath = path.join(dbOut, dbName);
 
+// Prisma schema path for CLI tools
 const currentFileUrl = new URL(import.meta.url);
 const currentDir = path.dirname(currentFileUrl.pathname);
-const schemaPath = path.join(currentDir, "src/db/schema.ts");
-
-export default defineConfig({
-  schema: schemaPath,
-  out: dbOut,
-  dialect: "sqlite",
-  dbCredentials: {
-    url: dbPath,
-  },
-});
+export const prismaSchemaPath = path.join(currentDir, "schema.prisma");

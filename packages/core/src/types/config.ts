@@ -1,7 +1,17 @@
+import type { JsonObject, JsonValue } from "@prisma/client/runtime/library";
+
 /**
  * Specifies the data source for the benchmark.
  */
-export interface Config<F extends (...args: any[]) => Promise<any>> {
+export interface Config<
+  // We're assuming csv can only include strings, if the function needs other inputs this ensures the user will be prompted to handle it.
+  Fn extends (...args: string[]) => Promise<unknown>,
+  Ft extends string | readonly string[] = string | readonly string[],
+  Vt extends Record<string, readonly unknown[]> = Record<
+    string,
+    readonly unknown[]
+  >,
+> {
   /**
    * Maximum number of concurrent Executions to run in parallel.
    * Defaults to the number of CPU cores available.
@@ -17,7 +27,7 @@ export interface Config<F extends (...args: any[]) => Promise<any>> {
    * Useful for rate limiting API calls. Defaults to 0 (no delay).
    */
   interval?: number;
-  data: ConfigData;
+  data: ConfigData & { features?: Ft; variants: Vt };
   /**
    * Configures the function to be executed for the benchmark.
    */
@@ -25,7 +35,7 @@ export interface Config<F extends (...args: any[]) => Promise<any>> {
     /**
      * The function to be benchmarked. This is required.
      */
-    function: F;
+    function: Fn;
     /**
      * Defines the arguments to be passed to the benchmarked function.
      * Can be a function that receives context with data and variants,
@@ -41,7 +51,9 @@ export interface Config<F extends (...args: any[]) => Promise<any>> {
      *     },
      *   ],
      */
-    args: (context: ArgsContext) => ParametersToArrays<Parameters<F>>;
+    args: (
+      context: ArgsContext<ConfigData & { features?: Ft; variants: Vt }>,
+    ) => Array<JsonObject | JsonValue>;
 
     /**
      * Object to map metrics directly to properties of the return type of the function that ran.
@@ -63,14 +75,9 @@ export interface Config<F extends (...args: any[]) => Promise<any>> {
      *   totalTokens: context.tokens_in + context.tokens_out,
      * }),
      */
-    result: (context: Awaited<ReturnType<F>>) => {
-      prediction: string;
-      tokens: {
-        in: number;
-        out: number;
-      };
-      [key: string]: any;
-    };
+    result: (context: Awaited<ReturnType<Fn>>) => {
+      output: string;
+    } & JsonObject;
   };
 }
 
@@ -80,9 +87,11 @@ export interface ConfigData {
    */
   path?: string;
   /**
-   * The column name for the input data. Defaults to the first column.
+   * The column name(s) for the input data. Can be a single column name or an array of column names.
+   * When an array is provided, features will be accessible as an object in the context.
+   * Defaults to the first column.
    */
-  features?: string;
+  features?: string | string[];
   /**
    * The column name for the expected output. All others are treated as features.
    */
@@ -116,16 +125,38 @@ export interface ConfigData {
   trim?: number;
 }
 
-// this includes the resolved data, so we now have array instead of strings.
-export type ArgsContext = Omit<ConfigData, "features" | "target"> & {
-  features: any[];
-  target: any[];
+// Normalizes the features context based on the input form
+type FeaturesContext<F> = F extends readonly (infer K extends string)[]
+  ? Record<K, string[]>
+  : F extends string
+    ? string[]
+    : Record<string, string[]>;
+
+// Infers the selected variant value type for each key
+type VariantsContext<V> = {
+  [K in keyof V]: V[K] extends readonly (infer U)[]
+    ? U
+    : V[K] extends (infer U)[]
+      ? U
+      : never;
 };
 
-type ParametersToArrays<T> = T extends any[]
-  ? {
-      [K in keyof T]: T[K] extends object
-        ? { [P in keyof T[K]]: T[K][P][] }
-        : T[K][];
-    }
+// Resolved data form used at execution time (arrays for features/target)
+type ResolvedData<D extends ConfigData> = Omit<
+  D,
+  "features" | "target" | "variants"
+> & {
+  features: FeaturesContext<D["features"]>;
+  target: unknown[];
+  variants: VariantsContext<D["variants"]>;
+};
+
+// Create ArgsContext from a full config object
+export type ArgsContextFromConfig<T> = T extends {
+  data: infer D extends ConfigData;
+}
+  ? ResolvedData<D>
   : never;
+
+// Resolved ArgsContext directly from ConfigData
+export type ArgsContext<T extends ConfigData = ConfigData> = ResolvedData<T>;

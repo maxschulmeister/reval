@@ -114,12 +114,15 @@ export default function Show({ args, options }: Props) {
               {execution.status.toUpperCase()}
             </Text>{" "}
             <Text>({execution.time}ms)</Text>
+            <Text>(accuracy: {execution.accuracy})</Text>
           </Text>
           <Text color="gray"> Target: {JSON.stringify(execution.target)}</Text>
           {execution.result && (
             <Text color="gray">
               {" "}
-              Result: {JSON.stringify(execution.result).slice(0, 100)}...
+              {execution.status === "error" && execution.result?.error
+                ? `Error: ${execution.result.error}`
+                : `Result: ${JSON.stringify(execution.result).slice(0, 100)}...`}
             </Text>
           )}
         </Box>

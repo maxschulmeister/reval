@@ -1,6 +1,4 @@
-import { desc, eq } from "drizzle-orm";
 import { getDb } from "../db";
-import { executions, runs } from "../db/schema";
 import type { Execution, Run } from "../types";
 
 export interface RunSummary {
@@ -21,27 +19,31 @@ export interface RunDetails extends RunSummary {
 }
 
 export async function listRuns(limit = 20): Promise<RunSummary[]> {
-  const db = getDb();
-  const runsData = await db
-    .select({
-      id: runs.id,
-      name: runs.name,
-      timestamp: runs.timestamp,
-      notes: runs.notes,
-    })
-    .from(runs)
-    .orderBy(desc(runs.timestamp))
-    .limit(limit);
+  const prisma = getDb();
+  const runsData = await prisma.run.findMany({
+    select: {
+      id: true,
+      name: true,
+      timestamp: true,
+      notes: true,
+    },
+    orderBy: {
+      timestamp: "desc",
+    },
+    take: limit,
+  });
 
   const runSummaries = await Promise.all(
     runsData.map(async (run) => {
-      const executionsData = await db
-        .select({
-          status: executions.status,
-          time: executions.time,
-        })
-        .from(executions)
-        .where(eq(executions.runId, run.id));
+      const executionsData = await prisma.execution.findMany({
+        where: {
+          runId: run.id,
+        },
+        select: {
+          status: true,
+          time: true,
+        },
+      });
 
       const totalExecutions = executionsData.length;
       const successCount = executionsData.filter(
@@ -58,7 +60,7 @@ export async function listRuns(limit = 20): Promise<RunSummary[]> {
       return {
         id: run.id,
         name: run.name,
-        timestamp: run.timestamp,
+        timestamp: Number(run.timestamp),
         totalExecutions,
         successCount,
         errorCount,
@@ -73,20 +75,22 @@ export async function listRuns(limit = 20): Promise<RunSummary[]> {
 }
 
 export async function getRunSummary(runId: string): Promise<RunSummary | null> {
-  const db = getDb();
-  const run = await db.select().from(runs).where(eq(runs.id, runId)).limit(1);
+  const prisma = getDb();
+  const run = await prisma.run.findUnique({
+    where: { id: runId },
+  });
 
-  if (run.length === 0) {
+  if (!run) {
     return null;
   }
 
-  const executionsData = await db
-    .select({
-      status: executions.status,
-      time: executions.time,
-    })
-    .from(executions)
-    .where(eq(executions.runId, runId));
+  const executionsData = await prisma.execution.findMany({
+    where: { runId },
+    select: {
+      status: true,
+      time: true,
+    },
+  });
 
   const totalExecutions = executionsData.length;
   const successCount = executionsData.filter(
@@ -101,34 +105,56 @@ export async function getRunSummary(runId: string): Promise<RunSummary | null> {
       : 0;
 
   return {
-    id: run[0].id,
-    name: run[0].name,
-    timestamp: run[0].timestamp,
+    id: run.id,
+    name: run.name,
+    timestamp: Number(run.timestamp),
     totalExecutions,
     successCount,
     errorCount,
     successRate,
     avgTime,
-    notes: run[0].notes || undefined,
+    notes: run.notes || undefined,
   };
 }
 
 export async function getRunDetails(runId: string): Promise<RunDetails | null> {
-  const db = getDb();
-  const runData = await db
-    .select()
-    .from(runs)
-    .where(eq(runs.id, runId))
-    .limit(1);
+  const prisma = getDb();
+  const runData = await prisma.run.findUnique({
+    where: { id: runId },
+  });
 
-  if (runData.length === 0) {
+  if (!runData) {
     return null;
   }
 
-  const executionsData = await db
-    .select()
-    .from(executions)
-    .where(eq(executions.runId, runId));
+  const executionsData = await prisma.execution.findMany({
+    where: { runId },
+  });
+
+  // Convert JSON strings back to objects for compatibility
+  const run: Run = {
+    id: runData.id,
+    name: runData.name,
+    notes: runData.notes,
+    function: runData.function,
+    features: JSON.parse(runData.features as string),
+    target: JSON.parse(runData.target as string),
+    variants: JSON.parse(runData.variants as string),
+    timestamp: Number(runData.timestamp),
+  };
+
+  const executions: Execution[] = executionsData.map((exec) => ({
+    id: exec.id,
+    runId: exec.runId,
+    features: JSON.parse(exec.features as string),
+    target: JSON.parse(exec.target as string),
+    result: exec.result ? JSON.parse(exec.result as string) : null,
+    time: exec.time,
+    retries: exec.retries,
+    accuracy: exec.accuracy ?? 0,
+    status: exec.status,
+    variant: JSON.parse(exec.variant as string),
+  }));
 
   const totalExecutions = executionsData.length;
   const successCount = executionsData.filter(
@@ -143,17 +169,17 @@ export async function getRunDetails(runId: string): Promise<RunDetails | null> {
       : 0;
 
   return {
-    id: runData[0].id,
-    name: runData[0].name,
-    timestamp: runData[0].timestamp,
+    id: run.id,
+    name: run.name,
+    timestamp: Number(run.timestamp),
     totalExecutions,
     successCount,
     errorCount,
     successRate,
     avgTime,
-    notes: runData[0].notes || undefined,
-    run: runData[0],
-    executions: executionsData,
+    notes: run.notes || undefined,
+    run,
+    executions,
   };
 }
 
@@ -173,7 +199,7 @@ export async function exportRun(
 
   // CSV format
   if (details.executions.length === 0) {
-    return "id,runId,features,target,result,time,retries,status,variant\n";
+    return "id,runId,features,target,result,time,retries,accuracy,status,variant,error\n";
   }
 
   const headers = [
@@ -184,8 +210,10 @@ export async function exportRun(
     "result",
     "time",
     "retries",
+    "accuracy",
     "status",
     "variant",
+    "error",
   ];
   const rows = details.executions.map((execution) => [
     execution.id,
@@ -195,8 +223,12 @@ export async function exportRun(
     JSON.stringify(execution.result),
     execution.time,
     execution.retries,
+    execution.accuracy,
     execution.status,
     JSON.stringify(execution.variant),
+    execution.status === "error" && execution.result?.error
+      ? execution.result.error
+      : "",
   ]);
 
   return [headers.join(","), ...rows.map((row) => row.join(","))].join("\n");

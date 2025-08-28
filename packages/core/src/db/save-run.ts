@@ -1,11 +1,21 @@
 import { getDb } from ".";
 import type { Execution, Run } from "../types/db";
-import { executions, runs } from "./schema";
 
 export const saveRun = async (run: Run, allExecutions: Execution[]) => {
-  const db = getDb();
+  const prisma = getDb();
   try {
-    await db.insert(runs).values(run);
+    await prisma.run.create({
+      data: {
+        id: run.id,
+        name: run.name,
+        notes: run.notes,
+        function: run.function,
+        features: JSON.stringify(run.features),
+        target: JSON.stringify(run.target),
+        variants: JSON.stringify(run.variants),
+        timestamp: BigInt(run.timestamp),
+      },
+    });
     console.debug(`Saved run ${run.id} to database`);
   } catch (error) {
     console.error(`Failed to save run ${run.id} to database`, error);
@@ -14,7 +24,24 @@ export const saveRun = async (run: Run, allExecutions: Execution[]) => {
 
   try {
     await Promise.all(
-      allExecutions.map((execution) => db.insert(executions).values(execution)),
+      allExecutions.map((execution) =>
+        prisma.execution.create({
+          data: {
+            id: execution.id,
+            runId: execution.runId,
+            features: JSON.stringify(execution.features),
+            target: JSON.stringify(execution.target),
+            result: execution.result
+              ? JSON.stringify(execution.result)
+              : undefined,
+            time: execution.time,
+            retries: execution.retries,
+            accuracy: execution.accuracy,
+            status: execution.status,
+            variant: JSON.stringify(execution.variant),
+          },
+        }),
+      ),
     );
     console.debug(`Saved all Executions of run ${run.id} to database`);
   } catch (error) {

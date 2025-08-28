@@ -1,7 +1,9 @@
+import { prismaConfigPath } from "@reval/core";
 import type { ResultPromise } from "execa";
 import { execa } from "execa";
+import { existsSync } from "fs";
+import path from "path";
 import { useEffect, useRef } from "react";
-import { drizzleConfigPath } from "@reval/core";
 
 export default function Studio() {
   const childProcessRef = useRef<ResultPromise | null>(null);
@@ -9,10 +11,15 @@ export default function Studio() {
   useEffect(() => {
     const startStudio = async () => {
       try {
-        // Use the drizzle config path exported from core
+        // Check for local schema first, fallback to core package schema
+        const localSchemaPath = path.resolve(process.cwd(), ".reval", "reval.prisma");
+        const schemaPath = existsSync(localSchemaPath) ? localSchemaPath : prismaConfigPath;
+        
+
+        
         const child = execa(
           "npx",
-          ["drizzle-kit", "studio", `--config=${drizzleConfigPath}`],
+          ["prisma", "studio", `--schema=${schemaPath}`],
           {
             cwd: process.cwd(),
             stdio: "inherit",
@@ -26,7 +33,7 @@ export default function Studio() {
       } catch (err: any) {
         // Process was likely killed, which is expected
         if (err.signal !== "SIGTERM" && err.signal !== "SIGINT") {
-          console.error("Error starting Drizzle Studio:", err);
+          console.error("Error starting Prisma Studio:", err);
         }
       }
     };

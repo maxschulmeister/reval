@@ -34,6 +34,7 @@ const COLUMN_ORDER = [
   "result",
   "time",
   "retries",
+  "accuracy",
   "status",
 ] as const;
 

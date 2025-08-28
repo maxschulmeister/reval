@@ -4,6 +4,7 @@ import type { ArgsContext } from "../types/config";
 import { loadConfig } from "./config";
 
 export * from "./config";
+export * from "./accuracy";
 
 export const loadData = async (configPath?: string) => {
   const config = await loadConfig(configPath);
@@ -26,11 +27,7 @@ export const loadData = async (configPath?: string) => {
     }
 
     // Validate target is required when path is provided (allow empty string as fallback)
-    if (
-      config.data.target === undefined ||
-      config.data.target === null ||
-      typeof config.data.target !== "string"
-    ) {
+    if (!config.data.target) {
       throw new Error(
         "Target column name is required when using path-based data loading",
       );
@@ -57,21 +54,14 @@ export const loadData = async (configPath?: string) => {
 
     // Validate target column exists (skip validation for empty string as it's a fallback case)
     const columnNames = df.getColumnNames();
-    if (
-      config.data.target !== "" &&
-      !columnNames.includes(config.data.target)
-    ) {
+    if (!columnNames.includes(config.data.target)) {
       throw new Error(
         `Target column '${config.data.target}' does not exist in CSV. Available columns: ${columnNames.join(", ")}`,
       );
     }
 
     // Validate features column exists if specified
-    if (
-      config.data.features &&
-      typeof config.data.features === "string" &&
-      config.data.features !== ""
-    ) {
+    if (config.data.features && typeof config.data.features === "string") {
       if (!columnNames.includes(config.data.features)) {
         throw new Error(
           `Features column '${config.data.features}' does not exist in CSV. Available columns: ${columnNames.join(", ")}`,
@@ -101,19 +91,31 @@ export const loadData = async (configPath?: string) => {
     }
 
     const dfWithoutTarget = df.dropSeries(config.data.target);
-    if (config.data.features && config.data.features !== "") {
+    // Features is single string
+    if (config.data.features && typeof config.data.features === "string") {
       dfFeatures = df.getSeries(config.data.features).toArray();
+
+      // Features is array of strings - return as object for easy access
+    } else if (config.data.features && Array.isArray(config.data.features)) {
+      dfFeatures = {};
+      config.data.features.forEach((feature: string) => {
+        dfFeatures[feature] = df.getSeries(feature).toArray();
+      });
+      // Features is not defined and there are more than one column
     } else if (dfWithoutTarget.getColumns().toArray().length > 1) {
       dfFeatures = dfWithoutTarget.toArray();
     } else {
+      // Features is not defined and there is only one column
       dfFeatures = dfWithoutTarget
         .toArray()
         .flatMap((feature) => Object.values(feature));
     }
 
-    if (config.data.target && config.data.target !== "") {
+    // Target is single string
+    if (config.data.target && typeof config.data.target === "string") {
       dfTarget = df.getSeries(config.data.target).toArray();
     } else {
+      // Target is not defined and there are more than one column (fallback)
       dfTarget = df.getSeries(df.getColumnNames()[1]).toArray();
     }
   }
@@ -195,34 +197,69 @@ export const getFeatures = (
 ): any => {
   let featuresValue: any;
 
-  // Find the features value that matches with data.features
-  if (Array.isArray(arg)) {
-    // For array arguments, find the value that exists in features
-    featuresValue = arg.find((argValue) => {
-      if (typeof argValue === "object" && argValue !== null) {
-        return Object.values(argValue).some((propValue) =>
-          features.includes(propValue),
-        );
-      }
-      return features.includes(argValue);
-    });
+  // Handle features as object (multiple columns)
+  if (typeof features === "object" && !Array.isArray(features)) {
+    const featureColumns = Object.values(features) as any[][];
+    // For object features, find the matching value from any column
+    if (Array.isArray(arg)) {
+      featuresValue = arg.find((argValue) => {
+        if (typeof argValue === "object" && argValue !== null) {
+          return Object.values(argValue).some((propValue) =>
+            featureColumns.some((column) => column.includes(propValue)),
+          );
+        }
+        return featureColumns.some((column) => column.includes(argValue));
+      });
 
-    // If it's an object, find the specific property that matched
-    if (typeof featuresValue === "object" && featuresValue !== null) {
-      const matchingInputValue = Object.values(featuresValue).find(
-        (propValue) => features.includes(propValue),
-      );
-      featuresValue = matchingInputValue;
+      if (typeof featuresValue === "object" && featuresValue !== null) {
+        const matchingInputValue = Object.values(featuresValue).find(
+          (propValue) =>
+            featureColumns.some((column) => column.includes(propValue)),
+        );
+        featuresValue = matchingInputValue;
+      }
+    } else {
+      if (typeof arg === "object" && arg !== null) {
+        const matchingInputValue = Object.values(arg).find((propValue) =>
+          featureColumns.some((column) => column.includes(propValue)),
+        );
+        featuresValue = matchingInputValue;
+      } else {
+        const matchingColumn = featureColumns.find((column) =>
+          column.includes(arg),
+        );
+        if (matchingColumn) {
+          featuresValue = arg;
+        }
+      }
     }
-  } else {
-    // Single argument case
-    if (typeof arg === "object" && arg !== null) {
-      const matchingInputValue = Object.values(arg).find((propValue) =>
-        features.includes(propValue),
-      );
-      featuresValue = matchingInputValue;
-    } else if (features.includes(arg)) {
-      featuresValue = arg;
+  } else if (Array.isArray(features)) {
+    // Handle features as array (original behavior)
+    if (Array.isArray(arg)) {
+      featuresValue = arg.find((argValue) => {
+        if (typeof argValue === "object" && argValue !== null) {
+          return Object.values(argValue).some((propValue) =>
+            features.includes(propValue as string),
+          );
+        }
+        return features.includes(argValue);
+      });
+
+      if (typeof featuresValue === "object" && featuresValue !== null) {
+        const matchingInputValue = Object.values(featuresValue).find(
+          (propValue) => features.includes(propValue as string),
+        );
+        featuresValue = matchingInputValue;
+      }
+    } else {
+      if (typeof arg === "object" && arg !== null) {
+        const matchingInputValue = Object.values(arg).find((propValue) =>
+          features.includes(propValue as string),
+        );
+        featuresValue = matchingInputValue;
+      } else if (features.includes(arg)) {
+        featuresValue = arg;
+      }
     }
   }
 

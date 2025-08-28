@@ -1,5 +1,7 @@
 import fs from "fs";
+import { createJiti } from "jiti";
 import path from "path";
+import { loadConfig as loadTsConfig, register } from "tsconfig-paths";
 
 /**
  * Configuration validation utilities
@@ -7,6 +9,15 @@ import path from "path";
  */
 
 import type { Config } from "../types/config";
+
+// Inline the ParametersToArrays type since we need it here
+type ParametersToArrays<T> = T extends any[]
+  ? {
+      [K in keyof T]: T[K] extends object
+        ? { [P in keyof T[K]]: T[K][P][] }
+        : T[K][];
+    }
+  : never;
 
 /**
  * Validates concurrency value for p-queue
@@ -83,9 +94,16 @@ const validateRetries = (value: number | undefined): number => {
  * @returns The validated config with proper defaults applied
  * @throws Error if any config property is invalid
  */
-export const validateConfig = <F extends (...args: any[]) => Promise<any>>(
-  config: Config<F>,
-): Config<F> => {
+export const validateConfig = <
+  F extends (...args: any[]) => Promise<any>,
+  Ft extends string | readonly string[] = string | readonly string[],
+  Vt extends Record<string, readonly unknown[]> = Record<
+    string,
+    readonly unknown[]
+  >,
+>(
+  config: Config<F, Ft, Vt>,
+): Config<F, Ft, Vt> => {
   // Validate top-level properties
   const validatedConcurrency = validateConcurrency(config.concurrency);
   const validatedRetries = validateRetries(config.retries);
@@ -105,9 +123,14 @@ export const validateConfig = <F extends (...args: any[]) => Promise<any>>(
  * @param config - The configuration object to validate and return
  * @returns The same config object with proper typing
  */
-export function defineConfig<F extends (args: any) => Promise<any>>(
-  config: Config<F>,
-) {
+export function defineConfig<
+  F extends (...args: any[]) => Promise<any>,
+  const Features extends string | readonly string[] = string | string[],
+  const Variants extends Record<string, readonly unknown[]> = Record<
+    string,
+    readonly unknown[]
+  >,
+>(config: Config<F, Features, Variants>) {
   return config;
 }
 
@@ -126,8 +149,40 @@ export const loadConfig = async (configPath?: string) => {
       );
     }
 
-    const configModule = await import(configModulePath);
-    return configModule.default || configModule;
+    // Get the directory where the config file is located
+    const configDir = path.dirname(configModulePath);
+
+    // Load TypeScript configuration to get path aliases
+    const tsConfig = loadTsConfig(configDir);
+    let cleanup: (() => void) | undefined;
+
+    // Register path aliases if tsconfig.json exists and has paths
+    if (tsConfig.resultType === "success" && tsConfig.paths) {
+      cleanup = register({
+        baseUrl: tsConfig.absoluteBaseUrl,
+        paths: tsConfig.paths,
+      });
+    }
+
+    try {
+      // Create jiti instance to handle TypeScript files and imports
+      const jiti = createJiti(configModulePath, {
+        // Enable interopDefault to handle both default and named exports
+        interopDefault: true,
+        // Disable cache for config files to ensure fresh reloads during development
+        fsCache: false,
+        moduleCache: false,
+      });
+
+      // Use jiti to import the TypeScript config file
+      const configModule = (await jiti.import(configModulePath)) as any;
+      return configModule.default || configModule;
+    } finally {
+      // Clean up path alias registration
+      if (cleanup) {
+        cleanup();
+      }
+    }
   } catch (error) {
     if (
       error instanceof Error &&
@@ -136,6 +191,8 @@ export const loadConfig = async (configPath?: string) => {
       throw error;
     }
     console.error("Config loading error:", error);
-    throw new Error(`Failed to load config from "./reval.config.ts": ${error}`);
+    throw new Error(
+      `Failed to load config from "${configPath || "reval.config.ts"}": ${error}`,
+    );
   }
 };

@@ -1,8 +1,6 @@
 {
   "$schema": "https://turbo.build/schema.json",
-  "globalDependencies": [
-    "**/.env.*local"
-  ],
+  "globalDependencies": ["**/.env.*local"],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
@@ -26,10 +24,7 @@
       "dependsOn": ["^build"],
       "outputs": [".reval/**"]
     },
-    "db-create": {
-      "outputs": [".reval/**"]
-    },
-    "db-ui": {
+    "db:ui": {
       "cache": false,
       "persistent": true
     }
