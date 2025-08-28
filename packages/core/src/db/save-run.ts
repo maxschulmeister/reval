@@ -31,7 +31,9 @@ export const saveRun = async (run: Run, allExecutions: Execution[]) => {
             runId: execution.runId,
             features: JSON.stringify(execution.features),
             target: JSON.stringify(execution.target),
-            result: execution.result ? JSON.stringify(execution.result) : undefined,
+            result: execution.result
+              ? JSON.stringify(execution.result)
+              : undefined,
             time: execution.time,
             retries: execution.retries,
             status: execution.status,

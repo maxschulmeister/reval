@@ -1,7 +1,7 @@
 import { customRandom, random, urlAlphabet } from "nanoid";
 import pQueue from "p-queue";
 import pRetry from "p-retry";
-import { saveRun } from "../db";
+import { disconnectDb, saveRun } from "../db";
 import type { Benchmark, Execution } from "../types";
 import { Status } from "../types";
 import {
@@ -120,6 +120,11 @@ export async function run(overrides: RunOptions = {}): Promise<Benchmark> {
         status = Status.Error;
         error = err;
         response = null;
+        console.error(
+          `Execution failed for args ${JSON.stringify(arg)}. Error: ${
+            err instanceof Error ? err.message : String(err)
+          }`,
+        );
       }
 
       const endTime = Date.now();
@@ -128,14 +133,28 @@ export async function run(overrides: RunOptions = {}): Promise<Benchmark> {
       const variant = getVariant(arg, finalConfig.data.variants);
       const features = getFeatures(arg, context.features);
 
-      const index = context.features.indexOf(features);
+      // Handle index calculation for both array and object features
+      let index = -1;
+      if (Array.isArray(context.features)) {
+        index = context.features.indexOf(features);
+      } else if (typeof context.features === "object" && features) {
+        // For object features, find the index by looking at the first column's values
+        const firstColumn = Object.values(context.features)[0] as any[];
+        if (firstColumn && Array.isArray(firstColumn)) {
+          index = firstColumn.indexOf(features);
+        }
+      }
 
       const execution: Execution = {
         id: nanoid(),
         runId,
         features, //TODO: check if works with multiple features
         target: context.target[index],
-        result: response ? finalConfig.run.result(response) : null,
+        result: response
+          ? finalConfig.run.result(response)
+          : error
+            ? { error: error instanceof Error ? error.message : String(error) }
+            : null,
         time: executionTime,
         retries:
           finalConfig.run.result[
@@ -175,6 +194,9 @@ export async function run(overrides: RunOptions = {}): Promise<Benchmark> {
 
   // Save to db
   await saveRun(runData, executions);
+
+  // Clean up database connection
+  await disconnectDb();
 
   return benchmark;
 }

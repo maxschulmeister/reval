@@ -1,6 +1,6 @@
 import type { RunOptions } from "@reval/core";
 import { run } from "@reval/core";
-import { Box, Text } from "ink";
+import { Box, Text, useApp } from "ink";
 import { option } from "pastel";
 import { useEffect, useState } from "react";
 import zod from "zod";
@@ -62,6 +62,7 @@ interface Props {
 }
 
 export default function Run({ options }: Props) {
+  const { exit } = useApp();
   const [status, setStatus] = useState<"running" | "completed" | "error">(
     "running",
   );
@@ -90,6 +91,16 @@ export default function Run({ options }: Props) {
 
     runBenchmark();
   }, [options]);
+
+  // Exit the app when benchmark completes or errors
+  useEffect(() => {
+    if (status === "completed" || status === "error") {
+      // Small delay to ensure the UI has rendered
+      setTimeout(() => {
+        process.exit(status === "completed" ? 0 : 1);
+      }, 100);
+    }
+  }, [status]);
 
   if (status === "running") {
     return (

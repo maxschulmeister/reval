@@ -28,7 +28,7 @@ export async function listRuns(limit = 20): Promise<RunSummary[]> {
       notes: true,
     },
     orderBy: {
-      timestamp: 'desc',
+      timestamp: "desc",
     },
     take: limit,
   });
@@ -198,7 +198,7 @@ export async function exportRun(
 
   // CSV format
   if (details.executions.length === 0) {
-    return "id,runId,features,target,result,time,retries,status,variant\n";
+    return "id,runId,features,target,result,time,retries,status,variant,error\n";
   }
 
   const headers = [
@@ -211,6 +211,7 @@ export async function exportRun(
     "retries",
     "status",
     "variant",
+    "error",
   ];
   const rows = details.executions.map((execution) => [
     execution.id,
@@ -222,6 +223,9 @@ export async function exportRun(
     execution.retries,
     execution.status,
     JSON.stringify(execution.variant),
+    execution.status === "error" && execution.result?.error
+      ? execution.result.error
+      : "",
   ]);
 
   return [headers.join(","), ...rows.map((row) => row.join(","))].join("\n");

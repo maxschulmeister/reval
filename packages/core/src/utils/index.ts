@@ -238,7 +238,7 @@ export const getFeatures = (
       featuresValue = arg.find((argValue) => {
         if (typeof argValue === "object" && argValue !== null) {
           return Object.values(argValue).some((propValue) =>
-            features.includes(propValue),
+            features.includes(propValue as string),
           );
         }
         return features.includes(argValue);
@@ -246,14 +246,14 @@ export const getFeatures = (
 
       if (typeof featuresValue === "object" && featuresValue !== null) {
         const matchingInputValue = Object.values(featuresValue).find(
-          (propValue) => features.includes(propValue),
+          (propValue) => features.includes(propValue as string),
         );
         featuresValue = matchingInputValue;
       }
     } else {
       if (typeof arg === "object" && arg !== null) {
         const matchingInputValue = Object.values(arg).find((propValue) =>
-          features.includes(propValue),
+          features.includes(propValue as string),
         );
         featuresValue = matchingInputValue;
       } else if (features.includes(arg)) {

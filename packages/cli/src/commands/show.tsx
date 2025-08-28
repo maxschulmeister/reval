@@ -119,7 +119,9 @@ export default function Show({ args, options }: Props) {
           {execution.result && (
             <Text color="gray">
               {" "}
-              Result: {JSON.stringify(execution.result).slice(0, 100)}...
+              {execution.status === "error" && execution.result?.error
+                ? `Error: ${execution.result.error}`
+                : `Result: ${JSON.stringify(execution.result).slice(0, 100)}...`}
             </Text>
           )}
         </Box>

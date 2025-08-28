@@ -1,9 +1,12 @@
+import type { JsonObject, JsonValue } from "@prisma/client/runtime/library";
+
 /**
  * Specifies the data source for the benchmark.
  */
 export interface Config<
-  F extends (...args: any[]) => Promise<any>,
-  Features extends string | readonly string[] = string | string[],
+  // We're assuming csv can only include strings, if the function needs other inputs this ensures the user will be prompted to handle it.
+  Fn extends (...args: string[]) => Promise<unknown>,
+  Ft extends string | readonly string[] = string | string[],
 > {
   /**
    * Maximum number of concurrent Executions to run in parallel.
@@ -20,7 +23,7 @@ export interface Config<
    * Useful for rate limiting API calls. Defaults to 0 (no delay).
    */
   interval?: number;
-  data: ConfigData & { features?: Features };
+  data: ConfigData & { features?: Ft };
   /**
    * Configures the function to be executed for the benchmark.
    */
@@ -28,7 +31,7 @@ export interface Config<
     /**
      * The function to be benchmarked. This is required.
      */
-    function: F;
+    function: Fn;
     /**
      * Defines the arguments to be passed to the benchmarked function.
      * Can be a function that receives context with data and variants,
@@ -44,7 +47,9 @@ export interface Config<
      *     },
      *   ],
      */
-    args: (context: ArgsContext<ConfigData & { features?: Features }>) => any;
+    args: (
+      context: ArgsContext<ConfigData & { features?: Ft }>,
+    ) => Array<JsonObject | JsonValue>;
 
     /**
      * Object to map metrics directly to properties of the return type of the function that ran.
@@ -66,14 +71,9 @@ export interface Config<
      *   totalTokens: context.tokens_in + context.tokens_out,
      * }),
      */
-    result: (context: Awaited<ReturnType<F>>) => {
-      prediction: string;
-      tokens: {
-        in: number;
-        out: number;
-      };
-      [key: string]: any;
-    };
+    result: (context: Awaited<ReturnType<Fn>>) => {
+      output: string;
+    } & JsonObject;
   };
 }
 
@@ -126,10 +126,10 @@ type ExtractFeatures<T> = T extends { data: { features: infer F } } ? F : never;
 
 // Helper type to create the proper features context type
 type FeaturesContextType<F> = F extends readonly string[]
-  ? Record<F[number], any[]> // Object for array of feature names with exact keys
+  ? Record<F[number], string[]> // Object for array of feature names with exact keys
   : F extends string
-    ? any[] // Array for single feature name
-    : Record<string, any[]>; // Default to object for other cases
+    ? string[] // Array for single feature name
+    : Record<string, string[]>; // Default to object for other cases
 
 // Helper type to create ArgsContext from a full config
 export type ArgsContextFromConfig<T> = T extends { data: infer D }
@@ -149,11 +149,3 @@ export type ArgsContext<T extends ConfigData = ConfigData> = Omit<
   features: FeaturesContextType<T["features"]>;
   target: any[];
 };
-
-type ParametersToArrays<T> = T extends any[]
-  ? {
-      [K in keyof T]: T[K] extends object
-        ? { [P in keyof T[K]]: T[K][P][] }
-        : T[K][];
-    }
-  : never;
