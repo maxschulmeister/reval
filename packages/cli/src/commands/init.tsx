@@ -20,7 +20,10 @@ interface Props {
 const getDefaultConfig = () => {
   const currentDir = path.dirname(new URL(import.meta.url).pathname);
   // When compiled, we need to look for the .js file, not .ts
-  const defaultConfigPath = path.join(currentDir, "../reval.config.default.js");
+  const defaultConfigPath = path.join(
+    currentDir,
+    "../../src/reval.config.default.ts",
+  );
   try {
     return fs.readFileSync(defaultConfigPath, "utf8");
   } catch (error) {
@@ -55,8 +58,6 @@ export default function Init({ options }: Props) {
             "Configuration file already exists. Use --force to overwrite.",
           );
         }
-
-
 
         // Create config file
         if (!configExists || options.force) {

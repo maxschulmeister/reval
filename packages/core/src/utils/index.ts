@@ -3,8 +3,8 @@ import fs from "fs";
 import type { ArgsContext } from "../types/config";
 import { loadConfig } from "./config";
 
-export * from "./config";
 export * from "./accuracy";
+export * from "./config";
 
 export const loadData = async (configPath?: string) => {
   const config = await loadConfig(configPath);

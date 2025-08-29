@@ -1,5 +1,4 @@
-// Prisma types are generated from schema.prisma
-// These types match the original Drizzle types for compatibility
+// Prisma types are generated from Prisma schema
 export type Run = {
   id: string;
   name: string;

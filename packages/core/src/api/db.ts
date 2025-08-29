@@ -1,15 +1,19 @@
 import { execa } from "execa";
 import fs from "fs";
-import { dbOut, dbPath, prismaSchemaPath } from "../../drizzle.config";
+import { dbOut, dbPath, prismaPath } from "../db";
 
 export async function runMigrations() {
   // Ensure migrations directory exists
   fs.mkdirSync(dbOut, { recursive: true });
 
   // Use Prisma Migrate to apply migrations
-  await execa("npx", ["prisma", "migrate", "deploy", `--schema=${prismaSchemaPath}`], {
-    stdio: "inherit",
-  });
+  await execa(
+    "npx",
+    ["prisma", "migrate", "deploy", `--schema=${prismaPath}`],
+    {
+      stdio: "inherit",
+    },
+  );
 }
 
 export async function createDatabase(force = false): Promise<void> {
@@ -30,14 +34,20 @@ export async function createDatabase(force = false): Promise<void> {
 
   // Copy Prisma schema to local .reval directory
   const localSchemaPath = `${dbOut}/reval.prisma`;
-  const originalSchema = fs.readFileSync(prismaSchemaPath, 'utf8');
-  
+  const originalSchema = fs.readFileSync(prismaPath, "utf8");
+
   // Modify schema for local use
   const localSchema = originalSchema
-    .replace('url      = "file:../../.reval/reval.db"', 'url      = "file:./reval.db"')
-    .replace('output   = "./node_modules/@prisma/client"', 'output   = "../node_modules/.prisma/client"');
-  
-  fs.writeFileSync(localSchemaPath, localSchema, 'utf8');
+    .replace(
+      'url      = "file:../../.reval/reval.db"',
+      'url      = "file:./reval.db"',
+    )
+    .replace(
+      'output   = "./node_modules/@prisma/client"',
+      'output   = "../node_modules/.prisma/client"',
+    );
+
+  fs.writeFileSync(localSchemaPath, localSchema, "utf8");
 
   // Generate Prisma Client using the local schema
   await execa("npx", ["prisma", "generate", `--schema=${localSchemaPath}`], {

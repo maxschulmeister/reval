@@ -1,4 +1,4 @@
-import { prismaConfigPath } from "@reval/core";
+import { prismaPath } from "@reval/core";
 import type { ResultPromise } from "execa";
 import { execa } from "execa";
 import { existsSync } from "fs";
@@ -12,11 +12,15 @@ export default function Studio() {
     const startStudio = async () => {
       try {
         // Check for local schema first, fallback to core package schema
-        const localSchemaPath = path.resolve(process.cwd(), ".reval", "reval.prisma");
-        const schemaPath = existsSync(localSchemaPath) ? localSchemaPath : prismaConfigPath;
-        
+        const localSchemaPath = path.resolve(
+          process.cwd(),
+          ".reval",
+          "reval.prisma",
+        );
+        const schemaPath = existsSync(localSchemaPath)
+          ? localSchemaPath
+          : prismaPath;
 
-        
         const child = execa(
           "npx",
           ["prisma", "studio", `--schema=${schemaPath}`],

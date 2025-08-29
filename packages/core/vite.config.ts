@@ -1,6 +1,7 @@
 import { copyFileSync } from "fs";
 import { resolve } from "path";
 import { defineConfig } from "vite";
+import { NAMESPACE } from "./src/constants";
 
 export default defineConfig({
   build: {
@@ -41,10 +42,10 @@ export default defineConfig({
     {
       name: "copy-prisma-schema",
       writeBundle() {
-        // Copy schema.prisma to dist directory
+        // Copy Prisma Schema to dist directory
         copyFileSync(
-          resolve(__dirname, "schema.prisma"),
-          resolve(__dirname, "dist/schema.prisma"),
+          resolve(__dirname, `${NAMESPACE}.prisma`),
+          resolve(__dirname, `dist/${NAMESPACE}.prisma`),
         );
       },
     },
