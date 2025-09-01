@@ -1,43 +1,47 @@
 // Prisma schema file for Reval
-// This replaces the previous Drizzle ORM setup
 
-generator client {
+generator revalClient {
   provider = "prisma-client-js"
   output   = "./node_modules/@prisma/client"
 }
 
-datasource db {
+datasource RevalDb {
   provider = "sqlite"
   url      = "file:../../.reval/reval.db"
 }
 
 model Run {
-  id        String      @id
-  name      String
-  notes     String?
-  function  String
-  features  String      // JSON string
-  target    String      // JSON string
-  variants  String      // JSON string
-  timestamp BigInt
+  id         String      @id
+  name       String
+  notes      String?
+  function   String
+  timestamp  BigInt
   executions Execution[]
 
   @@map("runs")
 }
 
 model Execution {
-  id       String  @id
-  runId    String  @map("run_id")
-  features String  // JSON string
-  target   String  // JSON string
-  result   String? // JSON string
-  time     Float   @map("execution_time") // in milliseconds
+  id       String @id
+  run_id   String
+  target   Json
+  result   Json?
+  time     Float
   retries  Int
-  accuracy Float   @default(0) // accuracy score
-  status   String  // "success" or "error"
-  variant  String  // JSON string
-  
-  run      Run     @relation(fields: [runId], references: [id])
+  accuracy Float? @default(0)
+  status   Status
+
+  args      Json
+  features  Json?
+  variants  Json?
+  dataIndex Int
+
+  run  Run  @relation(fields: [run_id], references: [id], onDelete: Cascade)
 
   @@map("executions")
+}
+
+enum Status {
+  success
+  error
 }

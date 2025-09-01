@@ -6,10 +6,10 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const { id: runId } = await params;
+    const { id: run_id } = await params;
 
     // Use the existing query function from core
-    const runData = await getRunDetails(runId);
+    const runData = await getRunDetails(run_id);
 
     if (!runData) {
       return NextResponse.json({ error: "Run not found" }, { status: 404 });

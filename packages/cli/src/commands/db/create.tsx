@@ -1,4 +1,4 @@
-import { createDatabase } from "@reval/core";
+import { createDb } from "@reval/core";
 import { Box, Text } from "ink";
 import { useEffect, useState } from "react";
 import zod from "zod";
@@ -22,23 +22,16 @@ export default function Create({ options }: Props) {
   const [createdFiles, setCreatedFiles] = useState<string[]>([]);
 
   useEffect(() => {
-    const createDb = async () => {
+    (async () => {
       try {
-        const files: string[] = [];
-
-        // Initialize database in current working directory
-        await createDatabase(options.force);
-        files.push(".reval/reval.db");
-
-        setCreatedFiles(files);
+        await createDb(options.force);
+        setCreatedFiles([".reval/reval.db"]);
         setStatus("completed");
       } catch (err) {
         setError(err instanceof Error ? err.message : String(err));
         setStatus("error");
       }
-    };
-
-    createDb();
+    })();
   }, [options.force]);
 
   if (status === "creating") {

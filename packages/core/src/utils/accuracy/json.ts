@@ -1,3 +1,4 @@
+import type { JsonValue } from "@prisma/client/runtime/library";
 import { diff } from "json-diff";
 import { calculateNumberAccuracy } from "./number";
 import { calculateStringAccuracy } from "./text";
@@ -8,7 +9,10 @@ import { calculateStringAccuracy } from "./text";
  * @param result - The actual JSON object
  * @returns Accuracy as a percentage (0-100)
  */
-export function calculateJsonDiffAccuracy(target: any, result: any): number {
+export function calculateJsonDiffAccuracy(
+  target: JsonValue,
+  result: JsonValue,
+): number {
   // If objects are exactly the same, return 100% accuracy
   if (JSON.stringify(target) === JSON.stringify(result)) {
     return 100;
@@ -89,13 +93,16 @@ export function calculateJsonDiffAccuracy(target: any, result: any): number {
  * @param result - The actual JSON object
  * @returns Accuracy as a percentage (0-100)
  */
-export function calculateJsonAccuracy(target: any, result: any): number {
+export function calculateJsonAccuracy(
+  result: JsonValue,
+  target: JsonValue,
+): number {
   const accuracies: number[] = [];
 
   // Helper function to recursively compare objects
   const compareValues = (
-    targetVal: any,
-    resultVal: any,
+    targetVal: JsonValue,
+    resultVal: JsonValue,
     path: string = "",
   ): void => {
     // Handle null/undefined cases
@@ -128,17 +135,21 @@ export function calculateJsonAccuracy(target: any, result: any): number {
 
     // Handle different types
     if (targetType === "string") {
-      accuracies.push(calculateStringAccuracy(targetVal, resultVal));
+      accuracies.push(
+        calculateStringAccuracy(targetVal as string, resultVal as string),
+      );
     } else if (targetType === "number") {
-      accuracies.push(calculateNumberAccuracy(targetVal, resultVal));
+      accuracies.push(
+        calculateNumberAccuracy(targetVal as number, resultVal as number),
+      );
     } else if (targetType === "boolean") {
       accuracies.push(targetVal === resultVal ? 100 : 0);
     } else if (Array.isArray(targetVal) && Array.isArray(resultVal)) {
       // For arrays, order matters - compare element by element
       const maxLength = Math.max(targetVal.length, resultVal.length);
       for (let i = 0; i < maxLength; i++) {
-        const targetItem = i < targetVal.length ? targetVal[i] : undefined;
-        const resultItem = i < resultVal.length ? resultVal[i] : undefined;
+        const targetItem = i < targetVal.length ? targetVal[i] : null;
+        const resultItem = i < resultVal.length ? resultVal[i] : null;
         compareValues(targetItem, resultItem, `${path}[${i}]`);
       }
     } else if (targetType === "object") {
@@ -149,8 +160,8 @@ export function calculateJsonAccuracy(target: any, result: any): number {
 
       // Compare each key
       for (const key of allKeys) {
-        const targetKeyVal = targetVal[key];
-        const resultKeyVal = resultVal[key];
+        const targetKeyVal = targetVal[key as keyof typeof targetVal];
+        const resultKeyVal = resultVal[key as keyof typeof resultVal];
         compareValues(
           targetKeyVal,
           resultKeyVal,

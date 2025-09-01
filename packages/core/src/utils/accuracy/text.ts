@@ -1,5 +1,4 @@
 import { distance } from "fastest-levenshtein";
-import { calculateJsonAccuracy, tryParseJson } from "./json";
 
 /**
  * Calculates accuracy between two strings, attempting JSON comparison first
@@ -8,21 +7,12 @@ import { calculateJsonAccuracy, tryParseJson } from "./json";
  * @returns Accuracy as a percentage (0-100)
  */
 export function calculateStringAccuracy(
-  target: string,
   result: string,
+  target: string,
 ): number {
   // If strings are exactly the same, return 100% accuracy
   if (target === result) {
     return 100;
-  }
-
-  // Try to parse both strings as JSON
-  const targetJson = tryParseJson(target);
-  const resultJson = tryParseJson(result);
-
-  // If both are valid JSON, use JSON comparison
-  if (targetJson !== null && resultJson !== null) {
-    return calculateJsonAccuracy(targetJson, resultJson);
   }
 
   // Fall back to string comparison using Levenshtein distance

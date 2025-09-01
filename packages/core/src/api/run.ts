@@ -1,207 +1,154 @@
-import { customRandom, random, urlAlphabet } from "nanoid";
+import type { JsonValue } from "@prisma/client/runtime/library";
+import { customRandom, random } from "nanoid";
 import pQueue from "p-queue";
 import pRetry from "p-retry";
 import { disconnectDb, saveRun } from "../db";
-import type { Benchmark, Execution } from "../types";
+import type {
+  ArgsContext,
+  Benchmark,
+  Config,
+  Execution,
+  ResultContext,
+  Run,
+  TData,
+  TFunction,
+  TVariants,
+} from "../types";
 import { Status } from "../types";
 import {
-  combineArgs,
-  getFeatures,
-  getVariant,
-  loadConfig,
-  loadData,
+  calculateAccuracy,
+  getArgsContext,
+  getTargets,
+  resolveArgs,
 } from "../utils";
-import { calculateAccuracy } from "../utils/accuracy";
-import { validateConfig } from "../utils/config";
+// import { validateConfig } from "../utils/config";
 
-const nanoid = customRandom(urlAlphabet, 24, random);
-
-export interface RunOptions {
-  configPath?: string;
-  dataPath?: string;
-  concurrency?: number;
-  retries?: number;
-  interval?: number;
-  dryRun?: boolean;
-}
-
-export async function run(overrides: RunOptions = {}): Promise<Benchmark> {
-  const timestamp = Date.now();
-  const rawConfig = await loadConfig(overrides.configPath);
-  const data = await loadData(overrides.configPath);
-
-  // Apply overrides to config and validate
-  const configWithOverrides = {
-    ...rawConfig,
-    concurrency: overrides.concurrency ?? rawConfig.concurrency,
-    retries: overrides.retries ?? rawConfig.retries,
-    interval: overrides.interval ?? rawConfig.interval,
-  };
-
-  const finalConfig = validateConfig(configWithOverrides);
-
-  const context = {
-    path: overrides.dataPath || finalConfig.data.path,
-    features: data.features,
-    target: data.target,
-    variants: finalConfig.data.variants,
-  };
-
-  const fnName = finalConfig.run.function.name;
-  const variants = Object.entries(finalConfig.data.variants).map(
-    ([key, value]) => {
-      if (Array.isArray(value)) {
-        return `${value.length}_${key}`;
-      }
-      return `${key}`;
-    },
+export const run = async <
+  F extends TFunction,
+  D extends TData,
+  V extends TVariants,
+>(
+  config: Config<F, D, V>,
+) => {
+  const nanoid = customRandom(
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+    16,
+    random,
   );
+  const run_id = nanoid();
+  const timestamp = BigInt(Date.now());
 
-  // Generate a name based on the function name, variants (and lengths) and timestamp
+  // And you can now properly type the argContext:
+  const argContext: ArgsContext<D, V> = getArgsContext(config);
+
+  const fnName = config.function.name;
+  const variants = Object.entries(config.variants).map(([key, value]) => {
+    if (Array.isArray(value)) {
+      return `${value.length}_${key}`;
+    }
+    return `${key}`;
+  });
   const name = `${fnName}-${variants.join("-")}-${timestamp}`;
-  const runId = nanoid();
 
-  // If dry run, return early with validation results
-  if (overrides.dryRun) {
-    const benchmark: Benchmark = {
-      run: {
-        id: runId,
-        name: `[DRY RUN] ${name}`,
-        notes: "Dry run - no execution performed",
-        function: finalConfig.run.function.toString(),
-        features: context.features,
-        target: context.target,
-        variants: context.variants,
-        timestamp,
-      },
-      executions: [],
-    };
-    return benchmark;
-  }
+  // **
+  // ** EXECUTIONS
+  // **
 
   // Create queue with concurrency control and interval
   const queue = new pQueue({
-    concurrency: finalConfig.concurrency,
-    interval: finalConfig.interval,
+    concurrency: config.concurrency,
+    interval: config.interval,
     intervalCap: 1,
   });
-
   // Add all tasks to the queue
-  const args = combineArgs(finalConfig.run.args(context));
-  const promises = args.map((arg) =>
-    queue.add(async () => {
-      let retryCount = 0;
-      let startTime: number = Date.now();
-      let status: Status = Status.Success;
-      let response: Awaited<ReturnType<typeof finalConfig.run.function>> | null;
-      let error: any;
-      error;
+  const argsCombinations = resolveArgs(config.args, argContext);
+  const executionPromises = argsCombinations.map(
+    ({ args, dataIndex, features, variants }) =>
+      queue.add(async () => {
+        // Generate unique ID for each execution
+        const id = nanoid();
+        let status: Status = "success";
+        let retryCount = 0;
+        let result: JsonValue;
+        const startTime = Date.now();
 
-      try {
-        response = await pRetry(
-          async () => {
-            startTime = Date.now();
-            return await finalConfig.run.function.apply(null, arg);
-          },
-          {
-            retries: finalConfig.retries,
-            onFailedAttempt: (attemptError) => {
-              retryCount = attemptError.attemptNumber - 1;
-              console.log(
-                `Attempt ${
-                  attemptError.attemptNumber
-                } failed for args ${JSON.stringify(arg)}. ${
-                  attemptError.retriesLeft
-                } retries left. Error: ${attemptError.message}`,
-              );
+        try {
+          const response = await pRetry(
+            async () => {
+              return await config.function(...args);
             },
-          },
-        );
-      } catch (err) {
-        status = Status.Error;
-        error = err;
-        response = null;
-        console.error(
-          `Execution failed for args ${JSON.stringify(arg)}. Error: ${
-            err instanceof Error ? err.message : String(err)
-          }`,
-        );
-      }
+            {
+              retries: config.retries,
+              onFailedAttempt: (attemptError) => {
+                retryCount = attemptError.attemptNumber - 1;
+                console.log(
+                  `Attempt ${attemptError.attemptNumber} failed for args ${JSON.stringify(args)}. ${attemptError.retriesLeft} retries left. Error: ${attemptError.message}`,
+                );
+              },
+            },
+          );
 
-      const endTime = Date.now();
-      const executionTime = endTime - startTime;
+          result = config.result(response as ResultContext<F>);
+        } catch (e) {
+          status = "error";
+          const error = e instanceof Error ? e : new Error(String(e));
+          console.error(
+            `Execution failed for args ${JSON.stringify(args)}. Error: ${error.message}`,
+          );
 
-      const variant = getVariant(arg, finalConfig.data.variants);
-      const features = getFeatures(arg, context.features);
-
-      // Handle index calculation for both array and object features
-      let index = -1;
-      if (Array.isArray(context.features)) {
-        index = context.features.indexOf(features);
-      } else if (typeof context.features === "object" && features) {
-        // For object features, find the index by looking at the first column's values
-        const firstColumn = Object.values(context.features)[0] as any[];
-        if (firstColumn && Array.isArray(firstColumn)) {
-          index = firstColumn.indexOf(features);
+          result = {
+            error: error.message,
+            stack: error.stack,
+            name: error.name,
+          };
         }
-      }
 
-      const execution: Execution = {
-        id: nanoid(),
-        runId,
-        features, //TODO: check if works with multiple features
-        target: context.target[index],
-        result: response
-          ? finalConfig.run.result(response)
-          : error
-            ? { error: error instanceof Error ? error.message : String(error) }
-            : null,
-        time: executionTime,
-        retries:
-          finalConfig.run.result[
-            "retries" as keyof typeof finalConfig.run.result
-          ] || retryCount,
-        accuracy: response
-          ? (calculateAccuracy(
-              context.target[index],
-              finalConfig.run.result(response).output,
-            ) ?? 0)
-          : 0,
-        // TODO:
-        // cost: finalConfig.run.result["cost" as keyof typeof finalConfig.run.result] || 0,
-        status,
-        variant,
-      };
+        const endTime = Date.now();
+        const executionTime = endTime - startTime;
 
-      return execution;
-    }),
+        const target = getTargets(config)[dataIndex];
+
+        const accuracy = result ? calculateAccuracy(result, target) : null;
+
+        const execution: Execution = {
+          id,
+          run_id,
+          result,
+          time: executionTime,
+          retries: retryCount,
+          status,
+          target,
+          accuracy,
+          args,
+          features,
+          variants,
+          dataIndex,
+        };
+        return execution;
+      }),
   );
+  const executions = (await Promise.all(executionPromises)) as Execution[];
 
-  const executions = (await Promise.all(promises)) as unknown as Execution[];
-
-  // Build run object
-  const runData = {
-    id: runId,
+  // **
+  // ** RUN
+  // **
+  const run: Run = {
+    id: run_id,
     name,
     notes: "",
-    function: finalConfig.run.function.toString(),
-    features: context.features,
-    target: context.target,
-    variants: context.variants,
+    function: config.function.toString(),
     timestamp,
   };
 
-  // Wait for all promises to complete
   const benchmark: Benchmark = {
-    run: runData,
+    run,
     executions,
   };
-
   // Save to db
-  await saveRun(runData, executions);
-
-  // Clean up database connection
-  await disconnectDb();
+  if (!config.dry) {
+    await saveRun(run, executions);
+    await disconnectDb();
+  }
 
   return benchmark;
-}
+};

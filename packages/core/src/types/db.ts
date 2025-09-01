@@ -1,31 +1,14 @@
-// Prisma types are generated from Prisma schema
-export type Run = {
-  id: string;
-  name: string;
-  notes?: string | null;
-  function: string;
-  features: any; // JSON data
-  target: any; // JSON data
-  variants: any; // JSON data
-  timestamp: number;
-};
+import type {
+  Execution as PrismaExecution,
+  Run as PrismaRun,
+  Status as PrismaStatus,
+} from "@prisma/client/client";
 
-export type Execution = {
-  id: string;
-  runId: string;
-  features: any; // JSON data
-  target: any; // JSON data
-  result?: any | null; // JSON data
-  time: number; // in milliseconds
-  retries: number;
-  accuracy: number; // accuracy score
-  status: string; // "success" or "error"
-  variant: any; // JSON data
-};
+// Prisma types are generated from Prisma schema
+export type Run = PrismaRun;
+
+export type Execution = PrismaExecution;
 
 export type Benchmark = { run: Run; executions: Execution[] };
 
-export enum Status {
-  Success = "success",
-  Error = "error",
-}
+export type Status = PrismaStatus;

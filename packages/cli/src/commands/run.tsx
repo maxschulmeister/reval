@@ -1,5 +1,4 @@
-import type { RunOptions } from "@reval/core";
-import { run } from "@reval/core";
+import { loadConfig, run } from "@reval/core";
 import { Box, Text, useApp } from "ink";
 import { option } from "pastel";
 import { useEffect, useState } from "react";
@@ -72,15 +71,8 @@ export default function Run({ options }: Props) {
   useEffect(() => {
     const runBenchmark = async () => {
       try {
-        const runOptions: RunOptions = {
-          configPath: options.config,
-          dataPath: options.data,
-          concurrency: options.concurrency,
-          retries: options.retries,
-          dryRun: options.dry,
-        };
-
-        const benchmark = await run(runOptions);
+        const config = await loadConfig();
+        const benchmark = await run(config);
         setResult(benchmark);
         setStatus("completed");
       } catch (err) {
@@ -125,7 +117,7 @@ export default function Run({ options }: Props) {
   }
 
   const summary = {
-    runId: result.run.id,
+    run_id: result.run.id,
     name: result.run.name,
     totalExecutions: result.executions.length,
     successCount: result.executions.filter((e: any) => e.status === "success")
@@ -150,7 +142,7 @@ export default function Run({ options }: Props) {
       <Text color="green">Benchmark completed!</Text>
       <Text></Text>
       <Text color="blue">Run Summary:</Text>
-      <Text> ID: {summary.runId}</Text>
+      <Text> ID: {summary.run_id}</Text>
       <Text> Name: {summary.name}</Text>
       <Text> Total executions: {summary.totalExecutions}</Text>
       <Text>
@@ -163,7 +155,7 @@ export default function Run({ options }: Props) {
       <Text></Text>
       <Text color="gray">Results saved to database at: ./.reval/reval.db</Text>
       <Text color="gray">
-        Use 'reval show {summary.runId}' to view detailed results
+        Use 'reval show {summary.run_id}' to view detailed results
       </Text>
     </Box>
   );

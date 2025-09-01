@@ -1,10 +1,9 @@
-import { createDatabase } from "@reval/core";
-import fs, { existsSync, mkdirSync, writeFileSync } from "fs";
+import { coreRoot, createDb, DATA_DIR, NAMESPACE } from "@reval/core";
+import { copyFileSync, existsSync, mkdirSync } from "fs";
 import { Box, Text } from "ink";
 import path from "path";
 import { useEffect, useState } from "react";
 import zod from "zod";
-import { DEFAULT_SAMPLE_CSV } from "../utils/index.js";
 
 export const options = zod.object({
   force: zod
@@ -16,25 +15,6 @@ export const options = zod.object({
 interface Props {
   options: zod.infer<typeof options>;
 }
-
-const getDefaultConfig = () => {
-  const currentDir = path.dirname(new URL(import.meta.url).pathname);
-  // When compiled, we need to look for the .js file, not .ts
-  const defaultConfigPath = path.join(
-    currentDir,
-    "../../src/reval.config.default.ts",
-  );
-  try {
-    return fs.readFileSync(defaultConfigPath, "utf8");
-  } catch (error) {
-    // Fallback to inline config if file doesn't exist
-    throw new Error(`Failed to read default config file: ${defaultConfigPath}`);
-  }
-};
-
-const getSampleData = () => {
-  return DEFAULT_SAMPLE_CSV;
-};
 
 export default function Init({ options }: Props) {
   const [status, setStatus] = useState<"initializing" | "completed" | "error">(
@@ -49,9 +29,9 @@ export default function Init({ options }: Props) {
         const files: string[] = [];
 
         // Check for existing files
-        const configExists = existsSync("reval.config.ts");
-        const dataDir = "data";
-        const dataDirExists = existsSync(dataDir);
+        const configName = `${NAMESPACE}.config.ts`;
+        const configExists = existsSync(configName);
+        const dataDirExists = existsSync(DATA_DIR);
 
         if (configExists && !options.force) {
           throw new Error(
@@ -61,23 +41,30 @@ export default function Init({ options }: Props) {
 
         // Create config file
         if (!configExists || options.force) {
-          const configContent = getDefaultConfig();
-          writeFileSync("reval.config.ts", configContent, "utf8");
-          files.push("reval.config.ts");
+          copyFileSync(path.resolve(coreRoot, configName), configName);
+          files.push(configName);
         }
 
         // Create data directory and sample data
         if (!dataDirExists) {
-          mkdirSync(dataDir, { recursive: true });
+          mkdirSync(DATA_DIR, { recursive: true });
         }
 
-        // Always create sample.csv (overwrite if exists)
-        writeFileSync("data/sample.csv", getSampleData(), "utf8");
-        files.push("data/sample.csv");
+        // Always create sample (overwrite if exists)
+        copyFileSync(
+          path.resolve(coreRoot, "sample.json"),
+          path.resolve("sample.json"),
+        );
+        files.push(path.resolve("sample.json"));
 
         // Initialize database in current working directory
-        await createDatabase(options.force);
-        files.push(".reval/reval.db (database)");
+        await createDb(options.force);
+        files.push(path.resolve(`.${NAMESPACE}`, `${NAMESPACE}.db (database)`));
+
+        // TODO: We need to edit an existing tsconfig or create a bew tsconfig to include the sample json.
+        // let the user know we did this and that he has to modify it if using other data
+        // "resolveJsonModule": true,
+        // "include": tsconfig.include.push["sample.json"],
 
         setCreatedFiles(files);
         setStatus("completed");

@@ -2,6 +2,7 @@ import { PrismaClient } from "@prisma/client";
 import path from "path";
 import { NAMESPACE } from "./constants";
 import type { Execution, Run } from "./types/db";
+import { withPrismaJsonNull } from "./utils";
 
 export const dbName = `${NAMESPACE}.db`;
 export const dbOut = path.resolve(process.cwd(), `.${NAMESPACE}`);
@@ -17,7 +18,7 @@ export const getDb = () => {
   if (!prisma) {
     prisma = new PrismaClient({
       datasources: {
-        db: {
+        RevalDb: {
           url: `file:${dbPath}`,
         },
       },
@@ -35,20 +36,11 @@ export const disconnectDb = async () => {
 };
 
 // Function to save a run and its executions
-export const saveRun = async (run: Run, allExecutions: Execution[]) => {
+export const saveRun = async (run: Run, executions: Execution[]) => {
   const prisma = getDb();
   try {
     await prisma.run.create({
-      data: {
-        id: run.id,
-        name: run.name,
-        notes: run.notes,
-        function: run.function,
-        features: JSON.stringify(run.features),
-        target: JSON.stringify(run.target),
-        variants: JSON.stringify(run.variants),
-        timestamp: BigInt(run.timestamp),
-      },
+      data: run,
     });
     console.debug(`Saved run ${run.id} to database`);
   } catch (error) {
@@ -57,27 +49,15 @@ export const saveRun = async (run: Run, allExecutions: Execution[]) => {
   }
 
   try {
+    // Then create all Executions (which reference Args)
     await Promise.all(
-      allExecutions.map((execution) =>
+      executions.map((execution) =>
         prisma.execution.create({
-          data: {
-            id: execution.id,
-            runId: execution.runId,
-            features: JSON.stringify(execution.features),
-            target: JSON.stringify(execution.target),
-            result: execution.result
-              ? JSON.stringify(execution.result)
-              : undefined,
-            time: execution.time,
-            retries: execution.retries,
-            accuracy: execution.accuracy,
-            status: execution.status,
-            variant: JSON.stringify(execution.variant),
-          },
+          data: withPrismaJsonNull(execution),
         }),
       ),
     );
-    console.debug(`Saved all Executions of run ${run.id} to database`);
+    console.debug(`Saved ${executions.length} Executions to database`);
   } catch (error) {
     console.error(
       `Failed to save all Executions of run ${run.id} to database`,

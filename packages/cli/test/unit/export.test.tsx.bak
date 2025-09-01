@@ -38,7 +38,7 @@ describe('Export Command', () => {
     executions: [{ id: 'exec1', result: 'test' }] 
   }, null, 2);
   
-  const mockCsvData = 'id,runId,features,target,result\nexec1,run123,"input","output","result"';
+  const mockCsvData = 'id,run_id,features,target,result\nexec1,run123,"input","output","result"';
 
   it('exports run data in JSON format by default', async () => {
     mockExportRun.mockResolvedValue(mockJsonData);

@@ -15,7 +15,7 @@ async function getAllRuns(): Promise<Run[]> {
       runs.map(async (runSummary) => {
         const fullRun = await getRunDetails(runSummary.id);
         return fullRun ? fullRun.run : null;
-      })
+      }),
     );
     return fullRuns.filter((run): run is Run => run !== null);
   } catch (error) {
@@ -24,9 +24,9 @@ async function getAllRuns(): Promise<Run[]> {
   }
 }
 
-async function getRunData(runId: string) {
+async function getRunData(run_id: string) {
   try {
-    return await getRunDetails(runId);
+    return await getRunDetails(run_id);
   } catch (error) {
     console.error("Error fetching run data:", error);
     return null;
@@ -34,12 +34,12 @@ async function getRunData(runId: string) {
 }
 
 export default async function RunPage({ params }: RunPageProps) {
-  const { id: runId } = await params;
+  const { id: run_id } = await params;
 
   // Fetch data on the server
   const [allRuns, runData] = await Promise.all([
     getAllRuns(),
-    getRunData(runId),
+    getRunData(run_id),
   ]);
 
   // If run not found, redirect to latest run or show not found
@@ -51,6 +51,6 @@ export default async function RunPage({ params }: RunPageProps) {
   }
 
   return (
-    <RunPageClient runs={allRuns} runData={runData} currentRunId={runId} />
+    <RunPageClient runs={allRuns} runData={runData} currentRunId={run_id} />
   );
 }

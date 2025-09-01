@@ -1,4 +1,4 @@
-import { Status } from "@reval/core/types";
+import type { Status } from "@reval/core";
 import { quantile } from "simple-statistics";
 
 export type GroupCategory = 1 | 2 | 3;
@@ -57,12 +57,10 @@ export const groupValues = (values: number[]) => {
  * Calculate success rate percentage
  */
 export const calculateSuccessRate = (
-  executions: Array<{ status: string }>,
+  executions: Array<{ status: Status }>,
 ): number => {
   if (executions.length === 0) return 0;
-  const successCount = executions.filter(
-    (e) => e.status === Status.Success,
-  ).length;
+  const successCount = executions.filter((e) => e.status === "success").length;
   return Math.round((successCount / executions.length) * 100);
 };
 

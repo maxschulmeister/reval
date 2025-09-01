@@ -1,19 +1,18 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import React from 'react';
-import { waitForComponentCompletion } from '../utils';
-import { render } from 'ink-testing-library';
-import Show from '../../src/commands/show';
+import { render } from "ink-testing-library";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import Show from "../../src/commands/show";
+import { waitForComponentCompletion } from "../utils";
 
 // Mock @reval/core
-vi.mock('@reval/core', () => ({
+vi.mock("@reval/core", () => ({
   getRunDetails: vi.fn(),
 }));
 
-import { getRunDetails } from '@reval/core';
+import { getRunDetails } from "@reval/core";
 
 const mockGetRunDetails = vi.mocked(getRunDetails);
 
-describe('Show Command', () => {
+describe("Show Command", () => {
   beforeEach(() => {
     vi.resetAllMocks();
   });
@@ -23,153 +22,155 @@ describe('Show Command', () => {
   });
 
   const mockRunDetails = {
-    id: 'run123',
-    name: 'test-function-1-model-1234567890',
+    id: "run123",
+    name: "test-function-1-model-1234567890",
     timestamp: 1640995200000,
     totalExecutions: 10,
     successCount: 8,
     errorCount: 2,
     successRate: 80,
     avgTime: 123.45,
-    notes: 'Test run notes',
+    notes: "Test run notes",
     run: {
-      id: 'run123',
-      name: 'test-function-1-model-1234567890',
+      id: "run123",
+      name: "test-function-1-model-1234567890",
       timestamp: 1640995200000,
-      notes: 'Test run notes',
+      notes: "Test run notes",
       function: 'async function testFunction() { return "test"; }',
-      features: ['input1', 'input2'],
-      target: ['output1', 'output2'],
-      variants: { model: ['test-model-1', 'test-model-2'] },
+      features: ["input1", "input2"],
+      target: ["output1", "output2"],
+      variants: { model: ["test-model-1", "test-model-2"] },
     },
     executions: [
       {
-        id: 'exec1',
-        runId: 'run123',
-        status: 'success',
+        id: "exec1",
+        run_id: "run123",
+        status: "success",
         time: 120,
-        features: 'input1',
-        target: 'output1',
+        features: "input1",
+        target: "output1",
         retries: 0,
-        variant: { model: 'test-model-1' },
-        result: { prediction: 'actual result', tokens: { in: 10, out: 5 } },
+        variant: { model: "test-model-1" },
+        result: { prediction: "actual result", tokens: { in: 10, out: 5 } },
       },
       {
-        id: 'exec2',
-        runId: 'run123',
-        status: 'error',
+        id: "exec2",
+        run_id: "run123",
+        status: "error",
         time: 0,
-        features: 'input2',
-        target: 'output2',
+        features: "input2",
+        target: "output2",
         retries: 1,
-        variant: { model: 'test-model-2' },
+        variant: { model: "test-model-2" },
         result: null,
       },
     ],
   };
 
-  it('renders detailed run information', async () => {
+  it("renders detailed run information", async () => {
     mockGetRunDetails.mockResolvedValue(mockRunDetails);
-    
-    const { lastFrame } = render(<Show args={['run123']} options={{}} />);
-    
+
+    const { lastFrame } = render(<Show args={["run123"]} options={{}} />);
+
     // Wait for async operation to complete
-    await waitForComponentCompletion(() => lastFrame() || '');
-    
+    await waitForComponentCompletion(() => lastFrame() || "");
+
     const output = lastFrame();
-    expect(output).toContain('Run Details:');
-    expect(output).toContain('ID: run123');
-    expect(output).toContain('Name: test-function-1-model-1234567890');
-    expect(output).toContain('Notes: Test run notes');
-    expect(output).toContain('Summary:');
-    expect(output).toContain('Total executions: 10');
-    expect(output).toContain('Successful: 8 (80.0%)');
-    expect(output).toContain('Failed: 2');
-    expect(output).toContain('Average time: 123.45ms');
-    expect(output).toContain('Sample Executions:');
-    expect(output).toContain('SUCCESS');
-    expect(output).toContain('ERROR');
-    
-    expect(mockGetRunDetails).toHaveBeenCalledWith('run123');
+    expect(output).toContain("Run Details:");
+    expect(output).toContain("ID: run123");
+    expect(output).toContain("Name: test-function-1-model-1234567890");
+    expect(output).toContain("Notes: Test run notes");
+    expect(output).toContain("Summary:");
+    expect(output).toContain("Total executions: 10");
+    expect(output).toContain("Successful: 8 (80.0%)");
+    expect(output).toContain("Failed: 2");
+    expect(output).toContain("Average time: 123.45ms");
+    expect(output).toContain("Sample Executions:");
+    expect(output).toContain("SUCCESS");
+    expect(output).toContain("ERROR");
+
+    expect(mockGetRunDetails).toHaveBeenCalledWith("run123");
   });
 
-  it('renders JSON output when --json flag is provided', async () => {
+  it("renders JSON output when --json flag is provided", async () => {
     mockGetRunDetails.mockResolvedValue(mockRunDetails);
-    
-    const { lastFrame } = render(<Show args={['run123']} options={{ json: true }} />);
-    
+
+    const { lastFrame } = render(
+      <Show args={["run123"]} options={{ json: true }} />,
+    );
+
     // Wait for async operation to complete
-    await waitForComponentCompletion(() => lastFrame() || '');
-    
+    await waitForComponentCompletion(() => lastFrame() || "");
+
     const output = lastFrame();
-    const parsed = JSON.parse(output || '{}');
-    
+    const parsed = JSON.parse(output || "{}");
+
     expect(parsed).toEqual(mockRunDetails);
   });
 
-  it('handles run not found', async () => {
+  it("handles run not found", async () => {
     mockGetRunDetails.mockResolvedValue(null);
-    
-    const { lastFrame } = render(<Show args={['nonexistent']} options={{}} />);
-    
+
+    const { lastFrame } = render(<Show args={["nonexistent"]} options={{}} />);
+
     // Wait for async operation to complete
-    await waitForComponentCompletion(() => lastFrame() || '');
-    
+    await waitForComponentCompletion(() => lastFrame() || "");
+
     const output = lastFrame();
-    expect(output).toContain('Error:');
+    expect(output).toContain("Error:");
     expect(output).toContain("Run with ID 'nonexistent' not found");
     expect(output).toContain("Use 'reval list' to see available runs");
   });
 
-  it('handles error from getRunDetails', async () => {
-    mockGetRunDetails.mockRejectedValue(new Error('Database error'));
-    
-    const { lastFrame } = render(<Show args={['run123']} options={{}} />);
-    
+  it("handles error from getRunDetails", async () => {
+    mockGetRunDetails.mockRejectedValue(new Error("Database error"));
+
+    const { lastFrame } = render(<Show args={["run123"]} options={{}} />);
+
     // Wait for async operation to complete
-    await waitForComponentCompletion(() => lastFrame() || '');
-    
+    await waitForComponentCompletion(() => lastFrame() || "");
+
     const output = lastFrame();
-    expect(output).toContain('Error:');
-    expect(output).toContain('Database error');
+    expect(output).toContain("Error:");
+    expect(output).toContain("Database error");
   });
 
-  it('shows loading state initially', () => {
+  it("shows loading state initially", () => {
     mockGetRunDetails.mockImplementation(() => new Promise(() => {})); // Never resolves
-    
-    const { lastFrame } = render(<Show args={['run123']} options={{}} />);
-    
-    expect(lastFrame()).toContain('Loading run details...');
+
+    const { lastFrame } = render(<Show args={["run123"]} options={{}} />);
+
+    expect(lastFrame()).toContain("Loading run details...");
   });
 
-  it('displays sample executions with proper formatting', async () => {
+  it("displays sample executions with proper formatting", async () => {
     const detailsWithManyExecutions = {
       ...mockRunDetails,
       executions: [
         ...mockRunDetails.executions,
         ...Array.from({ length: 10 }, (_, i) => ({
           id: `exec${i + 3}`,
-          runId: 'run123',
-          status: 'success',
+          run_id: "run123",
+          status: "success",
           time: 100 + i,
           features: `input${i}`,
           target: `result ${i}`,
           retries: 0,
-          variant: { model: 'test-model-1' },
+          variant: { model: "test-model-1" },
           result: { prediction: `prediction ${i}` },
         })),
       ],
     };
-    
+
     mockGetRunDetails.mockResolvedValue(detailsWithManyExecutions);
-    
-    const { lastFrame } = render(<Show args={['run123']} options={{}} />);
-    
+
+    const { lastFrame } = render(<Show args={["run123"]} options={{}} />);
+
     // Wait for async operation to complete
-    await waitForComponentCompletion(() => lastFrame() || '');
-    
+    await waitForComponentCompletion(() => lastFrame() || "");
+
     const output = lastFrame();
-    expect(output).toContain('Sample Executions:');
-    expect(output).toContain('... and 7 more executions');
+    expect(output).toContain("Sample Executions:");
+    expect(output).toContain("... and 7 more executions");
   });
 });

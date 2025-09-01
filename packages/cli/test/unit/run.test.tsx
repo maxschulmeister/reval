@@ -1,19 +1,18 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import React from 'react';
-import { waitForComponentCompletion } from '../utils';
-import { render } from 'ink-testing-library';
-import Run from '../../src/commands/run';
+import { render } from "ink-testing-library";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import Run from "../../src/commands/run";
+import { waitForComponentCompletion } from "../utils";
 
 // Mock @reval/core
-vi.mock('@reval/core', () => ({
+vi.mock("@reval/core", () => ({
   run: vi.fn(),
 }));
 
-import { run } from '@reval/core';
+import { run } from "@reval/core";
 
 const mockRun = vi.mocked(run);
 
-describe('Run Command', () => {
+describe("Run Command", () => {
   beforeEach(() => {
     vi.resetAllMocks();
   });
@@ -24,72 +23,77 @@ describe('Run Command', () => {
 
   const mockBenchmarkResult = {
     run: {
-      id: 'run123',
-      name: 'test-function-2-model-1640995200000',
+      id: "run123",
+      name: "test-function-2-model-1640995200000",
       timestamp: 1640995200000,
-      notes: '',
-      function: 'function test() {}',
-      features: ['What is 1+1?', 'What is the capital?'],
-      target: ['2', 'Paris'],
-      variants: { model: ['gpt-4', 'gpt-3.5'] },
+      notes: "",
+      function: "function test() {}",
+      features: ["What is 1+1?", "What is the capital?"],
+      target: ["2", "Paris"],
+      variants: { model: ["gpt-4", "gpt-3.5"] },
     },
     executions: [
       {
-        id: 'exec1',
-        runId: 'run123',
-        status: 'success',
+        id: "exec1",
+        run_id: "run123",
+        status: "success",
         time: 120,
-        features: 'What is 1+1?',
-        target: '2',
+        features: "What is 1+1?",
+        target: "2",
         retries: 0,
-        variant: { model: 'gpt-4' },
-        result: { prediction: '1+1 equals 2', tokens: { in: 10, out: 5 } },
+        variant: { model: "gpt-4" },
+        result: { prediction: "1+1 equals 2", tokens: { in: 10, out: 5 } },
       },
       {
-        id: 'exec2',
-        runId: 'run123',
-        status: 'success',
+        id: "exec2",
+        run_id: "run123",
+        status: "success",
         time: 180,
-        features: 'What is the capital?',
-        target: 'Paris',
+        features: "What is the capital?",
+        target: "Paris",
         retries: 0,
-        variant: { model: 'gpt-3.5' },
-        result: { prediction: 'Paris is the capital', tokens: { in: 15, out: 8 } },
+        variant: { model: "gpt-3.5" },
+        result: {
+          prediction: "Paris is the capital",
+          tokens: { in: 15, out: 8 },
+        },
       },
       {
-        id: 'exec3',
-        runId: 'run123',
-        status: 'error',
+        id: "exec3",
+        run_id: "run123",
+        status: "error",
         time: 0,
-        features: 'Error case',
-        target: 'Error case',
+        features: "Error case",
+        target: "Error case",
         retries: 1,
-        variant: { model: 'gpt-4' },
+        variant: { model: "gpt-4" },
         result: null,
       },
     ],
   };
 
-  it('runs benchmark with default options', async () => {
+  it("runs benchmark with default options", async () => {
     mockRun.mockResolvedValue(mockBenchmarkResult as any);
-    
+
     const { lastFrame } = render(<Run options={{}} />);
-    
+
     // Wait for async operation to complete
-    await waitForComponentCompletion(() => lastFrame() || '');
-    
-    const output = lastFrame() || '';
-    expect(output).toContain('Benchmark completed!');
-    expect(output).toContain('Run Summary:');
-    expect(output).toContain('ID: run123');
-    expect(output).toContain('Name: test-function-2-model-1640995200000');
-    expect(output).toContain('Total executions: 3');
-    expect(output).toContain('Success: 2 (66.7%)');
-    expect(output).toContain('Errors: 1');
-    expect(output).toContain('Average time: 100.00ms'); // (120 + 180 + 0) / 3
-    expect(output).toContain('Results saved to database at: ./.reval/reval.db');
-    expect(output).toContain('Use \'reval show run123\' to view detailed results');
-    
+    await waitForComponentCompletion(() => lastFrame() || "");
+
+    const output = lastFrame() || "";
+    expect(output).toContain("Benchmark completed!");
+    expect(output).toContain("Run Summary:");
+    expect(output).toContain("ID: run123");
+    expect(output).toContain("Name: test-function-2-model-1640995200000");
+    expect(output).toContain("Total executions: 3");
+    expect(output).toContain("Success: 2 (66.7%)");
+    expect(output).toContain("Errors: 1");
+    expect(output).toContain("Average time: 100.00ms"); // (120 + 180 + 0) / 3
+    expect(output).toContain("Results saved to database at: ./.reval/reval.db");
+    expect(output).toContain(
+      "Use 'reval show run123' to view detailed results",
+    );
+
     expect(mockRun).toHaveBeenCalledWith({
       configPath: undefined,
       dataPath: undefined,
@@ -99,148 +103,148 @@ describe('Run Command', () => {
     });
   });
 
-  it('passes all options to core run function', async () => {
+  it("passes all options to core run function", async () => {
     mockRun.mockResolvedValue(mockBenchmarkResult);
-    
+
     const options = {
-      config: './custom-config.ts',
-      data: './custom-data.csv',
+      config: "./custom-config.ts",
+      data: "./custom-data.csv",
       concurrency: 5,
       retries: 3,
       dry: true,
       verbose: true,
     };
-    
+
     const { lastFrame } = render(<Run options={options} />);
-    await waitForComponentCompletion(() => lastFrame() || '');
-    
+    await waitForComponentCompletion(() => lastFrame() || "");
+
     expect(mockRun).toHaveBeenCalledWith({
-      configPath: './custom-config.ts',
-      dataPath: './custom-data.csv',
+      configPath: "./custom-config.ts",
+      dataPath: "./custom-data.csv",
       concurrency: 5,
       retries: 3,
       dryRun: true,
     });
   });
 
-  it('handles dry run mode', async () => {
+  it("handles dry run mode", async () => {
     const dryRunResult = {
       ...mockBenchmarkResult,
       run: {
         ...mockBenchmarkResult.run,
-        name: '[DRY RUN] test-function-2-model-1640995200000',
-        notes: 'Dry run - no execution performed',
+        name: "[DRY RUN] test-function-2-model-1640995200000",
+        notes: "Dry run - no execution performed",
       },
       executions: [],
     };
-    
+
     mockRun.mockResolvedValue(dryRunResult as any);
-    
+
     const { lastFrame } = render(<Run options={{ dry: true }} />);
-    
+
     // Wait for async operation to complete
-    await waitForComponentCompletion(() => lastFrame() || '');
-    
-    const output = lastFrame() || '';
-    expect(output).toContain('Benchmark completed!');
-    expect(output).toContain('[DRY RUN]');
-    expect(output).toContain('Total executions: 0');
+    await waitForComponentCompletion(() => lastFrame() || "");
+
+    const output = lastFrame() || "";
+    expect(output).toContain("Benchmark completed!");
+    expect(output).toContain("[DRY RUN]");
+    expect(output).toContain("Total executions: 0");
   });
 
-  it('handles benchmark error', async () => {
-    mockRun.mockRejectedValue(new Error('Configuration file not found'));
-    
+  it("handles benchmark error", async () => {
+    mockRun.mockRejectedValue(new Error("Configuration file not found"));
+
     const { lastFrame } = render(<Run options={{}} />);
-    
+
     // Wait for async operation to complete
-    await waitForComponentCompletion(() => lastFrame() || '');
-    
+    await waitForComponentCompletion(() => lastFrame() || "");
+
     const output = lastFrame();
-    expect(output).toContain('Error running benchmark:');
-    expect(output).toContain('Configuration file not found');
+    expect(output).toContain("Error running benchmark:");
+    expect(output).toContain("Configuration file not found");
   });
 
-  it('shows running state initially', () => {
+  it("shows running state initially", () => {
     mockRun.mockImplementation(() => new Promise(() => {})); // Never resolves
-    
+
     const { lastFrame } = render(<Run options={{}} />);
-    
-    expect(lastFrame()).toContain('Running benchmark...');
+
+    expect(lastFrame()).toContain("Running benchmark...");
   });
 
-  it('shows dry run indicator in running state', () => {
+  it("shows dry run indicator in running state", () => {
     mockRun.mockImplementation(() => new Promise(() => {})); // Never resolves
-    
+
     const { lastFrame } = render(<Run options={{ dry: true }} />);
-    
-    expect(lastFrame()).toContain('Running benchmark...');
-    expect(lastFrame()).toContain('(Dry run mode)');
+
+    expect(lastFrame()).toContain("Running benchmark...");
+    expect(lastFrame()).toContain("(Dry run mode)");
   });
 
-  it('calculates success rate correctly for all successful executions', async () => {
+  it("calculates success rate correctly for all successful executions", async () => {
     const allSuccessResult = {
       ...mockBenchmarkResult,
       executions: [
         {
-          id: 'exec1',
-          runId: 'run123',
-          status: 'success',
+          id: "exec1",
+          run_id: "run123",
+          status: "success",
           time: 120,
-          target: '2',
-          result: { prediction: '2' },
+          target: "2",
+          result: { prediction: "2" },
         },
         {
-          id: 'exec2',
-          runId: 'run123',
-          status: 'success',
+          id: "exec2",
+          run_id: "run123",
+          status: "success",
           time: 180,
-          target: 'Paris',
-          result: { prediction: 'Paris' },
+          target: "Paris",
+          result: { prediction: "Paris" },
         },
       ],
     };
-    
+
     mockRun.mockResolvedValue(allSuccessResult as any);
-    
+
     const { lastFrame } = render(<Run options={{}} />);
-    
+
     // Wait for async operation to complete
-    await waitForComponentCompletion(() => lastFrame() || '');
-    
+    await waitForComponentCompletion(() => lastFrame() || "");
+
     const output = lastFrame();
-    expect(output).toContain('Success: 2 (100.0%)');
-    expect(output).toContain('Errors: 0');
-    expect(output).toContain('Average time: 150.00ms');
+    expect(output).toContain("Success: 2 (100.0%)");
+    expect(output).toContain("Errors: 0");
+    expect(output).toContain("Average time: 150.00ms");
   });
 
-  it('handles zero executions', async () => {
+  it("handles zero executions", async () => {
     const noExecutionsResult = {
       ...mockBenchmarkResult,
       executions: [],
     };
-    
+
     mockRun.mockResolvedValue(noExecutionsResult as any);
-    
+
     const { lastFrame } = render(<Run options={{}} />);
-    
+
     // Wait for async operation to complete
-    await waitForComponentCompletion(() => lastFrame() || '');
-    
-    const output = lastFrame() || '';
-    expect(output).toContain('Total executions: 0');
-    expect(output).toContain('Success: 0 (0.0%)');
-    expect(output).toContain('Average time: NaNms');
+    await waitForComponentCompletion(() => lastFrame() || "");
+
+    const output = lastFrame() || "";
+    expect(output).toContain("Total executions: 0");
+    expect(output).toContain("Success: 0 (0.0%)");
+    expect(output).toContain("Average time: NaNms");
   });
 
-  it('handles missing result data gracefully', async () => {
+  it("handles missing result data gracefully", async () => {
     mockRun.mockResolvedValue(null as any);
-    
+
     const { lastFrame } = render(<Run options={{}} />);
-    
+
     // Wait for async operation to complete
-    await waitForComponentCompletion(() => lastFrame() || '');
-    
+    await waitForComponentCompletion(() => lastFrame() || "");
+
     const output = lastFrame();
-    expect(output).toContain('No result data available');
+    expect(output).toContain("No result data available");
   });
 });

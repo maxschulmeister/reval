@@ -90,7 +90,7 @@ export default function List({ options }: Props) {
       ))}
       <Text></Text>
       <Text color="gray">
-        Use 'reval show &lt;runId&gt;' to view detailed results
+        Use 'reval show &lt;run_id&gt;' to view detailed results
       </Text>
     </Box>
   );

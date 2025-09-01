@@ -7,7 +7,7 @@ import zod from "zod";
 export const args = zod.tuple([
   zod.string().describe(
     argument({
-      name: "runId",
+      name: "run_id",
       description: "ID of the run to show",
     }),
   ),
@@ -25,14 +25,14 @@ interface Props {
 export default function Show({ args, options }: Props) {
   const [details, setDetails] = useState<any | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [runId] = args;
+  const [run_id] = args;
 
   useEffect(() => {
     const fetchDetails = async () => {
       try {
-        const runDetails = await getRunDetails(runId);
+        const runDetails = await getRunDetails(run_id);
         if (!runDetails) {
-          setError(`Run with ID '${runId}' not found`);
+          setError(`Run with ID '${run_id}' not found`);
           return;
         }
         setDetails(runDetails);
@@ -42,7 +42,7 @@ export default function Show({ args, options }: Props) {
     };
 
     fetchDetails();
-  }, [runId]);
+  }, [run_id]);
 
   if (error) {
     return (
@@ -137,7 +137,7 @@ export default function Show({ args, options }: Props) {
 
       <Text></Text>
       <Text color="gray">
-        Use 'reval export {runId}' to export full results
+        Use 'reval export {run_id}' to export full results
       </Text>
     </Box>
   );

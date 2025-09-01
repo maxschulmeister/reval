@@ -1,30 +1,29 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import React from 'react';
-import { render } from 'ink-testing-library';
-import { waitForComponentCompletion } from '../utils';
-import Export from '../../src/commands/export';
+import { render } from "ink-testing-library";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import Export from "../../src/commands/export";
+import { waitForComponentCompletion } from "../utils";
 
 // Mock @reval/core
-vi.mock('@reval/core', () => ({
+vi.mock("@reval/core", () => ({
   exportRun: vi.fn(),
 }));
 
 // Mock fs
-vi.mock('fs', async () => {
-  const actual = await vi.importActual('fs');
+vi.mock("fs", async () => {
+  const actual = await vi.importActual("fs");
   return {
     ...actual,
     writeFileSync: vi.fn(),
   };
 });
 
-import { exportRun } from '@reval/core';
-import * as fs from 'fs';
+import { exportRun } from "@reval/core";
+import * as fs from "fs";
 
 const mockExportRun = vi.mocked(exportRun);
 const mockWriteFileSync = vi.mocked(fs.writeFileSync);
 
-describe('Export Command', () => {
+describe("Export Command", () => {
   beforeEach(() => {
     vi.resetAllMocks();
   });
@@ -33,136 +32,144 @@ describe('Export Command', () => {
     vi.resetAllMocks();
   });
 
-  const mockJsonData = JSON.stringify({ 
-    id: 'run123', 
-    executions: [{ id: 'exec1', result: 'test' }] 
-  }, null, 2);
-  
-  const mockCsvData = 'id,runId,features,target,result\nexec1,run123,"input","output","result"';
+  const mockJsonData = JSON.stringify(
+    {
+      id: "run123",
+      executions: [{ id: "exec1", result: "test" }],
+    },
+    null,
+    2,
+  );
 
-  it('exports run data in JSON format by default', async () => {
+  const mockCsvData =
+    'id,run_id,features,target,result\nexec1,run123,"input","output","result"';
+
+  it("exports run data in JSON format by default", async () => {
     mockExportRun.mockResolvedValue(mockJsonData);
-    
+
     const { lastFrame } = render(
-      <Export args={['run123']} options={{ format: 'json' }} />
+      <Export args={["run123"]} options={{ format: "json" }} />,
     );
-    
+
     // Wait for async export to complete
-    await waitForComponentCompletion(() => lastFrame() || '');
-    
-    const output = lastFrame() || '';
-    expect(output).toContain('Export completed!');
-    expect(output).toContain('Run ID: run123');
-    expect(output).toContain('Format: JSON');
-    expect(output).toContain('Output file: reval-export-run123.json');
-    
-    expect(mockExportRun).toHaveBeenCalledWith('run123', 'json');
+    await waitForComponentCompletion(() => lastFrame() || "");
+
+    const output = lastFrame() || "";
+    expect(output).toContain("Export completed!");
+    expect(output).toContain("Run ID: run123");
+    expect(output).toContain("Format: JSON");
+    expect(output).toContain("Output file: reval-export-run123.json");
+
+    expect(mockExportRun).toHaveBeenCalledWith("run123", "json");
     expect(mockWriteFileSync).toHaveBeenCalledWith(
-      'reval-export-run123.json',
+      "reval-export-run123.json",
       mockJsonData,
-      'utf8'
+      "utf8",
     );
   });
 
-  it('exports run data in CSV format', async () => {
+  it("exports run data in CSV format", async () => {
     mockExportRun.mockResolvedValue(mockCsvData);
-    
+
     const { lastFrame } = render(
-      <Export args={['run123']} options={{ format: 'csv' }} />
+      <Export args={["run123"]} options={{ format: "csv" }} />,
     );
-    
+
     // Wait for async export to complete
-    await waitForComponentCompletion(() => lastFrame() || '');
-    
-    const output = lastFrame() || '';
-    expect(output).toContain('Export completed!');
-    expect(output).toContain('Format: CSV');
-    expect(output).toContain('Output file: reval-export-run123.csv');
-    
-    expect(mockExportRun).toHaveBeenCalledWith('run123', 'csv');
+    await waitForComponentCompletion(() => lastFrame() || "");
+
+    const output = lastFrame() || "";
+    expect(output).toContain("Export completed!");
+    expect(output).toContain("Format: CSV");
+    expect(output).toContain("Output file: reval-export-run123.csv");
+
+    expect(mockExportRun).toHaveBeenCalledWith("run123", "csv");
     expect(mockWriteFileSync).toHaveBeenCalledWith(
-      'reval-export-run123.csv',
+      "reval-export-run123.csv",
       mockCsvData,
-      'utf8'
+      "utf8",
     );
   });
 
-  it('uses custom output file path when provided', async () => {
+  it("uses custom output file path when provided", async () => {
     mockExportRun.mockResolvedValue(mockJsonData);
-    
+
     const { lastFrame } = render(
-      <Export args={['run123']} options={{ format: 'json', out: 'custom-results.json' }} />
+      <Export
+        args={["run123"]}
+        options={{ format: "json", out: "custom-results.json" }}
+      />,
     );
-    
+
     // Wait for async export to complete
-    await waitForComponentCompletion(() => lastFrame() || '');
-    
+    await waitForComponentCompletion(() => lastFrame() || "");
+
     const output = lastFrame();
-    expect(output).toContain('Output file: custom-results.json');
-    
+    expect(output).toContain("Output file: custom-results.json");
+
     expect(mockWriteFileSync).toHaveBeenCalledWith(
-      'custom-results.json',
+      "custom-results.json",
       mockJsonData,
-      'utf8'
+      "utf8",
     );
   });
 
-  it('handles export error from core', async () => {
-    mockExportRun.mockRejectedValue(new Error('Run not found'));
-    
+  it("handles export error from core", async () => {
+    mockExportRun.mockRejectedValue(new Error("Run not found"));
+
     const { lastFrame } = render(
-      <Export args={['nonexistent']} options={{ format: 'json' }} />
+      <Export args={["nonexistent"]} options={{ format: "json" }} />,
     );
-    
+
     // Wait for async export to complete
-    await waitForComponentCompletion(() => lastFrame() || '');
-    
+    await waitForComponentCompletion(() => lastFrame() || "");
+
     const output = lastFrame();
-    expect(output).toContain('Error exporting run:');
-    expect(output).toContain('Run not found');
+    expect(output).toContain("Error exporting run:");
+    expect(output).toContain("Run not found");
     expect(output).toContain("Use 'reval list' to see available runs");
   });
 
-  it('handles file write error', async () => {
+  it("handles file write error", async () => {
     mockExportRun.mockResolvedValue(mockJsonData);
     mockWriteFileSync.mockImplementation(() => {
-      throw new Error('Permission denied');
+      throw new Error("Permission denied");
     });
-    
+
     const { lastFrame } = render(
-      <Export args={['run123']} options={{ format: 'json' }} />
+      <Export args={["run123"]} options={{ format: "json" }} />,
     );
-    
+
     // Wait for async export to complete
-    await waitForComponentCompletion(() => lastFrame() || '');
-    
+    await waitForComponentCompletion(() => lastFrame() || "");
+
     const output = lastFrame();
-    expect(output).toContain('Error exporting run:');
-    expect(output).toContain('Permission denied');
+    expect(output).toContain("Error exporting run:");
+    expect(output).toContain("Permission denied");
   });
 
-  it('shows exporting state initially', () => {
+  it("shows exporting state initially", () => {
     mockExportRun.mockImplementation(() => new Promise(() => {})); // Never resolves
-    
+
     const { lastFrame } = render(
-      <Export args={['run123']} options={{ format: 'json' }} />
+      <Export args={["run123"]} options={{ format: "json" }} />,
     );
-    
-    expect(lastFrame()).toContain('Exporting run run123...');
-    expect(lastFrame()).toContain('Format: JSON');
+
+    expect(lastFrame()).toContain("Exporting run run123...");
+    expect(lastFrame()).toContain("Format: JSON");
   });
 
-  it('generates correct default filename for CSV', async () => {
+  it("generates correct default filename for CSV", async () => {
     mockExportRun.mockResolvedValue(mockCsvData);
-    
+
     const { lastFrame } = render(
-      <Export args={['abcdef123456']} options={{ format: 'csv' }} />
+      <Export args={["abcdef123456"]} options={{ format: "csv" }} />,
     );
-    
+
     // Wait for async export to complete
-    await waitForComponentCompletion(() => lastFrame() || '');
-    
+    await waitForComponentCompletion(() => lastFrame() || "");
+
     const output = lastFrame();
-    expect(output).toContain('Output file: reval-export-abcdef12.csv');
+    expect(output).toContain("Output file: reval-export-abcdef12.csv");
   });
 });

@@ -37,7 +37,7 @@ export async function listRuns(limit = 20): Promise<RunSummary[]> {
     runsData.map(async (run) => {
       const executionsData = await prisma.execution.findMany({
         where: {
-          runId: run.id,
+          run_id: run.id,
         },
         select: {
           status: true,
@@ -74,10 +74,12 @@ export async function listRuns(limit = 20): Promise<RunSummary[]> {
   return runSummaries;
 }
 
-export async function getRunSummary(runId: string): Promise<RunSummary | null> {
+export async function getRunSummary(
+  run_id: string,
+): Promise<RunSummary | null> {
   const prisma = getDb();
   const run = await prisma.run.findUnique({
-    where: { id: runId },
+    where: { id: run_id },
   });
 
   if (!run) {
@@ -85,7 +87,7 @@ export async function getRunSummary(runId: string): Promise<RunSummary | null> {
   }
 
   const executionsData = await prisma.execution.findMany({
-    where: { runId },
+    where: { run_id },
     select: {
       status: true,
       time: true,
@@ -117,18 +119,20 @@ export async function getRunSummary(runId: string): Promise<RunSummary | null> {
   };
 }
 
-export async function getRunDetails(runId: string): Promise<RunDetails | null> {
+export async function getRunDetails(
+  run_id: string,
+): Promise<RunDetails | null> {
   const prisma = getDb();
   const runData = await prisma.run.findUnique({
-    where: { id: runId },
+    where: { id: run_id },
   });
 
   if (!runData) {
     return null;
   }
 
-  const executionsData = await prisma.execution.findMany({
-    where: { runId },
+  const executions = await prisma.execution.findMany({
+    where: { run_id },
   });
 
   // Convert JSON strings back to objects for compatibility
@@ -137,35 +141,17 @@ export async function getRunDetails(runId: string): Promise<RunDetails | null> {
     name: runData.name,
     notes: runData.notes,
     function: runData.function,
-    features: JSON.parse(runData.features as string),
-    target: JSON.parse(runData.target as string),
-    variants: JSON.parse(runData.variants as string),
-    timestamp: Number(runData.timestamp),
+    timestamp: BigInt(runData.timestamp),
   };
 
-  const executions: Execution[] = executionsData.map((exec) => ({
-    id: exec.id,
-    runId: exec.runId,
-    features: JSON.parse(exec.features as string),
-    target: JSON.parse(exec.target as string),
-    result: exec.result ? JSON.parse(exec.result as string) : null,
-    time: exec.time,
-    retries: exec.retries,
-    accuracy: exec.accuracy ?? 0,
-    status: exec.status,
-    variant: JSON.parse(exec.variant as string),
-  }));
-
-  const totalExecutions = executionsData.length;
-  const successCount = executionsData.filter(
-    (e) => e.status === "success",
-  ).length;
+  const totalExecutions = executions.length;
+  const successCount = executions.filter((e) => e.status === "success").length;
   const errorCount = totalExecutions - successCount;
   const successRate =
     totalExecutions > 0 ? (successCount / totalExecutions) * 100 : 0;
   const avgTime =
     totalExecutions > 0
-      ? executionsData.reduce((sum, e) => sum + e.time, 0) / totalExecutions
+      ? executions.reduce((sum, e) => sum + e.time, 0) / totalExecutions
       : 0;
 
   return {
@@ -184,13 +170,13 @@ export async function getRunDetails(runId: string): Promise<RunDetails | null> {
 }
 
 export async function exportRun(
-  runId: string,
+  run_id: string,
   format: "json" | "csv" = "json",
 ): Promise<string> {
-  const details = await getRunDetails(runId);
+  const details = await getRunDetails(run_id);
 
   if (!details) {
-    throw new Error(`Run with id ${runId} not found`);
+    throw new Error(`Run with id ${run_id} not found`);
   }
 
   if (format === "json") {
@@ -199,12 +185,12 @@ export async function exportRun(
 
   // CSV format
   if (details.executions.length === 0) {
-    return "id,runId,features,target,result,time,retries,accuracy,status,variant,error\n";
+    return "id,run_id,features,target,result,time,retries,accuracy,status,variant,error\n";
   }
 
   const headers = [
     "id",
-    "runId",
+    "run_id",
     "features",
     "target",
     "result",
@@ -217,18 +203,13 @@ export async function exportRun(
   ];
   const rows = details.executions.map((execution) => [
     execution.id,
-    execution.runId,
-    JSON.stringify(execution.features),
-    JSON.stringify(execution.target),
-    JSON.stringify(execution.result),
+    execution.run_id,
+    execution.target,
+    execution.result,
     execution.time,
     execution.retries,
     execution.accuracy,
     execution.status,
-    JSON.stringify(execution.variant),
-    execution.status === "error" && execution.result?.error
-      ? execution.result.error
-      : "",
   ]);
 
   return [headers.join(","), ...rows.map((row) => row.join(","))].join("\n");

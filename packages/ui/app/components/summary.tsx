@@ -40,7 +40,7 @@ export const Summary = ({ run, executions }: Benchmark) => {
             dateStyle: "long",
             timeStyle: "short",
             // timeZoneName: "short",
-          }).format(run.timestamp)}
+          }).format(Number(run.timestamp))}
         </Small>
 
         {/* Executions Summary */}

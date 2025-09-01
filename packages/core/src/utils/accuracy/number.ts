@@ -5,8 +5,8 @@
  * @returns Accuracy as a percentage (0-100)
  */
 export function calculateNumberAccuracy(
-  target: number,
   result: number,
+  target: number,
 ): number {
   // If numbers are exactly the same, return 100% accuracy
   if (target === result) {

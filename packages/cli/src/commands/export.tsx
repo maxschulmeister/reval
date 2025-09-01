@@ -9,7 +9,7 @@ import zod from "zod";
 export const args = zod.tuple([
   zod.string().describe(
     argument({
-      name: "runId",
+      name: "run_id",
       description: "ID of the run to export",
     }),
   ),
@@ -39,15 +39,15 @@ export default function Export({ args, options }: Props) {
   );
   const [error, setError] = useState<string | null>(null);
   const [outputPath, setOutputPath] = useState<string | null>(null);
-  const [runId] = args;
+  const [run_id] = args;
 
   useEffect(() => {
     const performExport = async () => {
       try {
-        const data = await exportRun(runId, options.format);
+        const data = await exportRun(run_id, options.format);
 
         const fileName =
-          options.out || `reval-export-${runId.slice(0, 8)}.${options.format}`;
+          options.out || `reval-export-${run_id.slice(0, 8)}.${options.format}`;
 
         // Create parent directories if they don't exist
         const dir = dirname(fileName);
@@ -66,12 +66,12 @@ export default function Export({ args, options }: Props) {
     };
 
     performExport();
-  }, [runId, options.format, options.out]);
+  }, [run_id, options.format, options.out]);
 
   if (status === "exporting") {
     return (
       <Box flexDirection="column">
-        <Text color="blue">Exporting run {runId}...</Text>
+        <Text color="blue">Exporting run {run_id}...</Text>
         <Text color="gray">Format: {options.format.toUpperCase()}</Text>
       </Box>
     );
@@ -93,7 +93,7 @@ export default function Export({ args, options }: Props) {
       <Text color="green">Export completed!</Text>
       <Text></Text>
       <Text>
-        <Text bold>Run ID:</Text> {runId}
+        <Text bold>Run ID:</Text> {run_id}
       </Text>
       <Text>
         <Text bold>Format:</Text> {options.format.toUpperCase()}
