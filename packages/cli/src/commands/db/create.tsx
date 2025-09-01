@@ -70,7 +70,7 @@ export default function Create({ options }: Props) {
       ))}
       <Text></Text>
       <Text color="gray">
-        You can now run 'reval run' to execute benchmarks
+        You can now run 'reval eval' to execute benchmarks
       </Text>
       <Text color="gray">
         Use 'reval db studio' to explore the database in Prisma Studio

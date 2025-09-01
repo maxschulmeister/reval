@@ -1,18 +1,18 @@
 import { render } from "ink-testing-library";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import Run from "../../src/commands/run";
+import Eval from "../../src/commands/eval";
 import { waitForComponentCompletion } from "../utils";
 
 // Mock @reval/core
 vi.mock("@reval/core", () => ({
-  run: vi.fn(),
+  runEval: vi.fn(),
 }));
 
-import { run } from "@reval/core";
+import { runEval } from "@reval/core";
 
-const mockRun = vi.mocked(run);
+const mockRunEval = vi.mocked(runEval);
 
-describe("Run Command", () => {
+describe("Eval Command", () => {
   beforeEach(() => {
     vi.resetAllMocks();
   });
@@ -73,9 +73,9 @@ describe("Run Command", () => {
   };
 
   it("runs benchmark with default options", async () => {
-    mockRun.mockResolvedValue(mockBenchmarkResult as any);
+    mockRunEval.mockResolvedValue(mockBenchmarkResult as any);
 
-    const { lastFrame } = render(<Run options={{}} />);
+    const { lastFrame } = render(<Eval options={{}} />);
 
     // Wait for async operation to complete
     await waitForComponentCompletion(() => lastFrame() || "");
@@ -94,7 +94,7 @@ describe("Run Command", () => {
       "Use 'reval show run123' to view detailed results",
     );
 
-    expect(mockRun).toHaveBeenCalledWith({
+    expect(mockRunEval).toHaveBeenCalledWith({
       configPath: undefined,
       dataPath: undefined,
       concurrency: undefined,
@@ -103,8 +103,8 @@ describe("Run Command", () => {
     });
   });
 
-  it("passes all options to core run function", async () => {
-    mockRun.mockResolvedValue(mockBenchmarkResult);
+  it("passes all options to core eval function", async () => {
+    mockRunEval.mockResolvedValue(mockBenchmarkResult);
 
     const options = {
       config: "./custom-config.ts",
@@ -115,10 +115,10 @@ describe("Run Command", () => {
       verbose: true,
     };
 
-    const { lastFrame } = render(<Run options={options} />);
+    const { lastFrame } = render(<Eval options={options} />);
     await waitForComponentCompletion(() => lastFrame() || "");
 
-    expect(mockRun).toHaveBeenCalledWith({
+    expect(mockRunEval).toHaveBeenCalledWith({
       configPath: "./custom-config.ts",
       dataPath: "./custom-data.csv",
       concurrency: 5,
@@ -138,9 +138,9 @@ describe("Run Command", () => {
       executions: [],
     };
 
-    mockRun.mockResolvedValue(dryRunResult as any);
+    mockRunEval.mockResolvedValue(dryRunResult as any);
 
-    const { lastFrame } = render(<Run options={{ dry: true }} />);
+    const { lastFrame } = render(<Eval options={{ dry: true }} />);
 
     // Wait for async operation to complete
     await waitForComponentCompletion(() => lastFrame() || "");
@@ -152,9 +152,9 @@ describe("Run Command", () => {
   });
 
   it("handles benchmark error", async () => {
-    mockRun.mockRejectedValue(new Error("Configuration file not found"));
+    mockRunEval.mockRejectedValue(new Error("Configuration file not found"));
 
-    const { lastFrame } = render(<Run options={{}} />);
+    const { lastFrame } = render(<Eval options={{}} />);
 
     // Wait for async operation to complete
     await waitForComponentCompletion(() => lastFrame() || "");
@@ -165,17 +165,17 @@ describe("Run Command", () => {
   });
 
   it("shows running state initially", () => {
-    mockRun.mockImplementation(() => new Promise(() => {})); // Never resolves
+    mockRunEval.mockImplementation(() => new Promise(() => {})); // Never resolves
 
-    const { lastFrame } = render(<Run options={{}} />);
+    const { lastFrame } = render(<Eval options={{}} />);
 
     expect(lastFrame()).toContain("Running benchmark...");
   });
 
   it("shows dry run indicator in running state", () => {
-    mockRun.mockImplementation(() => new Promise(() => {})); // Never resolves
+    mockRunEval.mockImplementation(() => new Promise(() => {})); // Never resolves
 
-    const { lastFrame } = render(<Run options={{ dry: true }} />);
+    const { lastFrame } = render(<Eval options={{ dry: true }} />);
 
     expect(lastFrame()).toContain("Running benchmark...");
     expect(lastFrame()).toContain("(Dry run mode)");
@@ -204,9 +204,9 @@ describe("Run Command", () => {
       ],
     };
 
-    mockRun.mockResolvedValue(allSuccessResult as any);
+    mockRunEval.mockResolvedValue(allSuccessResult as any);
 
-    const { lastFrame } = render(<Run options={{}} />);
+    const { lastFrame } = render(<Eval options={{}} />);
 
     // Wait for async operation to complete
     await waitForComponentCompletion(() => lastFrame() || "");
@@ -223,9 +223,9 @@ describe("Run Command", () => {
       executions: [],
     };
 
-    mockRun.mockResolvedValue(noExecutionsResult as any);
+    mockRunEval.mockResolvedValue(noExecutionsResult as any);
 
-    const { lastFrame } = render(<Run options={{}} />);
+    const { lastFrame } = render(<Eval options={{}} />);
 
     // Wait for async operation to complete
     await waitForComponentCompletion(() => lastFrame() || "");
@@ -237,9 +237,9 @@ describe("Run Command", () => {
   });
 
   it("handles missing result data gracefully", async () => {
-    mockRun.mockResolvedValue(null as any);
+    mockRunEval.mockResolvedValue(null as any);
 
-    const { lastFrame } = render(<Run options={{}} />);
+    const { lastFrame } = render(<Eval options={{}} />);
 
     // Wait for async operation to complete
     await waitForComponentCompletion(() => lastFrame() || "");

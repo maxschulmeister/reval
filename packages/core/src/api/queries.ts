@@ -1,22 +1,5 @@
 import { getDb } from "../db";
-import type { Run, Eval } from "../types";
-
-export interface EvalSummary {
-  id: string;
-  name: string;
-  timestamp: number;
-  totalRuns: number;
-  successCount: number;
-  errorCount: number;
-  successRate: number;
-  avgTime: number;
-  notes?: string;
-}
-
-export interface EvalDetails extends EvalSummary {
-  eval: Eval;
-  runs: Run[];
-}
+import type { Eval, EvalDetails, EvalSummary } from "../types";
 
 export async function listEvals(limit = 20): Promise<EvalSummary[]> {
   const prisma = getDb();
@@ -50,8 +33,7 @@ export async function listEvals(limit = 20): Promise<EvalSummary[]> {
         (r) => r.status === "success",
       ).length;
       const errorCount = totalRuns - successCount;
-      const successRate =
-        totalRuns > 0 ? (successCount / totalRuns) * 100 : 0;
+      const successRate = totalRuns > 0 ? (successCount / totalRuns) * 100 : 0;
       const avgTime =
         totalRuns > 0
           ? runsData.reduce((sum, r) => sum + r.time, 0) / totalRuns
@@ -95,9 +77,7 @@ export async function getEvalSummary(
   });
 
   const totalRuns = runsData.length;
-  const successCount = runsData.filter(
-    (r) => r.status === "success",
-  ).length;
+  const successCount = runsData.filter((r) => r.status === "success").length;
   const errorCount = totalRuns - successCount;
   const successRate = totalRuns > 0 ? (successCount / totalRuns) * 100 : 0;
   const avgTime =

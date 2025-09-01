@@ -117,7 +117,7 @@ export default function Init({ options }: Props) {
       </Text>
       <Text color="blue">2. Update data/sample.csv with your test data</Text>
       <Text color="blue">
-        3. Run 'reval run' to execute your first benchmark
+        3. Run 'reval eval' to execute your first benchmark
       </Text>
       <Text color="blue">
         4. Use 'reval ui' to explore results in the web interface

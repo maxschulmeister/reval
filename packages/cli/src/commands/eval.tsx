@@ -1,4 +1,4 @@
-import { loadConfig, run } from "@reval/core";
+import { loadConfig, runEval } from "@reval/core";
 import { Box, Text, useApp } from "ink";
 import { option } from "pastel";
 import { useEffect, useState } from "react";
@@ -60,7 +60,7 @@ interface Props {
   options: zod.infer<typeof options>;
 }
 
-export default function Run({ options }: Props) {
+export default function Eval({ options }: Props) {
   const { exit } = useApp();
   const [status, setStatus] = useState<"running" | "completed" | "error">(
     "running",
@@ -72,7 +72,7 @@ export default function Run({ options }: Props) {
     const runBenchmark = async () => {
       try {
         const config = await loadConfig();
-        const benchmark = await run(config);
+        const benchmark = await runEval(config);
         setResult(benchmark);
         setStatus("completed");
       } catch (err) {
@@ -118,18 +118,16 @@ export default function Run({ options }: Props) {
 
   const summary = {
     eval_id: result.eval.id,
-        name: result.eval.name,
+    name: result.eval.name,
     totalRuns: result.runs.length,
-        successCount: result.runs.filter((r: any) => r.status === "success")
-          .length,
-        errorCount: result.runs.filter((r: any) => r.status === "error")
-          .length,
-        avgTime:
-          result.runs.reduce((sum: number, r: any) => sum + r.time, 0) /
-          result.runs.length,
-        avgAccuracy:
-          result.runs.reduce((sum: number, r: any) => sum + r.accuracy, 0) /
-          result.runs.length,
+    successCount: result.runs.filter((r: any) => r.status === "success").length,
+    errorCount: result.runs.filter((r: any) => r.status === "error").length,
+    avgTime:
+      result.runs.reduce((sum: number, r: any) => sum + r.time, 0) /
+      result.runs.length,
+    avgAccuracy:
+      result.runs.reduce((sum: number, r: any) => sum + r.accuracy, 0) /
+      result.runs.length,
   };
 
   const successRate =

@@ -17,9 +17,9 @@ npm run build
 
 ## Commands
 
-### `reval run`
+### `reval eval`
 
-Execute a benchmark run based on configuration.
+Execute a benchmark eval based on configuration.
 
 **Options:**
 
@@ -33,7 +33,7 @@ Execute a benchmark run based on configuration.
 **Example:**
 
 ```bash
-reval run --config ./my-config.ts --concurrency 5 --dry
+reval eval --config ./my-config.ts --concurrency 5 --dry
 ```
 
 ### `reval list`

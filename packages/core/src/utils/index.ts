@@ -178,9 +178,6 @@ export const resolveArgs = <
   return results;
 };
 
-// Legacy alias for backward compatibility
-export const combineArgs = resolveArgs;
-
 export function getArgsContext<
   F extends TFunction,
   D extends TData,

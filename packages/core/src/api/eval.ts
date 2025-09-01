@@ -2,14 +2,14 @@ import type { JsonValue } from "@prisma/client/runtime/library";
 import { customRandom, random } from "nanoid";
 import pQueue from "p-queue";
 import pRetry from "p-retry";
-import { disconnectDb, saveEval } from "../db";
+import { disconnectDb, getDb } from "../db";
 import type {
   ArgsContext,
   Benchmark,
   Config,
-  Run,
-  ResultContext,
   Eval,
+  ResultContext,
+  Run,
   TData,
   TFunction,
   TVariants,
@@ -20,10 +20,11 @@ import {
   getArgsContext,
   getTargets,
   resolveArgs,
+  withPrismaJsonNull,
 } from "../utils";
 // import { validateConfig } from "../utils/config";
 
-export const run = async <
+export const runEval = async <
   F extends TFunction,
   D extends TData,
   V extends TVariants,
@@ -151,4 +152,36 @@ export const run = async <
   }
 
   return benchmark;
+};
+
+// Function to save an eval and its runs
+export const saveEval = async (eval_: Eval, runs: Run[]) => {
+  const prisma = getDb();
+  try {
+    await prisma.eval.create({
+      data: eval_,
+    });
+    console.debug(`Saved eval ${eval_.id} to database`);
+  } catch (error) {
+    console.error(`Failed to save eval ${eval_.id} to database`, error);
+    throw error;
+  }
+
+  try {
+    // Then create all Runs (which reference the Eval)
+    await Promise.all(
+      runs.map((run) =>
+        prisma.run.create({
+          data: withPrismaJsonNull(run),
+        }),
+      ),
+    );
+    console.debug(`Saved ${runs.length} Runs to database`);
+  } catch (error) {
+    console.error(
+      `Failed to save all Runs of eval ${eval_.id} to database`,
+      error,
+    );
+    throw error;
+  }
 };

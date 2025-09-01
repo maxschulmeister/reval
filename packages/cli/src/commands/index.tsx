@@ -16,7 +16,7 @@ export default function Index() {
         <Text color="green">init</Text> Initialize a new reval project
       </Text>
       <Text>
-        <Text color="green">run</Text> Execute a benchmark run
+        <Text color="green">eval</Text> Execute a benchmark eval
       </Text>
       <Text>
         <Text color="green">ui</Text> Start the web interface
@@ -50,7 +50,7 @@ export default function Index() {
       <Text bold>Quick Start:</Text>
       <Text color="blue">1. reval init </Text>
       <Text color="gray"># Initialize project</Text>
-      <Text color="blue">2. reval run </Text>
+      <Text color="blue">2. reval eval </Text>
       <Text color="gray"># Run your first benchmark</Text>
       <Text color="blue">3. reval list </Text>
       <Text color="gray"># View results</Text>

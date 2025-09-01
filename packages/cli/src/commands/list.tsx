@@ -61,7 +61,7 @@ export default function List({ options }: Props) {
       <Box flexDirection="column">
         <Text>No benchmark evals found.</Text>
         <Text color="gray">
-          Run 'reval run' to create your first benchmark.
+          Run 'reval eval' to create your first benchmark.
         </Text>
       </Box>
     );

@@ -14,3 +14,20 @@ export type Reval = { eval: Eval; runs: Run[] };
 export type Benchmark = { eval: Eval; runs: Run[] };
 
 export type Status = PrismaStatus;
+
+export interface EvalSummary {
+  id: string;
+  name: string;
+  timestamp: number;
+  totalRuns: number;
+  successCount: number;
+  errorCount: number;
+  successRate: number;
+  avgTime: number;
+  notes?: string;
+}
+
+export interface EvalDetails extends EvalSummary {
+  eval: Eval;
+  runs: Run[];
+}
