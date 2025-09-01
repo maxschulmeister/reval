@@ -1,6 +1,6 @@
 "use client";
 
-import { DataTable } from "@/app/components/runs/data-table";
+import { DataTable } from "@/app/components/evals/data-table";
 import { Summary } from "@/app/components/summary";
 import type { Benchmark, Eval } from "@reval/core/types";
 import { useTheme } from "next-themes";

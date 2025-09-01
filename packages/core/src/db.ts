@@ -3,7 +3,10 @@ import path from "path";
 import { NAMESPACE } from "./constants";
 
 export const dbName = `${NAMESPACE}.db`;
-export const dbOut = path.resolve(process.cwd(), `.${NAMESPACE}`);
+export const dbOut = path.resolve(
+  process.env.REVAL_PROJECT_ROOT || process.cwd(),
+  `.${NAMESPACE}`,
+);
 export const dbPath = path.join(dbOut, dbName);
 export const dbSchema = `${NAMESPACE}.prisma`;
 

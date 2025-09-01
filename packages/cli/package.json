@@ -12,7 +12,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsc && chmod +x dist/cli.js",
+    "build": "rm -rf dist tsconfig.tsbuildinfo && tsc && chmod +x dist/cli.js",
     "reval": "tsx src/cli.ts",
     "dev": "tsx watch src/cli.ts",
     "test": "vitest run",

@@ -69,7 +69,7 @@ export default function Eval({ options }: Props) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const runBenchmark = async () => {
+    (async () => {
       try {
         const config = await loadConfig();
         const benchmark = await runEval(config);
@@ -79,9 +79,7 @@ export default function Eval({ options }: Props) {
         setError(err instanceof Error ? err.message : String(err));
         setStatus("error");
       }
-    };
-
-    runBenchmark();
+    })();
   }, [options]);
 
   // Exit the app when benchmark completes or errors

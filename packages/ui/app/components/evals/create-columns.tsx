@@ -46,7 +46,7 @@ const createColumn = (
   title: string,
 ): AccessorKeyColumnDef<Run> => ({
   accessorKey: key,
-  id: title,
+  id: key,
   header: ({ column }) => {
     return (
       <Button
@@ -146,9 +146,7 @@ const expandObjectColumns = (
 /**
  * Generates column definitions for run data table
  */
-export const createColumns = (
-  runs: Run[],
-): ColumnDef<Run>[] => {
+export const createColumns = (runs: Run[]): ColumnDef<Run>[] => {
   if (runs.length === 0) return [];
 
   // Validate data structure consistency
@@ -222,5 +220,7 @@ export const isBoolean = (value: unknown): value is boolean => {
 };
 
 export const isStatus = (value: unknown): value is Status => {
-  return typeof value === "string" && ["success", "error"].includes(value as string);
+  return (
+    typeof value === "string" && ["success", "error"].includes(value as string)
+  );
 };

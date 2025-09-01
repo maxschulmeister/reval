@@ -2,12 +2,11 @@ import { redirect } from "next/navigation";
 
 async function getLatestEval() {
   try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/api/evals`,
-      {
-        cache: "no-store",
-      },
-    );
+    const port = process.env.PORT || "3000";
+    const baseUrl = `http://localhost:${port}`;
+    const response = await fetch(`${baseUrl}/api/evals`, {
+      cache: "no-store",
+    });
     const evals = await response.json();
     return evals.length > 0 ? evals[evals.length - 1] : null;
   } catch (error) {
