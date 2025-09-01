@@ -5,7 +5,7 @@ import { waitForComponentCompletion } from "../utils";
 
 // Mock @reval/core
 vi.mock("@reval/core", () => ({
-  exportRun: vi.fn(),
+  exportEval: vi.fn(),
 }));
 
 // Mock fs
@@ -17,10 +17,10 @@ vi.mock("fs", async () => {
   };
 });
 
-import { exportRun } from "@reval/core";
+import { exportEval } from "@reval/core";
 import * as fs from "fs";
 
-const mockExportRun = vi.mocked(exportRun);
+const mockExportEval = vi.mocked(exportEval);
 const mockWriteFileSync = vi.mocked(fs.writeFileSync);
 
 describe("Export Command", () => {
@@ -42,10 +42,10 @@ describe("Export Command", () => {
   );
 
   const mockCsvData =
-    'id,run_id,features,target,result\nexec1,run123,"input","output","result"';
+    'id,eval_id,target,result,time,retries,accuracy,status\nexec1,run123,"output","result",120,0,0.95,"success"';
 
-  it("exports run data in JSON format by default", async () => {
-    mockExportRun.mockResolvedValue(mockJsonData);
+  it("exports eval data in JSON format by default", async () => {
+    mockExportEval.mockResolvedValue(mockJsonData);
 
     const { lastFrame } = render(
       <Export args={["run123"]} options={{ format: "json" }} />,
@@ -56,11 +56,11 @@ describe("Export Command", () => {
 
     const output = lastFrame() || "";
     expect(output).toContain("Export completed!");
-    expect(output).toContain("Run ID: run123");
+    expect(output).toContain("Eval ID: run123");
     expect(output).toContain("Format: JSON");
     expect(output).toContain("Output file: reval-export-run123.json");
 
-    expect(mockExportRun).toHaveBeenCalledWith("run123", "json");
+    expect(mockExportEval).toHaveBeenCalledWith("run123", "json");
     expect(mockWriteFileSync).toHaveBeenCalledWith(
       "reval-export-run123.json",
       mockJsonData,
@@ -68,8 +68,8 @@ describe("Export Command", () => {
     );
   });
 
-  it("exports run data in CSV format", async () => {
-    mockExportRun.mockResolvedValue(mockCsvData);
+  it("exports eval data in CSV format", async () => {
+    mockExportEval.mockResolvedValue(mockCsvData);
 
     const { lastFrame } = render(
       <Export args={["run123"]} options={{ format: "csv" }} />,
@@ -83,7 +83,7 @@ describe("Export Command", () => {
     expect(output).toContain("Format: CSV");
     expect(output).toContain("Output file: reval-export-run123.csv");
 
-    expect(mockExportRun).toHaveBeenCalledWith("run123", "csv");
+    expect(mockExportEval).toHaveBeenCalledWith("run123", "csv");
     expect(mockWriteFileSync).toHaveBeenCalledWith(
       "reval-export-run123.csv",
       mockCsvData,
@@ -92,7 +92,7 @@ describe("Export Command", () => {
   });
 
   it("uses custom output file path when provided", async () => {
-    mockExportRun.mockResolvedValue(mockJsonData);
+    mockExportEval.mockResolvedValue(mockJsonData);
 
     const { lastFrame } = render(
       <Export
@@ -115,7 +115,7 @@ describe("Export Command", () => {
   });
 
   it("handles export error from core", async () => {
-    mockExportRun.mockRejectedValue(new Error("Run not found"));
+    mockExportEval.mockRejectedValue(new Error("Eval not found"));
 
     const { lastFrame } = render(
       <Export args={["nonexistent"]} options={{ format: "json" }} />,
@@ -125,13 +125,13 @@ describe("Export Command", () => {
     await waitForComponentCompletion(() => lastFrame() || "");
 
     const output = lastFrame();
-    expect(output).toContain("Error exporting run:");
-    expect(output).toContain("Run not found");
-    expect(output).toContain("Use 'reval list' to see available runs");
+    expect(output).toContain("Error exporting eval:");
+    expect(output).toContain("Eval not found");
+    expect(output).toContain("Use 'reval list' to see available evals");
   });
 
   it("handles file write error", async () => {
-    mockExportRun.mockResolvedValue(mockJsonData);
+    mockExportEval.mockResolvedValue(mockJsonData);
     mockWriteFileSync.mockImplementation(() => {
       throw new Error("Permission denied");
     });
@@ -144,23 +144,23 @@ describe("Export Command", () => {
     await waitForComponentCompletion(() => lastFrame() || "");
 
     const output = lastFrame();
-    expect(output).toContain("Error exporting run:");
+    expect(output).toContain("Error exporting eval:");
     expect(output).toContain("Permission denied");
   });
 
   it("shows exporting state initially", () => {
-    mockExportRun.mockImplementation(() => new Promise(() => {})); // Never resolves
+    mockExportEval.mockImplementation(() => new Promise(() => {})); // Never resolves
 
     const { lastFrame } = render(
       <Export args={["run123"]} options={{ format: "json" }} />,
     );
 
-    expect(lastFrame()).toContain("Exporting run run123...");
+    expect(lastFrame()).toContain("Exporting eval run123...");
     expect(lastFrame()).toContain("Format: JSON");
   });
 
   it("generates correct default filename for CSV", async () => {
-    mockExportRun.mockResolvedValue(mockCsvData);
+    mockExportEval.mockResolvedValue(mockCsvData);
 
     const { lastFrame } = render(
       <Export args={["abcdef123456"]} options={{ format: "csv" }} />,

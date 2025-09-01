@@ -1,6 +1,6 @@
 "use client";
 
-import type { Execution } from "@reval/core/types";
+import type { Run } from "@reval/core/types";
 import { Status } from "@reval/core/types";
 import "@tanstack/react-table";
 import type {
@@ -44,7 +44,7 @@ const COLUMN_ORDER = [
 const createColumn = (
   key: string,
   title: string,
-): AccessorKeyColumnDef<Execution> => ({
+): AccessorKeyColumnDef<Run> => ({
   accessorKey: key,
   id: title,
   header: ({ column }) => {
@@ -68,15 +68,15 @@ const createColumn = (
 });
 
 /**
- * Validates that all Executions have consistent structure
+ * Validates that all Runs have consistent structure
  */
-const validateExecutions = (executions: Execution[]): void => {
-  if (executions.length === 0) return;
+const validateRuns = (runs: Run[]): void => {
+  if (runs.length === 0) return;
 
-  const referenceKeys = Object.keys(executions[0]).sort();
+  const referenceKeys = Object.keys(runs[0]).sort();
 
-  const hasConsistentStructure = executions.every((execution) => {
-    const currentKeys = Object.keys(execution).sort();
+  const hasConsistentStructure = runs.every((run) => {
+    const currentKeys = Object.keys(run).sort();
     return (
       currentKeys.length === referenceKeys.length &&
       currentKeys.every((key, index) => key === referenceKeys[index])
@@ -84,7 +84,7 @@ const validateExecutions = (executions: Execution[]): void => {
   });
 
   if (!hasConsistentStructure) {
-    throw new Error("All Executions must have the same keys");
+    throw new Error("All Runs must have the same keys");
   }
 };
 
@@ -92,8 +92,8 @@ const validateExecutions = (executions: Execution[]): void => {
  * Sorts columns according to predefined order
  */
 const sortColumns = (
-  columns: AccessorKeyColumnDef<Execution>[],
-): AccessorKeyColumnDef<Execution>[] => {
+  columns: AccessorKeyColumnDef<Run>[],
+): AccessorKeyColumnDef<Run>[] => {
   return columns.sort((a, b) => {
     const aIndex = COLUMN_ORDER.indexOf(
       a.accessorKey as (typeof COLUMN_ORDER)[number],
@@ -116,13 +116,13 @@ const sortColumns = (
  * Expands object columns into separate columns for each property (supports infinite nesting)
  */
 const expandObjectColumns = (
-  columns: AccessorKeyColumnDef<Execution>[],
-  executions: Execution[],
-): AccessorKeyColumnDef<Execution>[] => {
+  columns: AccessorKeyColumnDef<Run>[],
+  runs: Run[],
+): AccessorKeyColumnDef<Run>[] => {
   const flattenObject = (
     obj: { [key: string]: unknown },
     prefix = "",
-  ): AccessorKeyColumnDef<Execution>[] => {
+  ): AccessorKeyColumnDef<Run>[] => {
     return Object.keys(obj).flatMap((key) => {
       const path = prefix ? `${prefix}.${key}` : key;
       const value = obj[key];
@@ -136,7 +136,7 @@ const expandObjectColumns = (
   };
 
   return columns.flatMap((column) => {
-    const sampleValue = executions[0][column.accessorKey as keyof Execution];
+    const sampleValue = runs[0][column.accessorKey as keyof Run];
     return isObject(sampleValue)
       ? flattenObject(sampleValue, String(column.accessorKey))
       : [column];
@@ -144,15 +144,15 @@ const expandObjectColumns = (
 };
 
 /**
- * Generates column definitions for execution data table
+ * Generates column definitions for run data table
  */
 export const createColumns = (
-  executions: Execution[],
-): ColumnDef<Execution>[] => {
-  if (executions.length === 0) return [];
+  runs: Run[],
+): ColumnDef<Run>[] => {
+  if (runs.length === 0) return [];
 
   // Validate data structure consistency
-  validateExecutions(executions);
+  validateRuns(runs);
 
   // Create base columns
   const baseColumns = COLUMN_ORDER.map((key) => createColumn(key, key));
@@ -161,7 +161,7 @@ export const createColumns = (
   const sortedColumns = sortColumns(baseColumns);
 
   // Expand object columns into individual property columns
-  const expandedColumns = expandObjectColumns(sortedColumns, executions);
+  const expandedColumns = expandObjectColumns(sortedColumns, runs);
 
   // Classify columns
   expandedColumns.forEach((column) => {
@@ -169,7 +169,7 @@ export const createColumns = (
     const sampleValue = keys.reduce(
       (obj: Record<string, unknown>, key: string) =>
         obj[key] as Record<string, unknown>,
-      executions[0] as Record<string, unknown>,
+      runs[0] as Record<string, unknown>,
     );
     let type: ColumnMetaType = "";
     if (isString(sampleValue)) {
@@ -222,5 +222,5 @@ export const isBoolean = (value: unknown): value is boolean => {
 };
 
 export const isStatus = (value: unknown): value is Status => {
-  return Object.values(Status).includes(value as Status);
+  return typeof value === "string" && ["success", "error"].includes(value as string);
 };

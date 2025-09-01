@@ -1,6 +1,6 @@
 "use client";
 
-import type { Run } from "@reval/core/types";
+import type { Eval } from "@reval/core/types";
 import { useRouter } from "next/navigation";
 import { ThemeSwitcher, type ThemeSwitcherProps } from "./theme-switcher";
 import { Button } from "./ui/button";
@@ -9,40 +9,40 @@ import { Select, SelectContent, SelectItem, SelectTrigger } from "./ui/select";
 import { H3 } from "./ui/typography";
 
 interface HeaderProps {
-  runs: Run[];
-  currentRunId: string;
-  currentRunName: string;
+  evals: Eval[];
+  currentEvalId: string;
+  currentEvalName: string;
   theme: string | undefined;
   onThemeChange: (theme: string) => void;
 }
 
 export const Header = ({
-  runs,
-  currentRunId,
-  currentRunName,
+  evals,
+  currentEvalId,
+  currentEvalName,
   theme,
   onThemeChange,
 }: HeaderProps) => {
   const router = useRouter();
 
-  const handleRunChange = (newRunId: string) => {
-    router.push(`/run/${newRunId}`);
+  const handleEvalChange = (newEvalId: string) => {
+    router.push(`/eval/${newEvalId}`);
   };
 
   return (
     <div className="flex items-center justify-between border-b border-border">
       <Cell borderRight>
-        <Select value={currentRunId} onValueChange={handleRunChange}>
+        <Select value={currentEvalId} onValueChange={handleEvalChange}>
           <SelectTrigger
-            aria-label="Change run"
+            aria-label="Change eval"
             className="h-auto w-auto gap-1.5 rounded-none border-0 bg-transparent p-0 shadow-none hover:bg-transparent focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0"
           >
-            <H3 as="h1">{currentRunName || "Select a run"}</H3>
+            <H3 as="h1">{currentEvalName || "Select an eval"}</H3>
           </SelectTrigger>
           <SelectContent className="rounded-radius border border-border bg-popover shadow-none">
-            {[...runs].reverse().map((run) => (
-              <SelectItem key={run.id} value={run.id}>
-                {run.name}
+            {[...evals].reverse().map((evalItem) => (
+              <SelectItem key={evalItem.id} value={evalItem.id}>
+                {evalItem.name}
               </SelectItem>
             ))}
           </SelectContent>

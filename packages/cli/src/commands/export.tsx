@@ -1,4 +1,4 @@
-import { exportRun } from "@reval/core";
+import { exportEval } from "@reval/core";
 import { mkdirSync, writeFileSync } from "fs";
 import { Box, Text } from "ink";
 import { argument, option } from "pastel";
@@ -9,8 +9,8 @@ import zod from "zod";
 export const args = zod.tuple([
   zod.string().describe(
     argument({
-      name: "run_id",
-      description: "ID of the run to export",
+      name: "eval_id",
+      description: "ID of the eval to export",
     }),
   ),
 ]);
@@ -39,15 +39,15 @@ export default function Export({ args, options }: Props) {
   );
   const [error, setError] = useState<string | null>(null);
   const [outputPath, setOutputPath] = useState<string | null>(null);
-  const [run_id] = args;
+  const [eval_id] = args;
 
   useEffect(() => {
     const performExport = async () => {
       try {
-        const data = await exportRun(run_id, options.format);
+        const data = await exportEval(eval_id, options.format);
 
         const fileName =
-          options.out || `reval-export-${run_id.slice(0, 8)}.${options.format}`;
+          options.out || `reval-export-${eval_id.slice(0, 8)}.${options.format}`;
 
         // Create parent directories if they don't exist
         const dir = dirname(fileName);
@@ -66,12 +66,12 @@ export default function Export({ args, options }: Props) {
     };
 
     performExport();
-  }, [run_id, options.format, options.out]);
+  }, [eval_id, options.format, options.out]);
 
   if (status === "exporting") {
     return (
       <Box flexDirection="column">
-        <Text color="blue">Exporting run {run_id}...</Text>
+        <Text color="blue">Exporting eval {eval_id}...</Text>
         <Text color="gray">Format: {options.format.toUpperCase()}</Text>
       </Box>
     );
@@ -80,10 +80,10 @@ export default function Export({ args, options }: Props) {
   if (status === "error") {
     return (
       <Box flexDirection="column">
-        <Text color="red">Error exporting run:</Text>
+        <Text color="red">Error exporting eval:</Text>
         <Text>{error}</Text>
         <Text></Text>
-        <Text color="gray">Use 'reval list' to see available runs</Text>
+        <Text color="gray">Use 'reval list' to see available evals</Text>
       </Box>
     );
   }
@@ -93,7 +93,7 @@ export default function Export({ args, options }: Props) {
       <Text color="green">Export completed!</Text>
       <Text></Text>
       <Text>
-        <Text bold>Run ID:</Text> {run_id}
+        <Text bold>Eval ID:</Text> {eval_id}
       </Text>
       <Text>
         <Text bold>Format:</Text> {options.format.toUpperCase()}

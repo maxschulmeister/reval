@@ -21,18 +21,18 @@ import { createColumns } from "./create-columns";
 import { DataFilter, filterData } from "./data-filter";
 import { FormattedCell } from "./formatted-cell";
 
-export const DataTable = ({ run, executions }: Benchmark) => {
+export const DataTable = ({ eval: evalData, runs }: Benchmark) => {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<Record<string, string[]>>(
     {},
   );
 
-  const columns = useMemo(() => createColumns(executions), [executions]);
+  const columns = useMemo(() => createColumns(runs), [runs]);
 
   // Filter data based on selected filters
   const filteredData = useMemo(() => {
-    return filterData(executions, columnFilters);
-  }, [executions, columnFilters]);
+    return filterData(runs, columnFilters);
+  }, [runs, columnFilters]);
 
   const table = useReactTable({
     data: filteredData,
@@ -53,9 +53,9 @@ export const DataTable = ({ run, executions }: Benchmark) => {
     <section className="mt-8">
       {/* Dynamic Filters */}
       <DataFilter
-        data={executions}
+        data={runs}
         columns={columns}
-        run={run}
+        eval={evalData}
         columnFilters={columnFilters}
         onFilterChange={handleFilterChange}
       />

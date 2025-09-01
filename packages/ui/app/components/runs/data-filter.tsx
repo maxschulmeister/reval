@@ -1,6 +1,6 @@
 "use client";
 
-import type { Run } from "@reval/core/types";
+import type { Eval } from "@reval/core/types";
 import { ColumnDef } from "@tanstack/react-table";
 import { useMemo } from "react";
 import { Cell } from "../ui/cell";
@@ -15,7 +15,7 @@ type FilterConfig = {
 
 interface DataFilterProps<TData> {
   data: TData[];
-  run: Run;
+  eval: Eval;
   columns: ColumnDef<TData, unknown>[];
   columnFilters: Record<string, string[]>;
   onFilterChange: (columnId: string, values: string[]) => void;
@@ -24,13 +24,12 @@ interface DataFilterProps<TData> {
 export const DataFilter = <TData,>({
   data,
   columns,
-  run,
+  eval: evalData,
   columnFilters,
   onFilterChange,
 }: DataFilterProps<TData>) => {
-  const uniquenessThreshold = Array.isArray(run.variants)
-    ? run.variants.length
-    : Object.values(run.variants as Record<string, string[]>).flat().length;
+  // Calculate uniqueness threshold from the data
+  const uniquenessThreshold = Math.max(2, Math.ceil(data.length / 10));
 
   // Generate filter configurations for columns with sufficient unique values
   const filterConfigs = useMemo(() => {

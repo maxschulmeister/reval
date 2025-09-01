@@ -5,12 +5,12 @@ import { waitForComponentCompletion } from "../utils";
 
 // Mock @reval/core
 vi.mock("@reval/core", () => ({
-  getRunDetails: vi.fn(),
+  getEvalDetails: vi.fn(),
 }));
 
-import { getRunDetails } from "@reval/core";
+import { getEvalDetails } from "@reval/core";
 
-const mockGetRunDetails = vi.mocked(getRunDetails);
+const mockGetEvalDetails = vi.mocked(getEvalDetails);
 
 describe("Show Command", () => {
   beforeEach(() => {
@@ -21,54 +21,57 @@ describe("Show Command", () => {
     vi.resetAllMocks();
   });
 
-  const mockRunDetails = {
+  const mockEvalDetails = {
     id: "run123",
     name: "test-function-1-model-1234567890",
     timestamp: 1640995200000,
-    totalExecutions: 10,
+    totalRuns: 10,
     successCount: 8,
     errorCount: 2,
-    successRate: 80,
+    successRate: 80.0,
     avgTime: 123.45,
     notes: "Test run notes",
-    run: {
+    eval: {
       id: "run123",
       name: "test-function-1-model-1234567890",
-      timestamp: 1640995200000,
+      timestamp: BigInt(1640995200000),
       notes: "Test run notes",
       function: 'async function testFunction() { return "test"; }',
-      features: ["input1", "input2"],
-      target: ["output1", "output2"],
-      variants: { model: ["test-model-1", "test-model-2"] },
     },
-    executions: [
+     runs: [
       {
         id: "exec1",
-        run_id: "run123",
-        status: "success",
+        eval_id: "run123",
+        status: "success" as const,
         time: 120,
         features: "input1",
         target: "output1",
         retries: 0,
-        variant: { model: "test-model-1" },
+        accuracy: 0.95,
+        args: { input: "test" },
+        variants: { model: "test-model-1" },
+        dataIndex: 0,
         result: { prediction: "actual result", tokens: { in: 10, out: 5 } },
       },
       {
         id: "exec2",
-        run_id: "run123",
-        status: "error",
+        eval_id: "run123",
+        status: "error" as const,
         time: 0,
         features: "input2",
         target: "output2",
         retries: 1,
-        variant: { model: "test-model-2" },
+        accuracy: null,
+        args: { input: "test2" },
+        variants: { model: "test-model-2" },
+        dataIndex: 1,
         result: null,
       },
     ],
   };
 
   it("renders detailed run information", async () => {
-    mockGetRunDetails.mockResolvedValue(mockRunDetails);
+    mockGetEvalDetails.mockResolvedValue(mockEvalDetails);
 
     const { lastFrame } = render(<Show args={["run123"]} options={{}} />);
 
@@ -89,11 +92,11 @@ describe("Show Command", () => {
     expect(output).toContain("SUCCESS");
     expect(output).toContain("ERROR");
 
-    expect(mockGetRunDetails).toHaveBeenCalledWith("run123");
+    expect(mockGetEvalDetails).toHaveBeenCalledWith("run123");
   });
 
   it("renders JSON output when --json flag is provided", async () => {
-    mockGetRunDetails.mockResolvedValue(mockRunDetails);
+    mockGetEvalDetails.mockResolvedValue(mockEvalDetails);
 
     const { lastFrame } = render(
       <Show args={["run123"]} options={{ json: true }} />,
@@ -105,11 +108,11 @@ describe("Show Command", () => {
     const output = lastFrame();
     const parsed = JSON.parse(output || "{}");
 
-    expect(parsed).toEqual(mockRunDetails);
+    expect(parsed).toEqual(mockEvalDetails);
   });
 
   it("handles run not found", async () => {
-    mockGetRunDetails.mockResolvedValue(null);
+    mockGetEvalDetails.mockResolvedValue(null);
 
     const { lastFrame } = render(<Show args={["nonexistent"]} options={{}} />);
 
@@ -123,7 +126,7 @@ describe("Show Command", () => {
   });
 
   it("handles error from getRunDetails", async () => {
-    mockGetRunDetails.mockRejectedValue(new Error("Database error"));
+    mockGetEvalDetails.mockRejectedValue(new Error("Database error"));
 
     const { lastFrame } = render(<Show args={["run123"]} options={{}} />);
 
@@ -136,7 +139,7 @@ describe("Show Command", () => {
   });
 
   it("shows loading state initially", () => {
-    mockGetRunDetails.mockImplementation(() => new Promise(() => {})); // Never resolves
+    mockGetEvalDetails.mockImplementation(() => new Promise(() => {})); // Never resolves
 
     const { lastFrame } = render(<Show args={["run123"]} options={{}} />);
 
@@ -145,24 +148,27 @@ describe("Show Command", () => {
 
   it("displays sample executions with proper formatting", async () => {
     const detailsWithManyExecutions = {
-      ...mockRunDetails,
-      executions: [
-        ...mockRunDetails.executions,
+      ...mockEvalDetails,
+      runs: [
+        ...mockEvalDetails.runs,
         ...Array.from({ length: 10 }, (_, i) => ({
           id: `exec${i + 3}`,
-          run_id: "run123",
-          status: "success",
+          eval_id: "run123",
+          status: "success" as const,
           time: 100 + i,
           features: `input${i}`,
           target: `result ${i}`,
           retries: 0,
-          variant: { model: "test-model-1" },
+          accuracy: 0.9,
+          args: { input: `test${i}` },
+          variants: { model: "test-model-1" },
+          dataIndex: i + 2,
           result: { prediction: `prediction ${i}` },
         })),
       ],
     };
 
-    mockGetRunDetails.mockResolvedValue(detailsWithManyExecutions);
+    mockGetEvalDetails.mockResolvedValue(detailsWithManyExecutions);
 
     const { lastFrame } = render(<Show args={["run123"]} options={{}} />);
 

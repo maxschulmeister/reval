@@ -1,14 +1,16 @@
 import type {
-  Execution as PrismaExecution,
+  Eval as PrismaEval,
   Run as PrismaRun,
   Status as PrismaStatus,
 } from "@prisma/client/client";
 
 // Prisma types are generated from Prisma schema
+export type Eval = PrismaEval;
+
 export type Run = PrismaRun;
 
-export type Execution = PrismaExecution;
+export type Reval = { eval: Eval; runs: Run[] };
 
-export type Benchmark = { run: Run; executions: Execution[] };
+export type Benchmark = { eval: Eval; runs: Run[] };
 
 export type Status = PrismaStatus;

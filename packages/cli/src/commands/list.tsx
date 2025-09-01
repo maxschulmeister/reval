@@ -1,4 +1,4 @@
-import { listRuns } from "@reval/core";
+import { listEvals } from "@reval/core";
 import { Box, Text } from "ink";
 import { option } from "pastel";
 import { useEffect, useState } from "react";
@@ -11,7 +11,7 @@ export const options = zod.object({
     .default(20)
     .describe(
       option({
-        description: "Number of runs to display",
+        description: "Number of evals to display",
         alias: "n",
       }),
     ),
@@ -23,43 +23,43 @@ interface Props {
 }
 
 export default function List({ options }: Props) {
-  const [runs, setRuns] = useState<any[] | null>(null);
+  const [evals, setEvals] = useState<any[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchRuns = async () => {
+    const fetchEvals = async () => {
       try {
-        const runsData = await listRuns(options.limit);
-        setRuns(runsData);
+        const evalsData = await listEvals(options.limit);
+        setEvals(evalsData);
       } catch (err) {
         setError(err instanceof Error ? err.message : String(err));
       }
     };
 
-    fetchRuns();
+    fetchEvals();
   }, [options.limit]);
 
   if (error) {
     return (
       <Box flexDirection="column">
-        <Text color="red">Error fetching runs:</Text>
+        <Text color="red">Error fetching evals:</Text>
         <Text>{error}</Text>
       </Box>
     );
   }
 
-  if (!runs) {
-    return <Text color="blue">Loading runs...</Text>;
+  if (!evals) {
+    return <Text color="blue">Loading evals...</Text>;
   }
 
   if (options.json) {
-    return <Text>{JSON.stringify(runs, null, 2)}</Text>;
+    return <Text>{JSON.stringify(evals, null, 2)}</Text>;
   }
 
-  if (runs.length === 0) {
+  if (evals.length === 0) {
     return (
       <Box flexDirection="column">
-        <Text>No benchmark runs found.</Text>
+        <Text>No benchmark evals found.</Text>
         <Text color="gray">
           Run 'reval run' to create your first benchmark.
         </Text>
@@ -70,27 +70,27 @@ export default function List({ options }: Props) {
   return (
     <Box flexDirection="column">
       <Text color="blue" bold>
-        Recent Runs ({runs.length}):
+        Recent Evals ({evals.length}):
       </Text>
       <Text></Text>
-      {runs.map((run, index) => (
-        <Box key={run.id} flexDirection="column" marginBottom={1}>
+      {evals.map((evalItem, index) => (
+        <Box key={evalItem.id} flexDirection="column" marginBottom={1}>
           <Text>
-            <Text color="green">{index + 1}.</Text> <Text bold>{run.name}</Text>{" "}
-            <Text color="gray">({run.id.slice(0, 8)})</Text>
+            <Text color="green">{index + 1}.</Text> <Text bold>{evalItem.name}</Text>{" "}
+            <Text color="gray">({evalItem.id.slice(0, 8)})</Text>
           </Text>
           <Text color="gray">
             {" "}
-            {new Date(run.timestamp).toLocaleString()} |{run.totalExecutions}{" "}
-            executions |{run.successRate.toFixed(1)}% success |
-            {run.avgTime.toFixed(2)}ms avg
+            {new Date(evalItem.timestamp).toLocaleString()} |{evalItem.totalRuns}{" "}
+            runs |{evalItem.successRate.toFixed(1)}% success |
+            {evalItem.avgTime.toFixed(2)}ms avg
           </Text>
-          {run.notes && <Text color="gray"> {run.notes}</Text>}
+          {evalItem.notes && <Text color="gray"> {evalItem.notes}</Text>}
         </Box>
       ))}
       <Text></Text>
       <Text color="gray">
-        Use 'reval show &lt;run_id&gt;' to view detailed results
+        Use 'reval show &lt;eval_id&gt;' to view detailed results
       </Text>
     </Box>
   );

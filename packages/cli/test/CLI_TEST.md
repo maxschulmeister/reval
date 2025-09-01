@@ -29,7 +29,7 @@ Core Utilities and Fixtures (to be added under packages/cli/test)
   - sample-data/: data/sample.csv small dataset used by run and export
 
 Mocking Strategy
-- @reval/core: mock at unit level to simulate listRuns, getRunDetails, exportRun, initializeDatabase, runMigrations, and any run/execute entry points
+- @reval/core: mock at unit level to simulate listEvals, getEvalDetails, exportEval, initializeDatabase, runMigrations, and any run/execute entry points
 - fs / fs/promises: mock in unit tests for init and export; use real FS in integration with temp dirs
 - execa: mock for ui and db/studio commands to avoid starting real processes in unit/integration; consider enabling a smoke E2E behind a CI guard
 - process.env and cwd: isolate via withTempDir and environment setup/teardown

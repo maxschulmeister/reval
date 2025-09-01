@@ -10,9 +10,9 @@ interface StatusBadgeProps {
 export const StatusBadge = ({ status }: StatusBadgeProps) => {
   const getStatusClasses = (status: Status) => {
     switch (status) {
-      case Status.Success:
+      case "success":
         return "bg-success/10 text-success border-success/20";
-      case Status.Error:
+      case "error":
         return "bg-destructive/10 text-destructive border-destructive/20";
       default:
         return "bg-warning/10 text-warning border-warning/20";

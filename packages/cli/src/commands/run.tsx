@@ -28,7 +28,7 @@ export const options = zod.object({
     .optional()
     .describe(
       option({
-        description: "Parallelism for test execution",
+        description: "Parallelism for test runs",
         alias: "j",
       }),
     ),
@@ -37,7 +37,7 @@ export const options = zod.object({
     .optional()
     .describe(
       option({
-        description: "Retries for flaky executions",
+        description: "Retries for flaky runs",
         alias: "r",
       }),
     ),
@@ -117,24 +117,24 @@ export default function Run({ options }: Props) {
   }
 
   const summary = {
-    run_id: result.run.id,
-    name: result.run.name,
-    totalExecutions: result.executions.length,
-    successCount: result.executions.filter((e: any) => e.status === "success")
-      .length,
-    errorCount: result.executions.filter((e: any) => e.status === "error")
-      .length,
-    avgTime:
-      result.executions.reduce((sum: number, e: any) => sum + e.time, 0) /
-      result.executions.length,
-    avgAccuracy:
-      result.executions.reduce((sum: number, e: any) => sum + e.accuracy, 0) /
-      result.executions.length,
+    eval_id: result.eval.id,
+        name: result.eval.name,
+    totalRuns: result.runs.length,
+        successCount: result.runs.filter((r: any) => r.status === "success")
+          .length,
+        errorCount: result.runs.filter((r: any) => r.status === "error")
+          .length,
+        avgTime:
+          result.runs.reduce((sum: number, r: any) => sum + r.time, 0) /
+          result.runs.length,
+        avgAccuracy:
+          result.runs.reduce((sum: number, r: any) => sum + r.accuracy, 0) /
+          result.runs.length,
   };
 
   const successRate =
-    summary.totalExecutions > 0
-      ? (summary.successCount / summary.totalExecutions) * 100
+    summary.totalRuns > 0
+      ? (summary.successCount / summary.totalRuns) * 100
       : 0;
 
   return (
@@ -142,9 +142,9 @@ export default function Run({ options }: Props) {
       <Text color="green">Benchmark completed!</Text>
       <Text></Text>
       <Text color="blue">Run Summary:</Text>
-      <Text> ID: {summary.run_id}</Text>
+      <Text> ID: {summary.eval_id}</Text>
       <Text> Name: {summary.name}</Text>
-      <Text> Total executions: {summary.totalExecutions}</Text>
+      <Text> Total runs: {summary.totalRuns}</Text>
       <Text>
         {" "}
         Success: {summary.successCount} ({successRate.toFixed(1)}%)
@@ -155,7 +155,7 @@ export default function Run({ options }: Props) {
       <Text></Text>
       <Text color="gray">Results saved to database at: ./.reval/reval.db</Text>
       <Text color="gray">
-        Use 'reval show {summary.run_id}' to view detailed results
+        Use 'reval show {summary.eval_id}' to view detailed results
       </Text>
     </Box>
   );

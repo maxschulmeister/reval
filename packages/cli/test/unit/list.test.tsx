@@ -6,12 +6,12 @@ import List from '../../src/commands/list';
 
 // Mock @reval/core
 vi.mock('@reval/core', () => ({
-  listRuns: vi.fn(),
+  listEvals: vi.fn(),
 }));
 
-import { listRuns } from '@reval/core';
+import { listEvals } from "@reval/core";
 
-const mockListRuns = vi.mocked(listRuns);
+const mockListEvals = vi.mocked(listEvals);
 
 describe('List Command', () => {
   beforeEach(() => {
@@ -27,7 +27,7 @@ describe('List Command', () => {
       id: 'run123',
       name: 'test-function-1-model-1234567890',
       timestamp: 1640995200000, // 2022-01-01 00:00:00
-      totalExecutions: 10,
+      totalRuns: 10,
       successCount: 8,
       errorCount: 2,
       successRate: 80,
@@ -38,7 +38,7 @@ describe('List Command', () => {
       id: 'run456',
       name: 'another-function-2-model-1234567891',
       timestamp: 1640995260000, // 2022-01-01 00:01:00
-      totalExecutions: 5,
+      totalRuns: 5,
       successCount: 5,
       errorCount: 0,
       successRate: 100,
@@ -47,7 +47,7 @@ describe('List Command', () => {
   ];
 
   it('renders table of runs with default limit', async () => {
-    mockListRuns.mockResolvedValue(mockRuns);
+    mockListEvals.mockResolvedValue(mockRuns);
     
     const { lastFrame } = render(<List options={{ limit: 20 }} />);
     
@@ -63,11 +63,11 @@ describe('List Command', () => {
     expect(output).toContain('123.45ms avg');
     expect(output).toContain('200.50ms avg');
     
-    expect(mockListRuns).toHaveBeenCalledWith(20);
+    expect(mockListEvals).toHaveBeenCalledWith(20);
   });
 
   it('renders JSON output when --json flag is provided', async () => {
-    mockListRuns.mockResolvedValue(mockRuns);
+    mockListEvals.mockResolvedValue(mockRuns);
     
     const { lastFrame } = render(<List options={{ limit: 20, json: true }} />);
     
@@ -83,16 +83,16 @@ describe('List Command', () => {
   });
 
   it('handles custom limit option', async () => {
-    mockListRuns.mockResolvedValue(mockRuns.slice(0, 1));
+    mockListEvals.mockResolvedValue(mockRuns.slice(0, 1));
     
     const { lastFrame } = render(<List options={{ limit: 1 }} />);
     await waitForComponentCompletion(() => lastFrame() || '');
     
-    expect(mockListRuns).toHaveBeenCalledWith(1);
+    expect(mockListEvals).toHaveBeenCalledWith(1);
   });
 
   it('handles empty results gracefully', async () => {
-    mockListRuns.mockResolvedValue([]);
+    mockListEvals.mockResolvedValue([]);
     
     const { lastFrame } = render(<List options={{ limit: 20 }} />);
     
@@ -105,7 +105,7 @@ describe('List Command', () => {
   });
 
   it('returns empty JSON array for no results with --json', async () => {
-    mockListRuns.mockResolvedValue([]);
+    mockListEvals.mockResolvedValue([]);
     
     const { lastFrame } = render(<List options={{ limit: 20, json: true }} />);
     
@@ -116,8 +116,8 @@ describe('List Command', () => {
     expect(JSON.parse(output)).toEqual([]);
   });
 
-  it('handles error from listRuns', async () => {
-    mockListRuns.mockRejectedValue(new Error('Database connection failed'));
+  it('handles error from listEvals', async () => {
+    mockListEvals.mockRejectedValue(new Error('Database connection failed'));
     
     const { lastFrame } = render(<List options={{ limit: 20 }} />);
     
@@ -130,7 +130,7 @@ describe('List Command', () => {
   });
 
   it('shows loading state initially', () => {
-    mockListRuns.mockImplementation(() => new Promise(() => {})); // Never resolves
+    mockListEvals.mockImplementation(() => new Promise(() => {})); // Never resolves
     
     const { lastFrame } = render(<List options={{ limit: 20 }} />);
     

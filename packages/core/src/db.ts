@@ -1,7 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import path from "path";
 import { NAMESPACE } from "./constants";
-import type { Execution, Run } from "./types/db";
+import type { Run, Eval } from "./types/db";
 import { withPrismaJsonNull } from "./utils";
 
 export const dbName = `${NAMESPACE}.db`;
@@ -35,32 +35,32 @@ export const disconnectDb = async () => {
   }
 };
 
-// Function to save a run and its executions
-export const saveRun = async (run: Run, executions: Execution[]) => {
+// Function to save an eval and its runs
+export const saveEval = async (eval_: Eval, runs: Run[]) => {
   const prisma = getDb();
   try {
-    await prisma.run.create({
-      data: run,
+    await prisma.eval.create({
+      data: eval_,
     });
-    console.debug(`Saved run ${run.id} to database`);
+    console.debug(`Saved eval ${eval_.id} to database`);
   } catch (error) {
-    console.error(`Failed to save run ${run.id} to database`, error);
+    console.error(`Failed to save eval ${eval_.id} to database`, error);
     throw error;
   }
 
   try {
-    // Then create all Executions (which reference Args)
+    // Then create all Runs (which reference the Eval)
     await Promise.all(
-      executions.map((execution) =>
-        prisma.execution.create({
-          data: withPrismaJsonNull(execution),
+      runs.map((run) =>
+        prisma.run.create({
+          data: withPrismaJsonNull(run),
         }),
       ),
     );
-    console.debug(`Saved ${executions.length} Executions to database`);
+    console.debug(`Saved ${runs.length} Runs to database`);
   } catch (error) {
     console.error(
-      `Failed to save all Executions of run ${run.id} to database`,
+      `Failed to save all Runs of eval ${eval_.id} to database`,
       error,
     );
     throw error;
