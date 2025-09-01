@@ -1,13 +1,9 @@
+import { listEvals } from "@reval/core";
 import { redirect } from "next/navigation";
 
 async function getLatestEval() {
   try {
-    const port = process.env.PORT || "3000";
-    const baseUrl = `http://localhost:${port}`;
-    const response = await fetch(`${baseUrl}/api/evals`, {
-      cache: "no-store",
-    });
-    const evals = await response.json();
+    const evals = await listEvals(100);
     return evals.length > 0 ? evals[evals.length - 1] : null;
   } catch (error) {
     console.error("Error fetching evals:", error);

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { ThemeProvider } from 'next-themes';
 import { Geist, Geist_Mono } from 'next/font/google';
+import { ErrorBoundary } from './components/error-boundary';
 import './globals.css';
 
 const geistSans = Geist({
@@ -30,7 +31,9 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          {children}
+          <ErrorBoundary>
+            {children}
+          </ErrorBoundary>
         </ThemeProvider>
       </body>
     </html>

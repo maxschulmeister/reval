@@ -2,7 +2,7 @@
 
 import type { Eval } from "@reval/core/types";
 import { useRouter } from "next/navigation";
-import { ThemeSwitcher, type ThemeSwitcherProps } from "./theme-switcher";
+import { ThemeSwitcher } from "./theme-switcher";
 import { Button } from "./ui/button";
 import { Cell } from "./ui/cell";
 import { Select, SelectContent, SelectItem, SelectTrigger } from "./ui/select";
@@ -12,16 +12,12 @@ interface HeaderProps {
   evals: Eval[];
   currentEvalId: string;
   currentEvalName: string;
-  theme: string | undefined;
-  onThemeChange: (theme: string) => void;
 }
 
 export const Header = ({
   evals,
   currentEvalId,
   currentEvalName,
-  theme,
-  onThemeChange,
 }: HeaderProps) => {
   const router = useRouter();
 
@@ -50,10 +46,7 @@ export const Header = ({
       </Cell>
       <div className="flex items-center gap-0">
         <Cell borderLeft>
-          <ThemeSwitcher
-            onChange={onThemeChange}
-            value={theme as ThemeSwitcherProps["value"]}
-          />
+          <ThemeSwitcher />
           <Button
             variant="outline"
             onClick={() => window.open("https://www.github.com", "_blank")}
