@@ -15,8 +15,11 @@ import {
   getSortedRowModel,
   SortingState,
   useReactTable,
+  VisibilityState,
 } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
+import { ColumnVisibilityToggle } from "./column-visibility-toggle";
+import { HIDDEN_COLUMNS } from "./constants";
 import { createColumns } from "./create-columns";
 import { DataFilter, filterData } from "./data-filter";
 import { FormattedCell } from "./formatted-cell";
@@ -25,6 +28,17 @@ export const DataTable = ({ eval: evalData, runs }: Benchmark) => {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<Record<string, string[]>>(
     {},
+  );
+
+  // Initialize column visibility with hidden columns set to false
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
+    () => {
+      const initialVisibility: VisibilityState = {};
+      HIDDEN_COLUMNS.forEach((columnId) => {
+        initialVisibility[columnId] = false;
+      });
+      return initialVisibility;
+    },
   );
 
   const columns = useMemo(() => createColumns(runs), [runs]);
@@ -40,8 +54,10 @@ export const DataTable = ({ eval: evalData, runs }: Benchmark) => {
     getCoreRowModel: getCoreRowModel(),
     onSortingChange: setSorting,
     getSortedRowModel: getSortedRowModel(),
+    onColumnVisibilityChange: setColumnVisibility,
     state: {
       sorting,
+      columnVisibility,
     },
   });
 
@@ -58,6 +74,7 @@ export const DataTable = ({ eval: evalData, runs }: Benchmark) => {
         eval={evalData}
         columnFilters={columnFilters}
         onFilterChange={handleFilterChange}
+        columnVisibilityToggle={<ColumnVisibilityToggle table={table} />}
       />
 
       {/* Table */}

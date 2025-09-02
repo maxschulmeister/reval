@@ -6,6 +6,7 @@ import { useMemo } from "react";
 import { Cell } from "../ui/cell";
 import { MultiSelect } from "../ui/multi-select";
 import { H5 } from "../ui/typography";
+import { HIDDEN_COLUMNS } from "./constants";
 
 type FilterConfig = {
   columnId: string;
@@ -19,6 +20,7 @@ interface DataFilterProps<TData> {
   columns: ColumnDef<TData, unknown>[];
   columnFilters: Record<string, string[]>;
   onFilterChange: (columnId: string, values: string[]) => void;
+  columnVisibilityToggle?: React.ReactNode;
 }
 
 export const DataFilter = <TData,>({
@@ -27,6 +29,7 @@ export const DataFilter = <TData,>({
   eval: evalData,
   columnFilters,
   onFilterChange,
+  columnVisibilityToggle,
 }: DataFilterProps<TData>) => {
   // Calculate uniqueness threshold from the data
   const uniquenessThreshold = Math.max(2, Math.ceil(data.length / 10));
@@ -55,7 +58,12 @@ export const DataFilter = <TData,>({
     columns.forEach((column) => {
       const accessorKey = (column as { accessorKey?: string }).accessorKey;
       const type = column.meta?.type;
-      if (!accessorKey || (type !== "string" && type !== "status")) return;
+      if (
+        !accessorKey ||
+        (type !== "string" && type !== "status") ||
+        (HIDDEN_COLUMNS as readonly string[]).includes(accessorKey)
+      )
+        return;
       // Get all unique values for this column
       const values = data
         .map((row) => {
@@ -86,13 +94,26 @@ export const DataFilter = <TData,>({
   }, [data, columns, uniquenessThreshold, columnFilters]);
 
   if (filterConfigs.length === 0) {
+    // If no filters but we have a column visibility toggle, show just the toggle
+    if (columnVisibilityToggle) {
+      return (
+        <Cell>
+          <div className="flex items-center justify-between">
+            <H5 as="h4">Filters</H5>
+            {columnVisibilityToggle}
+          </div>
+        </Cell>
+      );
+    }
     return null;
   }
 
   return (
     <Cell>
-      <H5 as="h4">Filters</H5>
-      <div className="flex flex-wrap items-center gap-4 py-4">
+      <div className="flex items-center justify-between">
+        <H5 as="h4">Filters</H5>
+      </div>
+      <div className="flex grow flex-wrap items-center gap-4 py-4">
         {filterConfigs.map((config) => (
           <div key={config.columnId} className="flex items-center gap-2">
             <MultiSelect
@@ -104,6 +125,7 @@ export const DataFilter = <TData,>({
           </div>
         ))}
       </div>
+      <div>{columnVisibilityToggle}</div>
     </Cell>
   );
 };

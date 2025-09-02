@@ -155,26 +155,14 @@ const createColumn = (
   };
 };
 
-const EXCLUDED_COLUMNS = [
-  "args",
-  "dataIndex",
-  "evalId",
-  "id",
-  "eval_id",
-] as const;
-
 export const createColumns = (runs: Run[]): AccessorKeyColumnDef<Run>[] => {
   if (runs.length === 0) return [];
 
   // Get all possible column paths by flattening the first run
   const allPaths = flattenObject(runs[0] as Record<string, unknown>);
 
-  // Filter out excluded columns and create columns, then sort by predefined order
+  // Create columns for all paths (including hidden ones) and sort by predefined order
   return allPaths
-    .filter(
-      (path) =>
-        !EXCLUDED_COLUMNS.includes(path as (typeof EXCLUDED_COLUMNS)[number]),
-    )
     .map((path) => createColumn(path, runs))
     .sort((a, b) => {
       const orderA = getColumnOrder(a.accessorKey);

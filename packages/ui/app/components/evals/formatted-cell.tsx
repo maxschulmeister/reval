@@ -18,7 +18,7 @@ export const FormattedCell = ({
       <div className="flex items-center justify-center gap-x-4">
         <CodeDialog
           title={header}
-          content={jsBeautify(JSON.stringify(value), {
+          content={jsBeautify(JSON.stringify(value, null, 2), {
             indent_size: 4,
             indent_char: " ",
           })}
