@@ -10,7 +10,7 @@ export const FormattedCell = ({
   header,
 }: {
   type?: string;
-  value: string | number | boolean;
+  value: unknown;
   header: string;
 }) => {
   if (type === "json") {
@@ -18,7 +18,7 @@ export const FormattedCell = ({
       <div className="flex items-center justify-center gap-x-4">
         <CodeDialog
           title={header}
-          content={jsBeautify(value as string, {
+          content={jsBeautify(JSON.stringify(value), {
             indent_size: 4,
             indent_char: " ",
           })}
@@ -31,8 +31,12 @@ export const FormattedCell = ({
       </div>
     );
   } else if (type === "status") {
-    return <Badge variant={value as Status}>{value}</Badge>;
+    return <Badge variant={value as Status}>{value as string}</Badge>;
   } else {
-    return value;
+    // Handle objects by converting to string
+    if (typeof value === "object" && value !== null) {
+      return JSON.stringify(value);
+    }
+    return String(value ?? "");
   }
 };

@@ -2,11 +2,12 @@ import { Prisma } from "@prisma/client/client";
 import type { JsonValue } from "@prisma/client/runtime/library";
 import * as dataForge from "data-forge";
 import type {
+  Args,
   ArgsContext,
   Config,
+  DataToArrays,
   TData,
   TFunction,
-  ToArrays,
   TVariants,
 } from "../types/config";
 import { loadConfig } from "./config";
@@ -77,7 +78,7 @@ export const resolveArgs = <
   D extends TData,
   V extends TVariants,
 >(
-  argsFn: (context: ArgsContext<D, V>) => Parameters<F>,
+  argsFn: Args<F, D, V>,
   argContext: ArgsContext<D, V>,
 ): Array<ResolvedArg<F>> => {
   const results: Array<ResolvedArg<F>> = [];
@@ -140,9 +141,13 @@ export const resolveArgs = <
         data: createDataProxy(rowData),
         variants: createVariantProxy(variantCombo),
       };
+      console.log("proxiedContext", proxiedContext);
 
       // Generate args and track what was accessed
-      const args = argsFn(proxiedContext as ArgsContext<D, V>);
+      // Not great, but works.
+      const args = argsFn(
+        proxiedContext as ArgsContext<D, V>,
+      ) as unknown as Parameters<F>;
 
       // In the resolveArgs function, update the features and variants creation:
 
@@ -189,7 +194,7 @@ export function getArgsContext<
   // ->
   // input ={file: string[], brand: string[]}
 
-  const data = {} as ToArrays<D>;
+  const data = {} as DataToArrays<D>;
   config.data.reduce((acc, item) => {
     Object.entries(item).forEach(([key, value]) => {
       if (!acc[key]) {
@@ -213,9 +218,7 @@ export function getTargets<
   V extends TVariants,
 >(config: Config<F, D, V>) {
   const { data, target } = config;
-  return data.map((item) => ({
-    [target]: item[target as keyof typeof item],
-  }));
+  return data.map((item) => item[target as keyof typeof item]);
 }
 
 // Helper function to apply JsonNull to nullable fields

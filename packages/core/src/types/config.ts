@@ -25,33 +25,56 @@ export interface Config<
   target: T;
   variants: V;
   function: F;
-  args: (context: ArgsContext<D, V>) => ParametersToArrays<F>;
+  args: Args<F, D, V>;
   result: (context: ResultContext<F>) => {
-    output: string;
+    output: JsonValue;
   } & Record<string, JsonValue>;
 }
 
+export type Args<F extends TFunction, D extends TData, V extends TVariants> = (
+  context: ArgsContext<D, V>,
+) => ParametersToArrays<F>;
+
 export type ArgsContext<D extends TData, V extends TVariants> = {
-  data: ToArrays<D>;
+  data: DataToArrays<D>;
   variants: V;
 };
 
 export type ResultContext<F extends TFunction> =
   ReturnType<F> extends Promise<infer U> ? U : ReturnType<F>;
 
-type ParametersToArrays<T> = T extends TFunction
-  ? ToArrays<Parameters<T>>
+type ParametersToArrays<F> = F extends TFunction
+  ? ArgsToArrays<Parameters<F>>
   : never;
 
-// Works for Tuples (...args) and Arrays
-export type ToArrays<T> = T extends [infer First, ...infer Rest]
+// TODO: NOT fully type safe. Object allows foreign keys (TS limitation)
+export type ArgsToArrays<A> = A extends [infer First, ...infer Rest]
   ? First extends object
-    ? { [K in keyof First]: First[K][] }
+    ? [{ [K in keyof First]: First[K][] }, ...ArgsToArrays<Rest>]
     : First extends Primitive
-      ? Array<First[]>
-      : [never, ...ToArrays<Rest>]
-  : T extends (infer U)[]
-    ? U extends object
-      ? { [K in keyof U]: U[K][] }
+      ? [First[], ...ArgsToArrays<Rest>]
       : never
-    : never;
+  : [];
+
+export type ArgsArraysToSingles<A> = A extends [infer First, ...infer Rest]
+  ? First extends object
+    ? [
+        { [K in keyof First]: First[K] extends [infer X] ? X : never },
+        ...ArgsArraysToSingles<Rest>,
+      ]
+    : First extends Primitive
+      ? [First extends [infer X] ? X : never, ...ArgsArraysToSingles<Rest>]
+      : never
+  : [];
+
+export type DataToArrays<D> = D extends (infer U)[]
+  ? U extends object
+    ? { [K in keyof U]: U[K][] }
+    : never
+  : never;
+
+export type DataArraysToSingles<D> = D extends (infer U)[]
+  ? U extends object
+    ? { [K in keyof U]: U[K] extends [infer X] ? X : never }
+    : never
+  : never;

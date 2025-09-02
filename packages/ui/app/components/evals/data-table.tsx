@@ -91,7 +91,7 @@ export const DataTable = ({ eval: evalData, runs }: Benchmark) => {
                   <TableCell key={cell.id}>
                     <FormattedCell
                       type={cell.column.columnDef.meta?.type}
-                      value={cell.getValue() as string | number | boolean}
+                      value={cell.getValue()}
                       header={cell.getContext().column.id}
                     />
                   </TableCell>

@@ -109,7 +109,13 @@ export const runEval = async <
 
         const target = getTargets(config)[dataIndex];
 
-        const accuracy = result ? calculateAccuracy(result, target) : null;
+        const accuracy = result.output
+          ? calculateAccuracy(result.output, target)
+          : null;
+
+        console.log("ARGS: ", JSON.stringify(args, null, 2));
+        console.log("FEATURES: ", JSON.stringify(features, null, 2));
+        console.log("VARIANTS: ", JSON.stringify(variants, null, 2));
 
         const run: Run = {
           id,
