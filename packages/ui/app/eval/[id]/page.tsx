@@ -51,6 +51,10 @@ export default async function EvalPage({ params }: EvalPageProps) {
   }
 
   return (
-    <EvalPageClient evals={allEvals} evalData={evalData} currentEvalId={eval_id} />
+    <EvalPageClient
+      evals={allEvals}
+      evalData={evalData}
+      currentEvalId={eval_id}
+    />
   );
 }
