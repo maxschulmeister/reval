@@ -32,7 +32,7 @@ export const EvalPageClient = ({
       : initialEvals.map((evalItem) => ({
           id: evalItem.id,
           name: evalItem.name,
-          timestamp: Number(evalItem.timestamp),
+          timestamp: evalItem.timestamp,
           totalRuns: 0,
           successCount: 0,
           errorCount: 0,
@@ -90,7 +90,7 @@ export const EvalPageClient = ({
             name: evalSummary.name,
             notes: evalSummary.notes || null,
             function: "", // This field might not be available in summary
-            timestamp: BigInt(evalSummary.timestamp),
+            timestamp: evalSummary.timestamp,
           }))}
           currentEvalId={currentEvalId}
           currentEvalName={currentEvalData.eval.name}

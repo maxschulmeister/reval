@@ -37,7 +37,7 @@ export const runEval = async <
     random,
   );
   const eval_id = nanoid();
-  const timestamp = BigInt(Date.now());
+  const timestamp = new Date();
 
   // And you can now properly type the argContext:
   const argContext: ArgsContext<D, V> = getArgsContext(config);
@@ -45,11 +45,20 @@ export const runEval = async <
   const fnName = config.function.name;
   const variants = Object.entries(config.variants).map(([key, value]) => {
     if (Array.isArray(value)) {
-      return `${value.length}_${key}`;
+      return `${value.length} ${key.endsWith("s") ? key : key + "s"}`;
     }
     return `${key}`;
   });
-  const name = `${fnName}-${variants.join("-")}-${timestamp}`;
+  const name = `${fnName} ${variants.join(" ")} ${timestamp
+    .toLocaleString("en-GB", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    })
+    .replace(/\//g, "-")}`;
 
   // **
   // ** RUNS

@@ -42,7 +42,7 @@ export async function listEvals(limit = 20): Promise<EvalSummary[]> {
       return {
         id: evalData.id,
         name: evalData.name,
-        timestamp: Number(evalData.timestamp),
+        timestamp: evalData.timestamp,
         totalRuns,
         successCount,
         errorCount,
@@ -88,7 +88,7 @@ export async function getEvalSummary(
   return {
     id: evalData.id,
     name: evalData.name,
-    timestamp: Number(evalData.timestamp),
+    timestamp: evalData.timestamp,
     totalRuns,
     successCount,
     errorCount,
@@ -134,7 +134,7 @@ export async function getEvalDetails(
   return {
     id: evalData.id,
     name: evalData.name,
-    timestamp: Number(evalData.timestamp),
+    timestamp: evalData.timestamp,
     totalRuns,
     successCount,
     errorCount,
@@ -195,12 +195,12 @@ export async function exportEval(
 
 export async function deleteEval(eval_id: string): Promise<void> {
   const prisma = getDb();
-  
+
   // Delete the eval (runs will be deleted automatically due to CASCADE)
   const deletedEval = await prisma.eval.delete({
     where: { id: eval_id },
   });
-  
+
   if (!deletedEval) {
     throw new Error(`Eval with id ${eval_id} not found`);
   }
@@ -208,18 +208,18 @@ export async function deleteEval(eval_id: string): Promise<void> {
 
 export async function updateEval(
   eval_id: string,
-  updates: { name?: string; notes?: string }
+  updates: { name?: string; notes?: string },
 ): Promise<Eval> {
   const prisma = getDb();
-  
+
   const updatedEval = await prisma.eval.update({
     where: { id: eval_id },
     data: updates,
   });
-  
+
   if (!updatedEval) {
     throw new Error(`Eval with id ${eval_id} not found`);
   }
-  
+
   return updatedEval;
 }

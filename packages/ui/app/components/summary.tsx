@@ -40,7 +40,7 @@ export const Summary = ({ eval: evalData, runs }: Benchmark) => {
             dateStyle: "long",
             timeStyle: "short",
             // timeZoneName: "short",
-          }).format(Number(evalData.timestamp))}
+          }).format(new Date(evalData.timestamp))}
         </Small>
 
         {/* Runs Summary */}

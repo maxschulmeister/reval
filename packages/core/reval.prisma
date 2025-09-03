@@ -15,7 +15,7 @@ model Eval {
   name       String
   notes      String?
   function   String
-  timestamp  BigInt
+  timestamp  DateTime
   runs       Run[]
 
   @@map("evals")

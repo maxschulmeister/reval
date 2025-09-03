@@ -18,7 +18,7 @@ export type Status = PrismaStatus;
 export interface EvalSummary {
   id: string;
   name: string;
-  timestamp: number;
+  timestamp: Date;
   totalRuns: number;
   successCount: number;
   errorCount: number;
