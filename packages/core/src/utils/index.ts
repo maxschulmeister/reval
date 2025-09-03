@@ -1,6 +1,15 @@
+import { Prisma } from "@prisma/client/client";
+import type { JsonValue } from "@prisma/client/runtime/library";
 import * as dataForge from "data-forge";
-import fs from "fs";
-import type { ArgsContext } from "../types/config";
+import type {
+  Args,
+  ArgsContext,
+  Config,
+  DataToArrays,
+  TData,
+  TFunction,
+  TVariants,
+} from "../types/config";
 import { loadConfig } from "./config";
 
 export * from "./accuracy";
@@ -8,335 +17,217 @@ export * from "./config";
 
 export const loadData = async (configPath?: string) => {
   const config = await loadConfig(configPath);
-  let df: dataForge.IDataFrame<number, any>;
-  let dfFeatures: any;
-  let dfTarget: any;
 
   // Validate basic data configuration
   if (!config.data || Object.keys(config.data).length === 0) {
     throw new Error("Data configuration is required and cannot be empty");
   }
 
-  // Path-based data loading (CSV files)
-  if (config.data.path) {
-    // Validate file extension
-    if (!config.data.path.toLowerCase().endsWith(".csv")) {
+  let df: dataForge.IDataFrame<number, any>;
+  try {
+    df = dataForge.fromObject(config.data);
+  } catch (error) {
+    throw new Error(`Failed to create DataFrame: ${error}`);
+  }
+
+  // Validate JSON is not empty
+  if (df.count() === 0) {
+    throw new Error("JSON file is empty or contains no data rows");
+  }
+
+  // Validate and apply trim if specified
+  if (config.trim !== undefined) {
+    if (typeof config.trim !== "number" || !Number.isInteger(config.trim)) {
+      throw new Error("Trim value must be an integer");
+    }
+    if (config.trim < 0) {
+      throw new Error("Trim value cannot be negative");
+    }
+    if (config.trim > df.count()) {
       throw new Error(
-        "Only CSV files are supported. Please provide a file with .csv extension.",
+        `Trim value (${config.trim}) cannot be larger than dataset size (${df.count()})`,
       );
     }
-
-    // Validate target is required when path is provided (allow empty string as fallback)
-    if (!config.data.target) {
-      throw new Error(
-        "Target column name is required when using path-based data loading",
-      );
-    }
-
-    // Validate target is not an array when path is provided
-    if (Array.isArray(config.data.target)) {
-      throw new Error(
-        "Target must be a string column name when using path-based data loading, not an array",
-      );
-    }
-
-    try {
-      const csvContent = fs.readFileSync(config.data.path, "utf-8");
-      df = dataForge.fromCSV(csvContent);
-    } catch (error) {
-      throw new Error(`Failed to read CSV file: ${error}`);
-    }
-
-    // Validate CSV is not empty
-    if (df.count() === 0) {
-      throw new Error("CSV file is empty or contains no data rows");
-    }
-
-    // Validate target column exists (skip validation for empty string as it's a fallback case)
-    const columnNames = df.getColumnNames();
-    if (!columnNames.includes(config.data.target)) {
-      throw new Error(
-        `Target column '${config.data.target}' does not exist in CSV. Available columns: ${columnNames.join(", ")}`,
-      );
-    }
-
-    // Validate features column exists if specified
-    if (config.data.features && typeof config.data.features === "string") {
-      if (!columnNames.includes(config.data.features)) {
-        throw new Error(
-          `Features column '${config.data.features}' does not exist in CSV. Available columns: ${columnNames.join(", ")}`,
-        );
-      }
-    }
-
-    // Validate and apply trim if specified
-    if (config.data.trim !== undefined) {
-      if (
-        typeof config.data.trim !== "number" ||
-        !Number.isInteger(config.data.trim)
-      ) {
-        throw new Error("Trim value must be an integer");
-      }
-      if (config.data.trim < 0) {
-        throw new Error("Trim value cannot be negative");
-      }
-      if (config.data.trim > df.count()) {
-        throw new Error(
-          `Trim value (${config.data.trim}) cannot be larger than dataset size (${df.count()})`,
-        );
-      }
-      if (config.data.trim > 0) {
-        df = df.take(config.data.trim);
-      }
-    }
-
-    const dfWithoutTarget = df.dropSeries(config.data.target);
-    // Features is single string
-    if (config.data.features && typeof config.data.features === "string") {
-      dfFeatures = df.getSeries(config.data.features).toArray();
-
-      // Features is array of strings - return as object for easy access
-    } else if (config.data.features && Array.isArray(config.data.features)) {
-      dfFeatures = {};
-      config.data.features.forEach((feature: string) => {
-        dfFeatures[feature] = df.getSeries(feature).toArray();
-      });
-      // Features is not defined and there are more than one column
-    } else if (dfWithoutTarget.getColumns().toArray().length > 1) {
-      dfFeatures = dfWithoutTarget.toArray();
-    } else {
-      // Features is not defined and there is only one column
-      dfFeatures = dfWithoutTarget
-        .toArray()
-        .flatMap((feature) => Object.values(feature));
-    }
-
-    // Target is single string
-    if (config.data.target && typeof config.data.target === "string") {
-      dfTarget = df.getSeries(config.data.target).toArray();
-    } else {
-      // Target is not defined and there are more than one column (fallback)
-      dfTarget = df.getSeries(df.getColumnNames()[1]).toArray();
+    if (config.trim > 0) {
+      df = df.take(config.trim);
     }
   }
-  // Direct data arrays (no path)
-  else {
-    // Validate target is required
-    if (!config.data.target) {
-      throw new Error(
-        "Target is required when not using path-based data loading",
-      );
+
+  const dfFeatures = dataForge.fromObject(config.data);
+  const dfTarget = dataForge.fromObject(config.target);
+
+  // Validate each variant has array values and is not empty
+  for (const [key, value] of Object.entries(config.variants)) {
+    if (value.length === 0) {
+      throw new Error(`Variant '${key}' cannot be an empty array`);
     }
-
-    // Validate features is required
-    if (!config.data.features) {
-      throw new Error(
-        "Features is required when not using path-based data loading",
-      );
-    }
-
-    // Validate target is an array
-    if (!Array.isArray(config.data.target)) {
-      throw new Error(
-        "Target must be an array when not using path-based data loading",
-      );
-    }
-
-    // Validate features is an array or object
-    if (
-      !Array.isArray(config.data.features) &&
-      typeof config.data.features !== "object"
-    ) {
-      throw new Error(
-        "Features must be an array or object when not using path-based data loading",
-      );
-    }
-
-    // Validate variants when using direct data
-    if (!config.data.variants) {
-      throw new Error(
-        "Variants property is required when not using path-based data loading",
-      );
-    }
-
-    if (
-      typeof config.data.variants !== "object" ||
-      Array.isArray(config.data.variants)
-    ) {
-      throw new Error("Variants must be an object with array values");
-    }
-
-    // Validate each variant has array values and is not empty
-    for (const [key, value] of Object.entries(config.data.variants)) {
-      if (!Array.isArray(value)) {
-        throw new Error(
-          `Variant '${key}' must be an array, got ${typeof value}`,
-        );
-      }
-      if (value.length === 0) {
-        throw new Error(`Variant '${key}' cannot be an empty array`);
-      }
-    }
-
-    // Create dataframe from direct data
-    df = dataForge.fromObject({
-      features: config.data.features,
-      target: config.data.target,
-    });
-
-    dfFeatures = config.data.features;
-    dfTarget = config.data.target;
   }
 
   return { frame: df, features: dfFeatures, target: dfTarget };
 };
 
-export const getFeatures = (
-  arg: any,
-  features: ArgsContext["features"],
-): any => {
-  let featuresValue: any;
+type ResolvedArg<F extends TFunction> = {
+  args: Parameters<F>;
+  dataIndex: number;
+  features: Record<string, JsonValue> | null;
+  variants: Record<string, JsonValue> | null;
+};
 
-  // Handle features as object (multiple columns)
-  if (typeof features === "object" && !Array.isArray(features)) {
-    const featureColumns = Object.values(features) as any[][];
-    // For object features, find the matching value from any column
-    if (Array.isArray(arg)) {
-      featuresValue = arg.find((argValue) => {
-        if (typeof argValue === "object" && argValue !== null) {
-          return Object.values(argValue).some((propValue) =>
-            featureColumns.some((column) => column.includes(propValue)),
-          );
-        }
-        return featureColumns.some((column) => column.includes(argValue));
-      });
+export const resolveArgs = <
+  F extends TFunction,
+  D extends TData,
+  V extends TVariants,
+>(
+  argsFn: Args<F, D, V>,
+  argContext: ArgsContext<D, V>,
+): Array<ResolvedArg<F>> => {
+  const results: Array<ResolvedArg<F>> = [];
 
-      if (typeof featuresValue === "object" && featuresValue !== null) {
-        const matchingInputValue = Object.values(featuresValue).find(
-          (propValue) =>
-            featureColumns.some((column) => column.includes(propValue)),
-        );
-        featuresValue = matchingInputValue;
-      }
-    } else {
-      if (typeof arg === "object" && arg !== null) {
-        const matchingInputValue = Object.values(arg).find((propValue) =>
-          featureColumns.some((column) => column.includes(propValue)),
-        );
-        featuresValue = matchingInputValue;
-      } else {
-        const matchingColumn = featureColumns.find((column) =>
-          column.includes(arg),
-        );
-        if (matchingColumn) {
-          featuresValue = arg;
-        }
-      }
-    }
-  } else if (Array.isArray(features)) {
-    // Handle features as array (original behavior)
-    if (Array.isArray(arg)) {
-      featuresValue = arg.find((argValue) => {
-        if (typeof argValue === "object" && argValue !== null) {
-          return Object.values(argValue).some((propValue) =>
-            features.includes(propValue as string),
-          );
-        }
-        return features.includes(argValue);
-      });
+  // Track what gets accessed during execution
+  const usedFeatures = new Set<string>();
+  const usedVariants = new Set<string>();
 
-      if (typeof featuresValue === "object" && featuresValue !== null) {
-        const matchingInputValue = Object.values(featuresValue).find(
-          (propValue) => features.includes(propValue as string),
+  const dataKeys = Object.keys(argContext.data);
+  const variantKeys = Object.keys(argContext.variants);
+  const dataLength =
+    dataKeys.length > 0 ? argContext.data[dataKeys[0]].length : 0;
+
+  // Create proxies to track access
+  const createDataProxy = (rowData: Record<string, JsonValue>) =>
+    new Proxy(rowData, {
+      get(target, prop) {
+        if (typeof prop === "string" && dataKeys.includes(prop)) {
+          usedFeatures.add(prop);
+        }
+        return target[prop as string];
+      },
+    });
+
+  const createVariantProxy = (variants: Record<string, JsonValue>) =>
+    new Proxy(variants, {
+      get(target, prop) {
+        if (typeof prop === "string" && variantKeys.includes(prop)) {
+          usedVariants.add(prop);
+        }
+        return target[prop as string];
+      },
+    });
+
+  // Generate variant combinations (start with all, filter later)
+  const allVariantCombos =
+    variantKeys.length === 0
+      ? [{}]
+      : variantKeys.reduce(
+          (acc, key) =>
+            acc.flatMap((combo) =>
+              argContext.variants[key].map((value) => ({
+                ...combo,
+                [key]: value,
+              })),
+            ),
+          [{}] as Array<Record<string, JsonValue>>,
         );
-        featuresValue = matchingInputValue;
-      }
-    } else {
-      if (typeof arg === "object" && arg !== null) {
-        const matchingInputValue = Object.values(arg).find((propValue) =>
-          features.includes(propValue as string),
-        );
-        featuresValue = matchingInputValue;
-      } else if (features.includes(arg)) {
-        featuresValue = arg;
-      }
+
+  // Process each data row with each variant combination
+  for (let dataIndex = 0; dataIndex < dataLength; dataIndex++) {
+    const rowData: Record<string, JsonValue> = {};
+    dataKeys.forEach((key) => {
+      rowData[key] = argContext.data[key][dataIndex];
+    });
+
+    for (const variantCombo of allVariantCombos) {
+      // Create proxied context to track access
+      const proxiedContext = {
+        data: createDataProxy(rowData),
+        variants: createVariantProxy(variantCombo),
+      };
+      console.log("proxiedContext", proxiedContext);
+
+      // Generate args and track what was accessed
+      // Not great, but works.
+      const args = argsFn(
+        proxiedContext as ArgsContext<D, V>,
+      ) as unknown as Parameters<F>;
+
+      // In the resolveArgs function, update the features and variants creation:
+
+      // Extract only the features and variants that were actually used
+      const features: ResolvedArg<F>["features"] = usedFeatures.size
+        ? Object.fromEntries(
+            Array.from(usedFeatures).map((key) => [key, rowData[key]]),
+          )
+        : null;
+
+      const variants: ResolvedArg<F>["variants"] = usedVariants.size
+        ? Object.fromEntries(
+            Array.from(usedVariants).map((key) => [key, variantCombo[key]]),
+          )
+        : null;
+
+      results.push({ args, dataIndex, features, variants });
     }
   }
 
-  return featuresValue;
+  // Filter out duplicate combinations if no variants were actually used
+  if (usedVariants.size === 0) {
+    // Keep only one result per dataIndex
+    const uniqueResults = new Map<number, ResolvedArg<F>>();
+    results.forEach((result) => {
+      if (!uniqueResults.has(result.dataIndex)) {
+        uniqueResults.set(result.dataIndex, result);
+      }
+    });
+    return Array.from(uniqueResults.values());
+  }
+
+  return results;
 };
 
-export const getVariant = (
-  arg: any,
-  variants: ArgsContext["variants"],
-): Record<string, any> => {
-  const variantValues: Record<string, any> = {};
+export function getArgsContext<
+  F extends TFunction,
+  D extends TData,
+  V extends TVariants,
+>(config: Config<F, D, V>): Parameters<Config<F, D, V>["args"]>[0] {
+  // Transform array of objects to object of arrays
+  // Example:
+  // input = [{file: stringify, brand: string}, ...]
+  // ->
+  // input ={file: string[], brand: string[]}
 
-  // For each variant key, find the corresponding value in the current arg
-  Object.entries(variants).forEach(([variantKey, variantArray]) => {
-    // Check if arg is an array (multiple parameters)
-    if (Array.isArray(arg)) {
-      // Find the value that exists in this variant's array
-      const foundValue = arg.find((argValue) => {
-        // Handle object arguments - check if any property value matches
-        if (typeof argValue === "object" && argValue !== null) {
-          return Object.values(argValue).some((propValue) =>
-            variantArray.includes(propValue),
-          );
-        }
-        // Handle primitive arguments
-        return variantArray.includes(argValue);
-      });
+  const data = {} as DataToArrays<D>;
+  config.data.reduce((acc, item) => {
+    Object.entries(item).forEach(([key, value]) => {
+      if (!acc[key]) {
+        acc[key] = [] as (typeof value)[];
+      }
+      (acc[key] as (typeof value)[]).push(value);
+    });
+    return acc;
+  }, data);
 
-      if (foundValue !== undefined) {
-        // If it's an object, find the specific property that matched
-        if (typeof foundValue === "object" && foundValue !== null) {
-          const matchingValue = Object.values(foundValue).find((propValue) =>
-            variantArray.includes(propValue),
-          );
-          variantValues[variantKey] = matchingValue;
-        } else {
-          variantValues[variantKey] = foundValue;
-        }
-      }
-    } else {
-      // Single argument case
-      if (typeof arg === "object" && arg !== null) {
-        const matchingValue = Object.values(arg).find((propValue) =>
-          variantArray.includes(propValue),
-        );
-        if (matchingValue !== undefined) {
-          variantValues[variantKey] = matchingValue;
-        }
-      } else if (variantArray.includes(arg)) {
-        variantValues[variantKey] = arg;
-      }
+  // Return the context object directly, don't call config.args()
+  return {
+    data,
+    variants: config.variants,
+  };
+}
+
+export function getTargets<
+  F extends TFunction,
+  D extends TData,
+  V extends TVariants,
+>(config: Config<F, D, V>) {
+  const { data, target } = config;
+  return data.map((item) => item[target as keyof typeof item]);
+}
+
+// Helper function to apply JsonNull to nullable fields
+export const withPrismaJsonNull = (obj: any) => {
+  const result = { ...obj };
+  Object.keys(result).forEach((key) => {
+    if (result[key] === null || result[key] === undefined) {
+      result[key] = Prisma.JsonNull;
     }
   });
-
-  return variantValues;
-};
-
-export const combineArgs = (args: Array<any>) => {
-  if (args.length === 0) return [];
-
-  const cartesian = (...arrays: any[][]) => {
-    return arrays.reduce(
-      (acc, curr) => acc.flatMap((x) => curr.map((y) => [...x, y])),
-      [[]],
-    );
-  };
-
-  // Handle array of objects with array values
-  if (typeof args[0] === "object" && !Array.isArray(args[0])) {
-    const keys = Object.keys(args[0]);
-    const values = keys.map((key) => args[0][key]);
-    const combinations = cartesian(...values);
-    return combinations.map((combo) => [
-      keys.reduce((obj, key, index) => ({ ...obj, [key]: combo[index] }), {}),
-    ]);
-  }
-
-  // Handle array of arrays
-  return cartesian(...args);
+  return result;
 };

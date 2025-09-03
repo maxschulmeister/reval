@@ -1,31 +1,33 @@
+import type {
+  Eval as PrismaEval,
+  Run as PrismaRun,
+  Status as PrismaStatus,
+} from "@prisma/client/client";
+
 // Prisma types are generated from Prisma schema
-export type Run = {
+export type Eval = PrismaEval;
+
+export type Run = PrismaRun;
+
+export type Reval = { eval: Eval; runs: Run[] };
+
+export type Benchmark = { eval: Eval; runs: Run[] };
+
+export type Status = PrismaStatus;
+
+export interface EvalSummary {
   id: string;
   name: string;
-  notes?: string | null;
-  function: string;
-  features: any; // JSON data
-  target: any; // JSON data
-  variants: any; // JSON data
   timestamp: number;
-};
+  totalRuns: number;
+  successCount: number;
+  errorCount: number;
+  successRate: number;
+  avgTime: number;
+  notes?: string;
+}
 
-export type Execution = {
-  id: string;
-  runId: string;
-  features: any; // JSON data
-  target: any; // JSON data
-  result?: any | null; // JSON data
-  time: number; // in milliseconds
-  retries: number;
-  accuracy: number; // accuracy score
-  status: string; // "success" or "error"
-  variant: any; // JSON data
-};
-
-export type Benchmark = { run: Run; executions: Execution[] };
-
-export enum Status {
-  Success = "success",
-  Error = "error",
+export interface EvalDetails extends EvalSummary {
+  eval: Eval;
+  runs: Run[];
 }

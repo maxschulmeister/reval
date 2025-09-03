@@ -36,7 +36,7 @@ describe('Run Command', () => {
     executions: [
       {
         id: 'exec1',
-        runId: 'run123',
+        run_id: 'run123',
         status: 'success',
         time: 120,
         target: '2',
@@ -44,7 +44,7 @@ describe('Run Command', () => {
       },
       {
         id: 'exec2',
-        runId: 'run123',
+        run_id: 'run123',
         status: 'success',
         time: 180,
         target: 'Paris',
@@ -52,7 +52,7 @@ describe('Run Command', () => {
       },
       {
         id: 'exec3',
-        runId: 'run123',
+        run_id: 'run123',
         status: 'error',
         time: 0,
         target: 'Error case',
@@ -177,7 +177,7 @@ describe('Run Command', () => {
       executions: [
         {
           id: 'exec1',
-          runId: 'run123',
+          run_id: 'run123',
           status: 'success',
           time: 120,
           target: '2',
@@ -185,7 +185,7 @@ describe('Run Command', () => {
         },
         {
           id: 'exec2',
-          runId: 'run123',
+          run_id: 'run123',
           status: 'success',
           time: 180,
           target: 'Paris',

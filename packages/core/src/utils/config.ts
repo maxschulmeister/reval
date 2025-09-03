@@ -2,22 +2,19 @@ import fs from "fs";
 import { createJiti } from "jiti";
 import path from "path";
 import { loadConfig as loadTsConfig, register } from "tsconfig-paths";
+import { NAMESPACE } from "../constants";
+import type {
+  Config,
+  TData,
+  TFunction,
+  TTarget,
+  TVariants,
+} from "../types/config";
 
 /**
  * Configuration validation utilities
  * Provides type-safe validation for config properties with clear error messages
  */
-
-import type { Config } from "../types/config";
-
-// Inline the ParametersToArrays type since we need it here
-type ParametersToArrays<T> = T extends any[]
-  ? {
-      [K in keyof T]: T[K] extends object
-        ? { [P in keyof T[K]]: T[K][P][] }
-        : T[K][];
-    }
-  : never;
 
 /**
  * Validates concurrency value for p-queue
@@ -95,15 +92,13 @@ const validateRetries = (value: number | undefined): number => {
  * @throws Error if any config property is invalid
  */
 export const validateConfig = <
-  F extends (...args: any[]) => Promise<any>,
-  Ft extends string | readonly string[] = string | readonly string[],
-  Vt extends Record<string, readonly unknown[]> = Record<
-    string,
-    readonly unknown[]
-  >,
+  F extends TFunction,
+  D extends TData,
+  V extends TVariants,
+  T extends TTarget<D> = TTarget<D>,
 >(
-  config: Config<F, Ft, Vt>,
-): Config<F, Ft, Vt> => {
+  config: Config<F, D, V, T>,
+): Config<F, D, V, T> => {
   // Validate top-level properties
   const validatedConcurrency = validateConcurrency(config.concurrency);
   const validatedRetries = validateRetries(config.retries);
@@ -124,21 +119,37 @@ export const validateConfig = <
  * @returns The same config object with proper typing
  */
 export function defineConfig<
-  F extends (...args: any[]) => Promise<any>,
-  const Features extends string | readonly string[] = string | string[],
-  const Variants extends Record<string, readonly unknown[]> = Record<
-    string,
-    readonly unknown[]
-  >,
->(config: Config<F, Features, Variants>) {
+  F extends TFunction,
+  D extends TData,
+  V extends TVariants,
+  T extends TTarget<D> = TTarget<D>,
+>(config: Config<F, D, V, T>) {
   return config;
 }
 
-export const loadConfig = async (configPath?: string) => {
+/**
+ * Loads and validates the configuration file
+ * @param configPath - Optional path to the config file. Defaults to "reval.config.ts" in current directory
+ * @returns Promise resolving to the loaded and validated configuration
+ * @throws {Error} If config file is not found or cannot be loaded
+ * @example
+ * ```ts
+ * const config = await loadConfig(); // Loads default reval.config.ts
+ * const config = await loadConfig('./custom-config.ts'); // Loads custom config file
+ * ```
+ */
+export const loadConfig = async <
+  F extends TFunction = TFunction,
+  D extends TData = TData,
+  V extends TVariants = TVariants,
+  T extends TTarget<D> = TTarget<D>,
+>(
+  configPath?: string,
+): Promise<Config<F, D, V, T>> => {
   try {
     const configModulePath = path.resolve(
       process.cwd(),
-      configPath || "reval.config.ts",
+      configPath || `${NAMESPACE}.config.ts`,
     );
 
     if (!fs.existsSync(configModulePath)) {
@@ -176,7 +187,9 @@ export const loadConfig = async (configPath?: string) => {
 
       // Use jiti to import the TypeScript config file
       const configModule = (await jiti.import(configModulePath)) as any;
-      return configModule.default || configModule;
+      const config = (configModule.default || configModule) as Config<F, D, V>;
+
+      return validateConfig(config as Config<F, D, V, T>);
     } finally {
       // Clean up path alias registration
       if (cleanup) {

@@ -1,4 +1,4 @@
-import { runMigrations } from "@reval/core";
+import { migrateDb } from "@reval/core";
 import { Box, Text } from "ink";
 import { useEffect, useState } from "react";
 
@@ -9,17 +9,15 @@ export default function Migrate() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const migrate = async () => {
+    (async () => {
       try {
-        await runMigrations();
+        await migrateDb();
         setStatus("completed");
       } catch (err) {
         setError(err instanceof Error ? err.message : String(err));
         setStatus("error");
       }
-    };
-
-    migrate();
+    })();
   }, []);
 
   if (status === "migrating") {

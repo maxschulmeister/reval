@@ -41,7 +41,7 @@ describe('Show Command', () => {
     executions: [
       {
         id: 'exec1',
-        runId: 'run123',
+        run_id: 'run123',
         status: 'success',
         time: 120,
         target: { expected: 'test result' },
@@ -49,7 +49,7 @@ describe('Show Command', () => {
       },
       {
         id: 'exec2',
-        runId: 'run123',
+        run_id: 'run123',
         status: 'error',
         time: 0,
         target: { expected: 'another result' },
@@ -139,7 +139,7 @@ describe('Show Command', () => {
         ...mockRunDetails.executions,
         ...Array.from({ length: 10 }, (_, i) => ({
           id: `exec${i + 3}`,
-          runId: 'run123',
+          run_id: 'run123',
           status: 'success',
           time: 100 + i,
           target: { expected: `result ${i}` },

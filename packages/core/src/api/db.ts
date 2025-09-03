@@ -1,8 +1,9 @@
 import { execa } from "execa";
 import fs from "fs";
+import { NAMESPACE } from "../constants";
 import { dbOut, dbPath, prismaPath } from "../db";
 
-export async function runMigrations() {
+export async function migrateDb() {
   // Ensure migrations directory exists
   fs.mkdirSync(dbOut, { recursive: true });
 
@@ -16,7 +17,7 @@ export async function runMigrations() {
   );
 }
 
-export async function createDatabase(force = false): Promise<void> {
+export async function createDb(force = false): Promise<void> {
   if (fs.existsSync(dbPath) && !force) {
     throw new Error(
       `Database already exists at ${dbPath}. Use --force to overwrite.`,
@@ -33,14 +34,14 @@ export async function createDatabase(force = false): Promise<void> {
   fs.mkdirSync(dbOut, { recursive: true });
 
   // Copy Prisma schema to local .reval directory
-  const localSchemaPath = `${dbOut}/reval.prisma`;
+  const localSchemaPath = `${dbOut}/${NAMESPACE}.prisma`;
   const originalSchema = fs.readFileSync(prismaPath, "utf8");
 
-  // Modify schema for local use
+  // // Modify schema for local use
   const localSchema = originalSchema
     .replace(
-      'url      = "file:../../.reval/reval.db"',
-      'url      = "file:./reval.db"',
+      `url      = "file:../../.${NAMESPACE}/${NAMESPACE}.db"`,
+      `url      = "file:./${NAMESPACE}.db"`,
     )
     .replace(
       'output   = "./node_modules/@prisma/client"',

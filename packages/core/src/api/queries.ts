@@ -1,26 +1,9 @@
 import { getDb } from "../db";
-import type { Execution, Run } from "../types";
+import type { Eval, EvalDetails, EvalSummary } from "../types";
 
-export interface RunSummary {
-  id: string;
-  name: string;
-  timestamp: number;
-  totalExecutions: number;
-  successCount: number;
-  errorCount: number;
-  successRate: number;
-  avgTime: number;
-  notes?: string;
-}
-
-export interface RunDetails extends RunSummary {
-  run: Run;
-  executions: Execution[];
-}
-
-export async function listRuns(limit = 20): Promise<RunSummary[]> {
+export async function listEvals(limit = 20): Promise<EvalSummary[]> {
   const prisma = getDb();
-  const runsData = await prisma.run.findMany({
+  const evalsData = await prisma.eval.findMany({
     select: {
       id: true,
       name: true,
@@ -33,11 +16,11 @@ export async function listRuns(limit = 20): Promise<RunSummary[]> {
     take: limit,
   });
 
-  const runSummaries = await Promise.all(
-    runsData.map(async (run) => {
-      const executionsData = await prisma.execution.findMany({
+  const evalSummaries = await Promise.all(
+    evalsData.map(async (evalData) => {
+      const runsData = await prisma.run.findMany({
         where: {
-          runId: run.id,
+          eval_id: evalData.id,
         },
         select: {
           status: true,
@@ -45,191 +28,167 @@ export async function listRuns(limit = 20): Promise<RunSummary[]> {
         },
       });
 
-      const totalExecutions = executionsData.length;
-      const successCount = executionsData.filter(
-        (e) => e.status === "success",
+      const totalRuns = runsData.length;
+      const successCount = runsData.filter(
+        (r) => r.status === "success",
       ).length;
-      const errorCount = totalExecutions - successCount;
-      const successRate =
-        totalExecutions > 0 ? (successCount / totalExecutions) * 100 : 0;
+      const errorCount = totalRuns - successCount;
+      const successRate = totalRuns > 0 ? (successCount / totalRuns) * 100 : 0;
       const avgTime =
-        totalExecutions > 0
-          ? executionsData.reduce((sum, e) => sum + e.time, 0) / totalExecutions
+        totalRuns > 0
+          ? runsData.reduce((sum, r) => sum + r.time, 0) / totalRuns
           : 0;
 
       return {
-        id: run.id,
-        name: run.name,
-        timestamp: Number(run.timestamp),
-        totalExecutions,
+        id: evalData.id,
+        name: evalData.name,
+        timestamp: Number(evalData.timestamp),
+        totalRuns,
         successCount,
         errorCount,
         successRate,
         avgTime,
-        notes: run.notes || undefined,
+        notes: evalData.notes || undefined,
       };
     }),
   );
 
-  return runSummaries;
+  return evalSummaries;
 }
 
-export async function getRunSummary(runId: string): Promise<RunSummary | null> {
+export async function getEvalSummary(
+  eval_id: string,
+): Promise<EvalSummary | null> {
   const prisma = getDb();
-  const run = await prisma.run.findUnique({
-    where: { id: runId },
+  const evalData = await prisma.eval.findUnique({
+    where: { id: eval_id },
   });
 
-  if (!run) {
+  if (!evalData) {
     return null;
   }
 
-  const executionsData = await prisma.execution.findMany({
-    where: { runId },
+  const runsData = await prisma.run.findMany({
+    where: { eval_id },
     select: {
       status: true,
       time: true,
     },
   });
 
-  const totalExecutions = executionsData.length;
-  const successCount = executionsData.filter(
-    (e) => e.status === "success",
-  ).length;
-  const errorCount = totalExecutions - successCount;
-  const successRate =
-    totalExecutions > 0 ? (successCount / totalExecutions) * 100 : 0;
+  const totalRuns = runsData.length;
+  const successCount = runsData.filter((r) => r.status === "success").length;
+  const errorCount = totalRuns - successCount;
+  const successRate = totalRuns > 0 ? (successCount / totalRuns) * 100 : 0;
   const avgTime =
-    totalExecutions > 0
-      ? executionsData.reduce((sum, e) => sum + e.time, 0) / totalExecutions
+    totalRuns > 0
+      ? runsData.reduce((sum, r) => sum + r.time, 0) / totalRuns
       : 0;
 
   return {
-    id: run.id,
-    name: run.name,
-    timestamp: Number(run.timestamp),
-    totalExecutions,
+    id: evalData.id,
+    name: evalData.name,
+    timestamp: Number(evalData.timestamp),
+    totalRuns,
     successCount,
     errorCount,
     successRate,
     avgTime,
-    notes: run.notes || undefined,
+    notes: evalData.notes || undefined,
   };
 }
 
-export async function getRunDetails(runId: string): Promise<RunDetails | null> {
+export async function getEvalDetails(
+  eval_id: string,
+): Promise<EvalDetails | null> {
   const prisma = getDb();
-  const runData = await prisma.run.findUnique({
-    where: { id: runId },
+  const evalData = await prisma.eval.findUnique({
+    where: { id: eval_id },
   });
 
-  if (!runData) {
+  if (!evalData) {
     return null;
   }
 
-  const executionsData = await prisma.execution.findMany({
-    where: { runId },
+  const runs = await prisma.run.findMany({
+    where: {
+      eval_id,
+    },
   });
 
-  // Convert JSON strings back to objects for compatibility
-  const run: Run = {
-    id: runData.id,
-    name: runData.name,
-    notes: runData.notes,
-    function: runData.function,
-    features: JSON.parse(runData.features as string),
-    target: JSON.parse(runData.target as string),
-    variants: JSON.parse(runData.variants as string),
-    timestamp: Number(runData.timestamp),
+  const eval_: Eval = {
+    id: evalData.id,
+    name: evalData.name,
+    notes: evalData.notes,
+    function: evalData.function,
+    timestamp: evalData.timestamp,
   };
 
-  const executions: Execution[] = executionsData.map((exec) => ({
-    id: exec.id,
-    runId: exec.runId,
-    features: JSON.parse(exec.features as string),
-    target: JSON.parse(exec.target as string),
-    result: exec.result ? JSON.parse(exec.result as string) : null,
-    time: exec.time,
-    retries: exec.retries,
-    accuracy: exec.accuracy ?? 0,
-    status: exec.status,
-    variant: JSON.parse(exec.variant as string),
-  }));
-
-  const totalExecutions = executionsData.length;
-  const successCount = executionsData.filter(
-    (e) => e.status === "success",
-  ).length;
-  const errorCount = totalExecutions - successCount;
-  const successRate =
-    totalExecutions > 0 ? (successCount / totalExecutions) * 100 : 0;
+  const totalRuns = runs.length;
+  const successCount = runs.filter((r) => r.status === "success").length;
+  const errorCount = totalRuns - successCount;
+  const successRate = totalRuns > 0 ? (successCount / totalRuns) * 100 : 0;
   const avgTime =
-    totalExecutions > 0
-      ? executionsData.reduce((sum, e) => sum + e.time, 0) / totalExecutions
-      : 0;
+    totalRuns > 0 ? runs.reduce((sum, r) => sum + r.time, 0) / totalRuns : 0;
 
   return {
-    id: run.id,
-    name: run.name,
-    timestamp: Number(run.timestamp),
-    totalExecutions,
+    id: evalData.id,
+    name: evalData.name,
+    timestamp: Number(evalData.timestamp),
+    totalRuns,
     successCount,
     errorCount,
     successRate,
     avgTime,
-    notes: run.notes || undefined,
-    run,
-    executions,
+    notes: evalData.notes || undefined,
+    eval: eval_,
+    runs,
   };
 }
 
-export async function exportRun(
-  runId: string,
+export async function exportEval(
+  eval_id: string,
   format: "json" | "csv" = "json",
 ): Promise<string> {
-  const details = await getRunDetails(runId);
+  const details = await getEvalDetails(eval_id);
 
   if (!details) {
-    throw new Error(`Run with id ${runId} not found`);
+    throw new Error(`Eval with id ${eval_id} not found`);
   }
 
   if (format === "json") {
     return JSON.stringify(details, null, 2);
   }
 
-  // CSV format
-  if (details.executions.length === 0) {
-    return "id,runId,features,target,result,time,retries,accuracy,status,variant,error\n";
+  if (format === "csv") {
+    const headers = [
+      "id",
+      "eval_id",
+      "target",
+      "result",
+      "time",
+      "retries",
+      "accuracy",
+      "status",
+    ];
+
+    const rows = details.runs.map((run) => [
+      run.id,
+      run.eval_id,
+      run.target,
+      run.result,
+      run.time,
+      run.retries,
+      run.accuracy,
+      run.status,
+    ]);
+
+    const csvContent = [headers, ...rows]
+      .map((row) => row.map((cell) => JSON.stringify(cell)).join(","))
+      .join("\n");
+
+    return csvContent;
   }
 
-  const headers = [
-    "id",
-    "runId",
-    "features",
-    "target",
-    "result",
-    "time",
-    "retries",
-    "accuracy",
-    "status",
-    "variant",
-    "error",
-  ];
-  const rows = details.executions.map((execution) => [
-    execution.id,
-    execution.runId,
-    JSON.stringify(execution.features),
-    JSON.stringify(execution.target),
-    JSON.stringify(execution.result),
-    execution.time,
-    execution.retries,
-    execution.accuracy,
-    execution.status,
-    JSON.stringify(execution.variant),
-    execution.status === "error" && execution.result?.error
-      ? execution.result.error
-      : "",
-  ]);
-
-  return [headers.join(","), ...rows.map((row) => row.join(","))].join("\n");
+  throw new Error(`Unsupported format: ${format}`);
 }

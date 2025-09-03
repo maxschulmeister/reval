@@ -19,5 +19,5 @@
     "noEmit": true,
     "outDir": "./dist"
   },
-  "exclude": ["node_modules", "dist", ".reval", "*/**/*.test.*"]
+  "exclude": ["node_modules", "dist", ".reval"]
 }

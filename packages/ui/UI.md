@@ -11,9 +11,9 @@
 
 **Step 1: Header Section**
 
-- **Top Left:** Dropdown select for choosing the run to display.
-  - Options: Use run `name` as display text, `id` as value.
-  - On selection, update the page content to show data for the selected run.
+- **Top Left:** Dropdown select for choosing the eval to display.
+  - Options: Use eval `name` as display text, `id` as value.
+  - On selection, update the page content to show data for the selected eval.
 - **Top Right:**
   - Secondary button: Link to GitHub ([www.github.com](www.github.com)).
   - Primary button: Link to documentation ([www.google.com](www.google.com)).
@@ -28,13 +28,13 @@
 
 **Step 3: Summary Rows (Above Table)**
 
-- **First Summary Row:** Display aggregated metrics for the selected run.
+- **First Summary Row:** Display aggregated metrics for the selected eval.
   - Columns:
     - Function name (clickable collapsible to show the function code as a string in a code syntax highlighter, e.g., using Prism.js or react-syntax-highlighter).
-    - Timestamp of the run.
-    - Number of Executions.
+    - Timestamp of the eval.
+    - Number of Runs.
     - Success rate (percentage).
-    - Average execution time.
+    - Average run time.
 - **Second Summary Row:** Empty row with a placeholder comment: `<!-- Placeholder for future charts insertion -->`.
 
 **Step 4: Main Table**

@@ -1,162 +1,80 @@
-import type { JsonObject, JsonValue } from "@prisma/client/runtime/library";
+import type { JsonValue } from "@prisma/client/runtime/library";
 
-/**
- * Specifies the data source for the benchmark.
- */
-export interface Config<
-  // We're assuming csv can only include strings, if the function needs other inputs this ensures the user will be prompted to handle it.
-  Fn extends (...args: string[]) => Promise<unknown>,
-  Ft extends string | readonly string[] = string | readonly string[],
-  Vt extends Record<string, readonly unknown[]> = Record<
-    string,
-    readonly unknown[]
-  >,
-> {
-  /**
-   * Maximum number of concurrent Executions to run in parallel.
-   * Defaults to the number of CPU cores available.
-   */
-  concurrency?: number;
-  /**
-   * Number of times to retry a failed execution before marking it as failed.
-   * Defaults to 0 (no retries).
-   */
-  retries?: number;
-  /**
-   * Time interval in milliseconds between each execution batch.
-   * Useful for rate limiting API calls. Defaults to 0 (no delay).
-   */
-  interval?: number;
-  data: ConfigData & { features?: Ft; variants: Vt };
-  /**
-   * Configures the function to be executed for the benchmark.
-   */
-  run: {
-    /**
-     * The function to be benchmarked. This is required.
-     */
-    function: Fn;
-    /**
-     * Defines the arguments to be passed to the benchmarked function.
-     * Can be a function that receives context with data and variants,
-     * or a static array for simple cases.
-     * e.g.
-     *   args: (context) => [context.data.input, context.variants.model]
-     * or
-     *   args: (context: any) => [
-     *     {
-     *       file: context.data.input,
-     *       ocrModel: context.variants.models.ocr,
-     *       extractModel: context.variants.models.extract,
-     *     },
-     *   ],
-     */
-    args: (
-      context: ArgsContext<ConfigData & { features?: Ft; variants: Vt }>,
-    ) => Array<JsonObject | JsonValue>;
+export type Primitive = string | number | boolean;
+export type Target = Primitive;
 
-    /**
-     * Object to map metrics directly to properties of the return type of the function that ran.
-     * defaults to OpenAI specification:
-     *   (context) => ({
-     *     response: context.choices[0].message.content,
-     *     token: {
-     *       features: context.usage.prompt_tokens,
-     *       target: context.usage.completion_tokens,
-     *     }
-     *   })
-     * example:
-     * metrics: (context) => ({
-     *   response: context.result,
-     *   tokens: {
-     *     features: context.tokens_in,
-     *     target: context.tokens_out,
-     *   },
-     *   totalTokens: context.tokens_in + context.tokens_out,
-     * }),
-     */
-    result: (context: Awaited<ReturnType<Fn>>) => {
-      output: string;
-    } & JsonObject;
-  };
-}
-
-export interface ConfigData {
-  /**
-   * Path to the data file (e.g., CSV). Defaults to `data.csv`.
-   */
-  path?: string;
-  /**
-   * The column name(s) for the input data. Can be a single column name or an array of column names.
-   * When an array is provided, features will be accessible as an object in the context.
-   * Defaults to the first column.
-   */
-  features?: string | string[];
-  /**
-   * The column name for the expected output. All others are treated as features.
-   */
-  target?: string;
-  /**
-   * Defines the variables to be tested. Reval will generate a benchmark for each
-   * possible combination of these variants.
-   * Can be an object or an array for simpler cases (e.g., `variants: ["gpt-4.1", "gemini-2.5"]`).
-   *
-   * Example: Test different models for OCR and extraction tasks.
-   * Each property must be an array.
-   *   models: {
-   *     ocr: ["gemini-2.5", "o4-mini-high"],
-   *     extract: ["gemini-2.5", "o4-mini-high"],
-   *   },
-   * Example: Test different prompts.
-   *   prompts: [
-   *     "create a concise summary of the attached document.",
-   *     "create a comprehensive summary of the attached document.",
-   *   ],
-   * Example: Test a range of temperatures.
-   *   temperatures: () => Array.from({ length: 11 }, (_, i) =>
-   *     Number((i * 0.1).toFixed(1))
-   *   ),
-   */
-  variants: Record<string, any[]>;
-  /**
-   * Limits the number of data rows to process from the dataset.
-   * Useful for testing with a subset of data. If not specified, all rows are processed.
-   */
-  trim?: number;
-}
-
-// Normalizes the features context based on the input form
-type FeaturesContext<F> = F extends readonly (infer K extends string)[]
-  ? Record<K, string[]>
-  : F extends string
-    ? string[]
-    : Record<string, string[]>;
-
-// Infers the selected variant value type for each key
-type VariantsContext<V> = {
-  [K in keyof V]: V[K] extends readonly (infer U)[]
-    ? U
-    : V[K] extends (infer U)[]
-      ? U
-      : never;
-};
-
-// Resolved data form used at execution time (arrays for features/target)
-type ResolvedData<D extends ConfigData> = Omit<
-  D,
-  "features" | "target" | "variants"
-> & {
-  features: FeaturesContext<D["features"]>;
-  target: unknown[];
-  variants: VariantsContext<D["variants"]>;
-};
-
-// Create ArgsContext from a full config object
-export type ArgsContextFromConfig<T> = T extends {
-  data: infer D extends ConfigData;
-}
-  ? ResolvedData<D>
+export type TFunction = (...args: any[]) => Promise<unknown> | unknown;
+export type TData = readonly Record<string, JsonValue>[];
+export type TVariants = Record<string, JsonValue[]>;
+export type TTarget<D extends TData> = keyof D[number] extends string
+  ? keyof D[number]
   : never;
 
-// Resolved ArgsContext directly from ConfigData
-export type ArgsContext<T extends ConfigData = ConfigData> = ResolvedData<T>;
+export interface Config<
+  F extends TFunction = TFunction,
+  D extends TData = TData,
+  V extends TVariants = TVariants,
+  T extends TTarget<D> = TTarget<D>,
+> {
+  concurrency?: number;
+  retries?: number;
+  interval?: number;
+  trim?: number;
+  dry?: boolean;
+  data: D;
+  target: T;
+  variants: V;
+  function: F;
+  args: Args<F, D, V>;
+  result: (context: ResultContext<F>) => {
+    output: JsonValue;
+  } & Record<string, JsonValue>;
+}
+
+export type Args<F extends TFunction, D extends TData, V extends TVariants> = (
+  context: ArgsContext<D, V>,
+) => ParametersToArrays<F>;
+
+export type ArgsContext<D extends TData, V extends TVariants> = {
+  data: DataToArrays<D>;
+  variants: V;
+};
+
+export type ResultContext<F extends TFunction> =
+  ReturnType<F> extends Promise<infer U> ? U : ReturnType<F>;
+
+type ParametersToArrays<F> = F extends TFunction
+  ? ArgsToArrays<Parameters<F>>
+  : never;
+
+// TODO: NOT fully type safe. Object allows foreign keys (TS limitation)
+export type ArgsToArrays<A> = A extends [infer First, ...infer Rest]
+  ? First extends object
+    ? [{ [K in keyof First]: First[K][] }, ...ArgsToArrays<Rest>]
+    : First extends Primitive
+      ? [First[], ...ArgsToArrays<Rest>]
+      : never
+  : [];
+
+export type ArgsArraysToSingles<A> = A extends [infer First, ...infer Rest]
+  ? First extends object
+    ? [
+        { [K in keyof First]: First[K] extends [infer X] ? X : never },
+        ...ArgsArraysToSingles<Rest>,
+      ]
+    : First extends Primitive
+      ? [First extends [infer X] ? X : never, ...ArgsArraysToSingles<Rest>]
+      : never
+  : [];
+
+export type DataToArrays<D> = D extends (infer U)[]
+  ? U extends object
+    ? { [K in keyof U]: U[K][] }
+    : never
+  : never;
+
+export type DataArraysToSingles<D> = D extends (infer U)[]
+  ? U extends object
+    ? { [K in keyof U]: U[K] extends [infer X] ? X : never }
+    : never
+  : never;

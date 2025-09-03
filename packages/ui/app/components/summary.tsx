@@ -8,7 +8,7 @@ import { Button } from "./ui/button";
 import { Cell } from "./ui/cell";
 import { H5, Small } from "./ui/typography";
 
-export const Summary = ({ run, executions }: Benchmark) => {
+export const Summary = ({ eval: evalData, runs }: Benchmark) => {
   return (
     <Cell className="border-b border-border">
       {/* Function summary */}
@@ -17,7 +17,7 @@ export const Summary = ({ run, executions }: Benchmark) => {
         <Small as="dd" className="mr-8">
           <CodeDialog
             title="Function"
-            content={jsBeautify(run.function, {
+            content={jsBeautify(evalData.function, {
               indent_size: 4,
               indent_char: " ",
             })}
@@ -40,24 +40,24 @@ export const Summary = ({ run, executions }: Benchmark) => {
             dateStyle: "long",
             timeStyle: "short",
             // timeZoneName: "short",
-          }).format(run.timestamp)}
+          }).format(Number(evalData.timestamp))}
         </Small>
 
-        {/* Executions Summary */}
-        <H5 as="dt">Executions</H5>
+        {/* Runs Summary */}
+        <H5 as="dt">Runs</H5>
         <Small as="dd" className="mr-8">
-          {executions.length}
+          {runs.length}
         </Small>
 
         {/* Success Rate Summary */}
         <H5 as="dt">Success Rate</H5>
         <Small as="dd" className="mr-8">
-          {calculateSuccessRate(executions)}%
+          {calculateSuccessRate(runs)}%
         </Small>
         {/* Average Time Summary */}
         <H5 as="dt">Avg Time</H5>
         <Small as="dd" className="mr-8">
-          {calculateAverageTime(executions)}ms
+          {calculateAverageTime(runs)}ms
         </Small>
       </dl>
     </Cell>

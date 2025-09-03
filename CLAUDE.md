@@ -122,7 +122,7 @@ export default defineConfig({
 
 - CLI uses core's programmatic APIs from `src/api/`
 - `run()` function accepts RunOptions for overrides (concurrency, retries, dryRun)
-- Query helpers: `listRuns()`, `getRunDetails()`, `exportRun()`
+- Query helpers: `listEvals()`, `getEvalDetails()`, `exportEval()`
 - Migration helpers: `runMigrations()`, `initializeDatabase()`
 
 ### Testing Strategy

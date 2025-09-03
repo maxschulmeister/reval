@@ -40,12 +40,23 @@ export default defineConfig({
   },
   plugins: [
     {
-      name: "copy-prisma-schema",
+      name: "copy-templates",
       writeBundle() {
         // Copy Prisma Schema to dist directory
         copyFileSync(
           resolve(__dirname, `${NAMESPACE}.prisma`),
           resolve(__dirname, `dist/${NAMESPACE}.prisma`),
+        );
+        // Copy Config
+        copyFileSync(
+          resolve(__dirname, `${NAMESPACE}.config.ts`),
+          resolve(__dirname, `dist/${NAMESPACE}.config.ts`),
+        );
+
+        // Copy Sample Data
+        copyFileSync(
+          resolve(__dirname, `sample.json`),
+          resolve(__dirname, `dist/sample.json`),
         );
       },
     },
