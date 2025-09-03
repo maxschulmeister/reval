@@ -27,6 +27,7 @@ declare module "@tanstack/react-table" {
 }
 
 const COLUMN_ORDER = [
+  "status",
   "features",
   "variants",
   "target",
@@ -34,7 +35,6 @@ const COLUMN_ORDER = [
   "accuracy",
   "time",
   "retries",
-  "status",
 ] as const;
 
 const createSortableHeader = (title: string) => {

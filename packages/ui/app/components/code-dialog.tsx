@@ -24,7 +24,7 @@ export const CodeDialog = ({ title, content, trigger }: CodeDialogProps) => {
   return (
     <Dialog>
       {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
-      <DialogContent className="bg-background border-border rounded-radius w-full max-w-[60rem] shadow-none">
+      <DialogContent className="rounded-radius w-full max-w-[60rem] border-border bg-background shadow-none">
         <DialogHeader>
           <DialogTitle className="text-foreground capitalize">
             {title}

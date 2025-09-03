@@ -24,6 +24,7 @@ export const EvalPageClient = ({
           evals={evals}
           currentEvalId={currentEvalId}
           currentEvalName={evalData.eval.name}
+          currentEval={evalData.eval}
         />
 
         <Summary {...evalData} />

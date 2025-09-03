@@ -34,7 +34,7 @@ export const Summary = ({ eval: evalData, runs }: Benchmark) => {
         </Small>
 
         {/* Timestamp Summary */}
-        <H5 as="dt">Timestamp</H5>
+        <H5 as="dt">Date</H5>
         <Small as="dd" className="mr-8">
           {new Intl.DateTimeFormat("en-GB", {
             dateStyle: "long",

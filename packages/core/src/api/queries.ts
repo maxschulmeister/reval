@@ -192,3 +192,34 @@ export async function exportEval(
 
   throw new Error(`Unsupported format: ${format}`);
 }
+
+export async function deleteEval(eval_id: string): Promise<void> {
+  const prisma = getDb();
+  
+  // Delete the eval (runs will be deleted automatically due to CASCADE)
+  const deletedEval = await prisma.eval.delete({
+    where: { id: eval_id },
+  });
+  
+  if (!deletedEval) {
+    throw new Error(`Eval with id ${eval_id} not found`);
+  }
+}
+
+export async function updateEval(
+  eval_id: string,
+  updates: { name?: string; notes?: string }
+): Promise<Eval> {
+  const prisma = getDb();
+  
+  const updatedEval = await prisma.eval.update({
+    where: { id: eval_id },
+    data: updates,
+  });
+  
+  if (!updatedEval) {
+    throw new Error(`Eval with id ${eval_id} not found`);
+  }
+  
+  return updatedEval;
+}
