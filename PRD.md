@@ -13,7 +13,7 @@ To become the industry-standard tool for benchmarking LLM-based applications, em
 ### Core Functionality
 
 - Support for TypeScript/JavaScript functions only.
-- Benchmark text-to-text functions.
+- Reval text-to-text functions.
 - Handle CSV data using `data-forge`.
 - Calculate essential metrics like speed and accuracy.
 - Store benchmark runs and results in a local SQLite database.
@@ -27,7 +27,7 @@ To become the industry-standard tool for benchmarking LLM-based applications, em
 
 - **Background:** Sarah works at a fintech company building an LLM-powered SQL query generator.
 - **Goals:**
-  - Benchmark the accuracy of SQL query generation against a test dataset.
+  - Reval the accuracy of SQL query generation against a test dataset.
   - Track performance metrics like generation speed and success rate.
   - Compare different model versions using standardized test cases.
   - Share benchmark results with the engineering team.
@@ -60,7 +60,6 @@ input,expected_output
 ```
 
 - **Input Column:**
-
   - Can contain direct text input OR
   - File paths (e.g., for images or documents)
   - UTF-8 encoded
@@ -75,11 +74,9 @@ input,expected_output
 ## 6. User Flow
 
 1.  **Setup:**
-
     - No installation is needed. The project is run directly using `bun`.
 
 2.  **Configuration:**
-
     - Edit `reval.config.ts` to define the benchmark parameters, data source, and function to test.
 
 3.  **Execution:**

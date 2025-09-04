@@ -84,7 +84,7 @@ export default defineConfig({
     variants: { models: ["gpt-4", "claude"] },
   },
   run: {
-    function: yourBenchmarkFunction,
+    function: yourRevalFunction,
     args: (context) => [context.features, context.variants.models],
     result: (response) => ({
       prediction: response.content,
@@ -110,7 +110,7 @@ export default defineConfig({
 
 ## Key Implementation Details
 
-### Benchmark Execution Flow
+### Reval Execution Flow
 
 1. Load config via `loadConfig()` from `src/utils/`
 2. Load CSV data via `loadData()` using data-forge
