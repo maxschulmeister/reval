@@ -114,7 +114,7 @@ export default function Show({ args, options }: Props) {
               {run.status.toUpperCase()}
             </Text>{" "}
             <Text>({run.time}ms)</Text>
-            <Text>(accuracy: {run.accuracy})</Text>
+            <Text>(score: {run.score.accuracy})</Text>
           </Text>
           <Text color="gray"> Target: {JSON.stringify(run.target)}</Text>
           {run.result && (
@@ -129,10 +129,7 @@ export default function Show({ args, options }: Props) {
       ))}
 
       {details.runs.length > 5 && (
-        <Text color="gray">
-          {" "}
-          ... and {details.runs.length - 5} more runs
-        </Text>
+        <Text color="gray"> ... and {details.runs.length - 5} more runs</Text>
       )}
 
       <Text></Text>

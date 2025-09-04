@@ -17,9 +17,9 @@ import type {
 } from "../types";
 import { Status } from "../types";
 import {
-  calculateAccuracy,
   ensureJson,
   getArgsContext,
+  getScore,
   getTargets,
   resolveArgs,
   withPrismaJsonNull,
@@ -150,9 +150,7 @@ export const runEval = async <
 
         const target = getTargets(config)[dataIndex];
 
-        const accuracy = result.output
-          ? calculateAccuracy(result.output, target)
-          : null;
+        const score = result.output ? getScore(result.output, target) : null;
 
         const run: Run = {
           id,
@@ -162,7 +160,7 @@ export const runEval = async <
           retries: retryCount,
           status,
           target,
-          accuracy,
+          score,
           args,
           features,
           variants,

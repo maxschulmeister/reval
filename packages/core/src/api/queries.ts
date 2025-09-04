@@ -151,6 +151,7 @@ export async function exportEval(
   format: "json" | "csv" = "json",
 ): Promise<string> {
   const details = await getEvalDetails(eval_id);
+  const prisma = getDb();
 
   if (!details) {
     throw new Error(`Eval with id ${eval_id} not found`);
@@ -161,27 +162,9 @@ export async function exportEval(
   }
 
   if (format === "csv") {
-    const headers = [
-      "id",
-      "eval_id",
-      "target",
-      "result",
-      "time",
-      "retries",
-      "accuracy",
-      "status",
-    ];
+    const headers = Object.keys(prisma.run.fields);
 
-    const rows = details.runs.map((run) => [
-      run.id,
-      run.eval_id,
-      run.target,
-      run.result,
-      run.time,
-      run.retries,
-      run.accuracy,
-      run.status,
-    ]);
+    const rows = details.runs.map((run) => [...Object.values(details.runs)]);
 
     const csvContent = [headers, ...rows]
       .map((row) => row.map((cell) => JSON.stringify(cell)).join(","))

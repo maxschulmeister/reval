@@ -22,9 +22,14 @@ export const DataCharts = ({ eval: evalData, runs }: Reval) => {
     // Get numeric keys from the first run
     const allNumericKeys =
       runs.length > 0
-        ? Object.keys(runs[0]).filter(
-            (key) => typeof runs[0][key as keyof (typeof runs)[0]] === "number",
-          )
+        ? Object.keys(runs[0]).filter((key) => {
+            // use only numeric values or array where first item is numeric
+            const value = runs[0][key as keyof (typeof runs)[0]];
+            return (
+              typeof value === "number" ||
+              (Array.isArray(value) && typeof value[0] === "number")
+            );
+          })
         : [];
 
     // Get unique variant combinations
