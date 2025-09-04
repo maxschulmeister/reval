@@ -123,8 +123,8 @@ export default function Eval({ options }: Props) {
     avgTime:
       result.runs.reduce((sum: number, r: any) => sum + r.time, 0) /
       result.runs.length,
-    avgAccuracy:
-      result.runs.reduce((sum: number, r: any) => sum + r.accuracy, 0) /
+    avgScore:
+      result.runs.reduce((sum: number, r: any) => sum + r.score.accuracy, 0) /
       result.runs.length,
   };
 
@@ -147,7 +147,7 @@ export default function Eval({ options }: Props) {
       </Text>
       <Text> Errors: {summary.errorCount}</Text>
       <Text> Average time: {summary.avgTime.toFixed(2)}ms</Text>
-      <Text> Average accuracy: {summary.avgAccuracy.toFixed(2)}</Text>
+      <Text> Average accuracy: {summary.avgScore.toFixed(2)}</Text>
       <Text></Text>
       <Text color="gray">Results saved to database at: ./.reval/reval.db</Text>
       <Text color="gray">

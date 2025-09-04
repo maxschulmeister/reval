@@ -28,9 +28,8 @@ model Run {
   result   Json?
   time     Float
   retries  Int
-  accuracy Float? @default(0)
+  score    Json?
   status   Status
-
   args      Json
   features  Json?
   variants  Json?

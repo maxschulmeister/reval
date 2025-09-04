@@ -1,4 +1,5 @@
 import type { JsonValue } from "@prisma/client/runtime/library";
+import type { Score } from "../../types";
 import { calculateJsonAccuracy } from "./json";
 import { calculateNumberAccuracy } from "./number";
 import { calculateStringAccuracy } from "./text";
@@ -9,10 +10,7 @@ import { calculateStringAccuracy } from "./text";
  * @param result - The actual value
  * @returns Accuracy as a percentage (0-100) or null if types don't match
  */
-export function calculateAccuracy(
-  result: JsonValue,
-  target: JsonValue,
-): number | null {
+export function getScore(result: JsonValue, target: JsonValue): Score {
   // Check if both values are of the same type
   const resultType = typeof result;
   const targetType = typeof target;
@@ -23,21 +21,28 @@ export function calculateAccuracy(
 
   // Handle number comparison
   if (resultType === "number" && targetType === "number") {
-    return calculateNumberAccuracy(result as number, target as number);
+    return {
+      accuracy: calculateNumberAccuracy(result as number, target as number),
+    };
   }
 
-  // // If both are valid JSON, use JSON comparison
-  // if (targetJson !== null && resultJson !== null) {
-  //   return calculateJsonAccuracy(targetJson, resultJson);
-  // }
   // Handle object comparison
   if (resultType === "object" && targetType === "object") {
-    return calculateJsonAccuracy(result, target);
+    return {
+      accuracy: calculateJsonAccuracy(result, target),
+    };
   }
 
   // Handle string comparison
   if (resultType === "string" && targetType === "string") {
-    return calculateStringAccuracy(result as string, target as string);
+    return {
+      accuracy: calculateStringAccuracy(result as string, target as string),
+    };
+  }
+
+  // Handle boolean comparison
+  if (resultType === "boolean" && targetType === "boolean") {
+    return { accuracy: result === target ? 100 : 0 };
   }
 
   // For other types, return null (unsupported)

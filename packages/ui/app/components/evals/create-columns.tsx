@@ -32,7 +32,7 @@ const COLUMN_ORDER = [
   "variants",
   "target",
   "result",
-  "accuracy",
+  "score",
   "time",
   "retries",
 ] as const;

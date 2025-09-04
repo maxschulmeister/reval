@@ -1,5 +1,6 @@
-import type { JsonValue } from "@prisma/client/runtime/library";
+import type { JsonObject, JsonValue } from "@prisma/client/runtime/library";
 import { diff } from "json-diff";
+import type { Primitive } from "../../types";
 import { calculateNumberAccuracy } from "./number";
 import { calculateStringAccuracy } from "./text";
 
@@ -96,8 +97,8 @@ export function calculateJsonDiffAccuracy(
 export function calculateJsonAccuracy(
   result: JsonValue,
   target: JsonValue,
-): number {
-  const accuracies: number[] = [];
+): Array<Primitive | JsonObject> {
+  const accuracies: Record<string, number> = {};
 
   // Helper function to recursively compare objects
   const compareValues = (
@@ -107,11 +108,11 @@ export function calculateJsonAccuracy(
   ): void => {
     // Handle null/undefined cases
     if (targetVal === null && resultVal === null) {
-      accuracies.push(100);
+      accuracies[path] = 100;
       return;
     }
     if (targetVal === undefined && resultVal === undefined) {
-      accuracies.push(100);
+      accuracies[path] = 100;
       return;
     }
     if (
@@ -120,7 +121,7 @@ export function calculateJsonAccuracy(
       resultVal === null ||
       resultVal === undefined
     ) {
-      accuracies.push(0);
+      accuracies[path] = 0;
       return;
     }
 
@@ -129,21 +130,23 @@ export function calculateJsonAccuracy(
     const resultType = typeof resultVal;
 
     if (targetType !== resultType) {
-      accuracies.push(0);
+      accuracies[path] = 0;
       return;
     }
 
     // Handle different types
     if (targetType === "string") {
-      accuracies.push(
-        calculateStringAccuracy(targetVal as string, resultVal as string),
+      accuracies[path] = calculateStringAccuracy(
+        targetVal as string,
+        resultVal as string,
       );
     } else if (targetType === "number") {
-      accuracies.push(
-        calculateNumberAccuracy(targetVal as number, resultVal as number),
+      accuracies[path] = calculateNumberAccuracy(
+        targetVal as number,
+        resultVal as number,
       );
     } else if (targetType === "boolean") {
-      accuracies.push(targetVal === resultVal ? 100 : 0);
+      accuracies[path] = targetVal === resultVal ? 100 : 0;
     } else if (Array.isArray(targetVal) && Array.isArray(resultVal)) {
       // For arrays, order matters - compare element by element
       const maxLength = Math.max(targetVal.length, resultVal.length);
@@ -170,7 +173,7 @@ export function calculateJsonAccuracy(
       }
     } else {
       // For other types, use strict equality
-      accuracies.push(targetVal === resultVal ? 100 : 0);
+      accuracies[path] = targetVal === resultVal ? 100 : 0;
     }
   };
 
@@ -179,12 +182,15 @@ export function calculateJsonAccuracy(
 
   // Calculate mean accuracy
   if (accuracies.length === 0) {
-    return 100; // Empty objects are considered identical
+    return {
+      accuracy: 100,
+    }; // Empty objects are considered identical
   }
 
   const meanAccuracy =
-    accuracies.reduce((sum, acc) => sum + acc, 0) / accuracies.length;
-  return Math.round(meanAccuracy * 100) / 100; // Round to 2 decimal places
+    Object.values(accuracies).reduce((sum, acc) => sum + acc, 0) /
+    Object.values(accuracies).length;
+  return [Math.round(meanAccuracy * 100) / 100, { details: accuracies }]; // Round to 2 decimal places
 }
 
 /**
