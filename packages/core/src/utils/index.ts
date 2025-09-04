@@ -13,8 +13,8 @@ import type {
   TVariants,
 } from "../types/config";
 
-export * from "./accuracy";
 export * from "./config";
+export * from "./score";
 
 type ResolvedArg<F extends TFunction> = {
   args: Parameters<F>;
