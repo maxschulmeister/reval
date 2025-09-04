@@ -135,7 +135,7 @@ export default function Eval({ options }: Props) {
 
   return (
     <Box flexDirection="column">
-      <Text color="green">Benchmark completed!</Text>
+      <Text color="green">Reval completed!</Text>
       <Text></Text>
       <Text color="blue">Run Summary:</Text>
       <Text> ID: {summary.eval_id}</Text>
