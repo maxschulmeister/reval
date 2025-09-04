@@ -1,9 +1,11 @@
-import type { JsonValue } from "@prisma/client/runtime/library";
+import type { InputJsonValue, JsonValue } from "@prisma/client/runtime/library";
 
 export type Primitive = string | number | boolean;
 export type Target = Primitive;
 
-export type TFunction = (...args: any[]) => Promise<unknown> | unknown;
+export type TFunction = (
+  ...args: any[]
+) => Promise<InputJsonValue> | InputJsonValue;
 export type TData = readonly Record<string, JsonValue>[];
 export type TVariants = Record<string, JsonValue[]>;
 export type TTarget<D extends TData> = keyof D[number] extends string
@@ -11,10 +13,10 @@ export type TTarget<D extends TData> = keyof D[number] extends string
   : never;
 
 export interface Config<
-  F extends TFunction = TFunction,
-  D extends TData = TData,
-  V extends TVariants = TVariants,
-  T extends TTarget<D> = TTarget<D>,
+  F extends TFunction,
+  D extends TData,
+  V extends TVariants,
+  T extends TTarget<D>,
 > {
   concurrency?: number;
   retries?: number;

@@ -5,18 +5,20 @@ import pRetry from "p-retry";
 import { disconnectDb, getDb } from "../db";
 import type {
   ArgsContext,
-  Benchmark,
   Config,
   Eval,
   ResultContext,
+  Reval,
   Run,
   TData,
   TFunction,
+  TTarget,
   TVariants,
 } from "../types";
 import { Status } from "../types";
 import {
   calculateAccuracy,
+  ensureJson,
   getArgsContext,
   getTargets,
   resolveArgs,
@@ -28,8 +30,9 @@ export const runEval = async <
   F extends TFunction,
   D extends TData,
   V extends TVariants,
+  T extends TTarget<D>,
 >(
-  config: Config<F, D, V>,
+  config: Config<F, D, V, T>,
 ) => {
   const nanoid = customRandom(
     "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
@@ -85,33 +88,62 @@ export const runEval = async <
         try {
           const response = await pRetry(
             async () => {
-              return await config.function(...args);
+              try {
+                return await config.function(...args);
+              } catch (error) {
+                throw error instanceof Error
+                  ? error
+                  : new Error(JSON.stringify(error));
+              }
             },
             {
               retries: config.retries,
-              onFailedAttempt: (attemptError) => {
-                retryCount = attemptError.attemptNumber - 1;
+              onFailedAttempt: ({ error, attemptNumber, retriesLeft }) => {
+                retryCount = attemptNumber - 1;
                 console.log(
-                  `Attempt ${attemptError.attemptNumber} failed for args ${JSON.stringify(args)}. ${attemptError.retriesLeft} retries left. Error: ${attemptError.message}`,
+                  `Attempt ${attemptNumber} failed for args ${JSON.stringify(args)}. ${retriesLeft} retries left. Error: ${error.message}`,
                 );
               },
             },
           );
-
           result = config.result(response as ResultContext<F>);
-        } catch (e) {
-          status = "error";
-          const error = e instanceof Error ? e : new Error(String(e));
+        } catch (error) {
           console.error(
-            `Run failed for args ${JSON.stringify(args)}. Error: ${error.message}`,
+            `Run failed for args ${JSON.stringify(args)}. Error: ${error instanceof Error ? error.message : error}`,
           );
-
-          result = {
-            error: error.message,
-            stack: error.stack,
-            name: error.name,
-          };
+          status = "error";
+          result = { output: ensureJson(error) };
         }
+
+        // try {
+        //   const response = await pRetry(
+        //     async () => {
+        //       try {
+        //         return await config.function(...args);
+        //       } catch (fnError) {
+        //         throw fnError instanceof Error
+        //           ? fnError
+        //           : new Error(JSON.stringify(fnError));
+        //       }
+        //     },
+        //     {
+        //       retries: config.retries,
+        //       onFailedAttempt: (attemptError) => {
+        //         retryCount = attemptError.attemptNumber - 1;
+        //         console.log(
+        //           `Attempt ${attemptError.attemptNumber} failed for args ${JSON.stringify(args)}. ${attemptError.retriesLeft} retries left. Error: ${attemptError.message}`,
+        //         );
+        //       },
+        //     },
+        //   );
+        //   result = config.result(response as ResultContext<F>);
+        // } catch (error) {
+        //   console.error(
+        //     `Run failed for args ${JSON.stringify(args)}. Error: ${error instanceof Error ? error.message : error}`,
+        //   );
+        //   status = "error";
+        //   result = { output: ensureJson(error) };
+        // }
 
         const endTime = Date.now();
         const executionTime = endTime - startTime;
@@ -121,10 +153,6 @@ export const runEval = async <
         const accuracy = result.output
           ? calculateAccuracy(result.output, target)
           : null;
-
-        console.log("ARGS: ", JSON.stringify(args, null, 2));
-        console.log("FEATURES: ", JSON.stringify(features, null, 2));
-        console.log("VARIANTS: ", JSON.stringify(variants, null, 2));
 
         const run: Run = {
           id,
@@ -156,7 +184,7 @@ export const runEval = async <
     timestamp,
   };
 
-  const benchmark: Benchmark = {
+  const benchmark: Reval = {
     eval: eval_,
     runs,
   };

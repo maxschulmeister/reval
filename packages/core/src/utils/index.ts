@@ -1,6 +1,8 @@
 import { Prisma } from "@prisma/client/client";
 import type { JsonValue } from "@prisma/client/runtime/library";
 import * as dataForge from "data-forge";
+import { serializeError } from "serialize-error";
+import { getDb } from "../db";
 import type {
   Args,
   ArgsContext,
@@ -8,6 +10,7 @@ import type {
   DataToArrays,
   TData,
   TFunction,
+  TTarget,
   TVariants,
 } from "../types/config";
 import { loadConfig } from "./config";
@@ -141,7 +144,6 @@ export const resolveArgs = <
         data: createDataProxy(rowData),
         variants: createVariantProxy(variantCombo),
       };
-      console.log("proxiedContext", proxiedContext);
 
       // Generate args and track what was accessed
       // Not great, but works.
@@ -187,7 +189,8 @@ export function getArgsContext<
   F extends TFunction,
   D extends TData,
   V extends TVariants,
->(config: Config<F, D, V>): Parameters<Config<F, D, V>["args"]>[0] {
+  T extends TTarget<D>,
+>(config: Config<F, D, V, T>): Parameters<Config<F, D, V, T>["args"]>[0] {
   // Transform array of objects to object of arrays
   // Example:
   // input = [{file: stringify, brand: string}, ...]
@@ -216,18 +219,40 @@ export function getTargets<
   F extends TFunction,
   D extends TData,
   V extends TVariants,
->(config: Config<F, D, V>) {
+  T extends TTarget<D>,
+>(config: Config<F, D, V, T>) {
   const { data, target } = config;
   return data.map((item) => item[target as keyof typeof item]);
 }
 
-// Helper function to apply JsonNull to nullable fields
+// Helper function to apply JsonNull to nullable JSON fields only
 export const withPrismaJsonNull = (obj: any) => {
   const result = { ...obj };
+
+  const prisma = getDb();
+
+  const jsonFields = Object.entries(prisma.run.fields)
+    .filter(([_, field]) => field.typeName === "Json")
+    .map(([fieldName, _]) => fieldName);
+
   Object.keys(result).forEach((key) => {
-    if (result[key] === null || result[key] === undefined) {
+    if (
+      jsonFields.includes(key) &&
+      (result[key] === null || result[key] === undefined)
+    ) {
       result[key] = Prisma.JsonNull;
     }
   });
+
   return result;
+};
+
+export const ensureJson = (obj: any): JsonValue => {
+  try {
+    return JSON.parse(
+      JSON.stringify(obj instanceof Error ? serializeError(obj) : obj),
+    );
+  } catch (e) {
+    throw new Error(`${obj} is not JSON serializable: ${e}`);
+  }
 };

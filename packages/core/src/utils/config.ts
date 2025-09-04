@@ -187,7 +187,12 @@ export const loadConfig = async <
 
       // Use jiti to import the TypeScript config file
       const configModule = (await jiti.import(configModulePath)) as any;
-      const config = (configModule.default || configModule) as Config<F, D, V>;
+      const config = (configModule.default || configModule) as Config<
+        F,
+        D,
+        V,
+        T
+      >;
 
       return validateConfig(config as Config<F, D, V, T>);
     } finally {
