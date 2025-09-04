@@ -13,7 +13,7 @@ export const FormattedCell = ({
   value: unknown;
   header: string;
 }) => {
-  if (type === "json") {
+  if (type === "json" && value) {
     return (
       <div className="flex items-center justify-center gap-x-4">
         <CodeDialog

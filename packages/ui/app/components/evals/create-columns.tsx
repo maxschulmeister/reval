@@ -102,10 +102,18 @@ const getColumnType = (value: unknown): ColumnMetaType => {
 // Column expansion configuration
 // By default, no columns are expanded (depth 0)
 // Only explicitly configured columns will be expanded
-const COLUMN_EXPANSION_CONFIG = {
-  result: 1, // Expand only first level
-  features: -1, // Expand infinitely
-  variants: -1, // Expand infinitely
+// Column expansion configuration with proper typing
+
+const COLUMN_EXPANSION_CONFIG: Record<
+  string,
+  {
+    depth: number;
+    exclude?: string[];
+  }
+> = {
+  result: { depth: -1, exclude: ["output"] }, // Expand infinitely but exclude output
+  features: { depth: -1 },
+  variants: { depth: -1 },
 } as const;
 
 const flattenObject = (
@@ -120,10 +128,14 @@ const flattenObject = (
 
     // Get expansion depth for this column (use root key for nested paths)
     const rootKey = prefix ? prefix.split(".")[0] : key;
-    const configuredDepth =
-      COLUMN_EXPANSION_CONFIG[
-        rootKey as keyof typeof COLUMN_EXPANSION_CONFIG
-      ] ?? 0;
+    const config = COLUMN_EXPANSION_CONFIG[rootKey];
+
+    // Check if this specific key should be excluded at the current level
+    if (config?.exclude?.includes(key) && prefix === rootKey) {
+      return [path]; // Stop expansion here, treat as leaf
+    }
+
+    const configuredDepth = config?.depth ?? 0;
     const effectiveMaxDepth = maxDepth === 0 ? configuredDepth : maxDepth;
 
     // Check if we should stop expanding
@@ -158,17 +170,14 @@ const createColumn = (
 export const createColumns = (runs: Run[]): AccessorKeyColumnDef<Run>[] => {
   if (runs.length === 0) return [];
 
-  // Get all possible column paths by flattening the first run
   const allPaths = flattenObject(runs[0] as Record<string, unknown>);
 
-  // Create columns for all paths (including hidden ones) and sort by predefined order
   return allPaths
     .map((path) => createColumn(path, runs))
     .sort((a, b) => {
       const orderA = getColumnOrder(a.accessorKey);
       const orderB = getColumnOrder(b.accessorKey);
-      if (orderA !== orderB) return orderA - orderB;
-      return a.accessorKey.localeCompare(b.accessorKey);
+      return orderA - orderB;
     });
 };
 

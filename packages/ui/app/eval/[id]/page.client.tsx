@@ -3,14 +3,15 @@
 import { DataTable } from "@/app/components/evals/data-table";
 import { Summary } from "@/app/components/summary";
 import { useEvalDetails, useEvals } from "@/app/lib/hooks";
-import type { Benchmark, Eval } from "@reval/core/types";
+import type { Eval, Reval } from "@reval/core/types";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { DataCharts } from "../../components/evals/data-charts";
 import { Header } from "../../components/header";
 
 interface EvalPageClientProps {
   evals: Eval[];
-  evalData: Benchmark;
+  evalData: Reval;
   currentEvalId: string;
 }
 
@@ -99,6 +100,8 @@ export const EvalPageClient = ({
         />
 
         <Summary {...currentEvalData} />
+
+        <DataCharts {...currentEvalData} />
 
         <DataTable {...currentEvalData} />
       </div>

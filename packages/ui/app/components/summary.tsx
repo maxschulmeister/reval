@@ -1,6 +1,6 @@
 "use client";
 
-import type { Benchmark } from "@reval/core/types";
+import type { Reval } from "@reval/core/types";
 import jsBeautify from "js-beautify";
 import { calculateAverageTime, calculateSuccessRate } from "../lib/grouping";
 import { CodeDialog } from "./code-dialog";
@@ -8,7 +8,7 @@ import { Button } from "./ui/button";
 import { Cell } from "./ui/cell";
 import { H5, Small } from "./ui/typography";
 
-export const Summary = ({ eval: evalData, runs }: Benchmark) => {
+export const Summary = ({ eval: evalData, runs }: Reval) => {
   return (
     <Cell className="border-b border-border">
       {/* Function summary */}

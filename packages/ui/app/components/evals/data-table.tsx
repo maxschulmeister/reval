@@ -8,7 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/app/components/ui/table";
-import type { Benchmark } from "@reval/core/types";
+import type { Reval } from "@reval/core/types";
 import {
   flexRender,
   getCoreRowModel,
@@ -24,7 +24,7 @@ import { createColumns } from "./create-columns";
 import { DataFilter, filterData } from "./data-filter";
 import { FormattedCell } from "./formatted-cell";
 
-export const DataTable = ({ eval: evalData, runs }: Benchmark) => {
+export const DataTable = ({ eval: evalData, runs }: Reval) => {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<Record<string, string[]>>(
     {},
