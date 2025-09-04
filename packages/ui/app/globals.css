@@ -206,3 +206,19 @@
     @apply bg-background text-foreground;
   }
 }
+
+@theme {
+  --animate-bar: bar 500ms forwards ease-out;
+  @keyframes bar {
+    0% {
+      opacity: 1;
+      transform: scaleY(0);
+      transform-origin: bottom;
+    }
+    100% {
+      opacity: 1;
+      transform: scaleY(1);
+      transform-origin: bottom;
+    }
+  }
+}
