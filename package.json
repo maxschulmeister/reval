@@ -7,16 +7,9 @@
   "bin": "packages/cli/dist/cli.js",
   "type": "module",
   "scripts": {
-    "build": "turbo run build",
-    "dev": "turbo run dev",
-    "lint": "turbo run lint",
-    "test": "turbo run test",
-    "clean": "turbo run clean",
-    "reval": "turbo run reval",
-    "reval-cli": "cd packages/cli && npm run dev",
-    "db-create": "turbo run db-create",
-    "db-ui": "turbo run db-ui",
-    "ui": "cd packages/ui && npm run dev"
+    "build": "npx prisma generate --schema packages/core/reval.prisma && turbo run build",
+    "dev": "npx prisma generate --schema packages/core/reval.prisma && turbo run dev",
+    "lint": "npx prisma generate --schema packages/core/reval.prisma && turbo run lint"
   },
   "devDependencies": {
     "glob": "^11.0.3",

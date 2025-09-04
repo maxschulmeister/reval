@@ -9,22 +9,8 @@
     "lint": {
       "dependsOn": ["^lint"]
     },
-    "test": {
-      "dependsOn": ["^build"],
-      "outputs": ["coverage/**"]
-    },
-    "clean": {
-      "cache": false
-    },
+
     "dev": {
-      "cache": false,
-      "persistent": true
-    },
-    "reval": {
-      "dependsOn": ["^build"],
-      "outputs": [".reval/**"]
-    },
-    "db:ui": {
       "cache": false,
       "persistent": true
     }

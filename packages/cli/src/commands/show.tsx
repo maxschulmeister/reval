@@ -114,7 +114,7 @@ export default function Show({ args, options }: Props) {
               {run.status.toUpperCase()}
             </Text>{" "}
             <Text>({run.time}ms)</Text>
-            <Text>(score: {run.score.accuracy})</Text>
+            <Text>(score: {run.score.accuracy.value || 0})</Text>
           </Text>
           <Text color="gray"> Target: {JSON.stringify(run.target)}</Text>
           {run.result && (

@@ -33,7 +33,6 @@
     "@reval/core": "workspace:*",
     "ink": "^4.4.1",
     "pastel": "^3.0.0",
-    "prisma": "^6.14.0",
     "react": "^18.2.0",
     "zod": "^3.22.4"
   },

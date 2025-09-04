@@ -41,7 +41,6 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
-    "@prisma/client": "^6.14.0",
     "@tailwindcss/postcss": "^4",
     "@types/js-beautify": "^1.14.3",
     "@types/node": "^20",

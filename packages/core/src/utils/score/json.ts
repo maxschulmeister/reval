@@ -1,6 +1,5 @@
 import type { JsonObject, JsonValue } from "@prisma/client/runtime/library";
 import { diff } from "json-diff";
-import type { Primitive } from "../../types";
 import { calculateNumberAccuracy } from "./number";
 import { calculateStringAccuracy } from "./text";
 
@@ -97,7 +96,7 @@ export function calculateJsonDiffAccuracy(
 export function calculateJsonAccuracy(
   result: JsonValue,
   target: JsonValue,
-): Array<Primitive | JsonObject> {
+): { value: number; details: JsonObject } {
   const accuracies: Record<string, number> = {};
 
   // Helper function to recursively compare objects
@@ -183,14 +182,18 @@ export function calculateJsonAccuracy(
   // Calculate mean accuracy
   if (accuracies.length === 0) {
     return {
-      accuracy: 100,
+      value: 100,
+      details: accuracies,
     }; // Empty objects are considered identical
   }
 
   const meanAccuracy =
     Object.values(accuracies).reduce((sum, acc) => sum + acc, 0) /
     Object.values(accuracies).length;
-  return [Math.round(meanAccuracy * 100) / 100, { details: accuracies }]; // Round to 2 decimal places
+  return {
+    value: Math.round(meanAccuracy * 100) / 100,
+    details: accuracies,
+  };
 }
 
 /**

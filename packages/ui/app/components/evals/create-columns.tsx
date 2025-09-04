@@ -112,6 +112,7 @@ const COLUMN_EXPANSION_CONFIG: Record<
   }
 > = {
   result: { depth: -1, exclude: ["output"] }, // Expand infinitely but exclude output
+  score: { depth: 2 },
   features: { depth: -1 },
   variants: { depth: -1 },
 } as const;

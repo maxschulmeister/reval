@@ -15,7 +15,7 @@ export const FormattedCell = ({
 }) => {
   if (type === "json" && value) {
     return (
-      <div className="flex items-center justify-center gap-x-4">
+      <div className="flex justify-center">
         <CodeDialog
           title={header}
           content={jsBeautify(JSON.stringify(value, null, 2), {
@@ -32,6 +32,8 @@ export const FormattedCell = ({
     );
   } else if (type === "status") {
     return <Badge variant={value as Status}>{value as string}</Badge>;
+  } else if (type === "number") {
+    return <div className="flex justify-end">{value as number}</div>;
   } else {
     // Handle objects by converting to string
     if (typeof value === "object" && value !== null) {

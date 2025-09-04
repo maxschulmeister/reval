@@ -4,7 +4,6 @@ import type {
   Status as PrismaStatus,
 } from "@prisma/client/client";
 import type { JsonObject } from "@prisma/client/runtime/library";
-import type { Primitive } from "./config";
 
 // Prisma types are generated from Prisma schema
 export type Eval = PrismaEval;
@@ -33,6 +32,6 @@ export interface EvalDetails extends EvalSummary {
 }
 
 export type Score = {
-  accuracy: number | Array<Primitive | JsonObject>;
-  diff?: number | Array<Primitive | JsonObject>;
+  accuracy: number | JsonObject;
+  diff?: number | JsonObject;
 } | null;
