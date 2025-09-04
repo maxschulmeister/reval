@@ -1,6 +1,5 @@
 import { Prisma } from "@prisma/client/client";
 import type { JsonValue } from "@prisma/client/runtime/library";
-import * as dataForge from "data-forge";
 import { serializeError } from "serialize-error";
 import { getDb } from "../db";
 import type {
@@ -13,61 +12,9 @@ import type {
   TTarget,
   TVariants,
 } from "../types/config";
-import { loadConfig } from "./config";
 
 export * from "./accuracy";
 export * from "./config";
-
-export const loadData = async (configPath?: string) => {
-  const config = await loadConfig(configPath);
-
-  // Validate basic data configuration
-  if (!config.data || Object.keys(config.data).length === 0) {
-    throw new Error("Data configuration is required and cannot be empty");
-  }
-
-  let df: dataForge.IDataFrame<number, any>;
-  try {
-    df = dataForge.fromObject(config.data);
-  } catch (error) {
-    throw new Error(`Failed to create DataFrame: ${error}`);
-  }
-
-  // Validate JSON is not empty
-  if (df.count() === 0) {
-    throw new Error("JSON file is empty or contains no data rows");
-  }
-
-  // Validate and apply trim if specified
-  if (config.trim !== undefined) {
-    if (typeof config.trim !== "number" || !Number.isInteger(config.trim)) {
-      throw new Error("Trim value must be an integer");
-    }
-    if (config.trim < 0) {
-      throw new Error("Trim value cannot be negative");
-    }
-    if (config.trim > df.count()) {
-      throw new Error(
-        `Trim value (${config.trim}) cannot be larger than dataset size (${df.count()})`,
-      );
-    }
-    if (config.trim > 0) {
-      df = df.take(config.trim);
-    }
-  }
-
-  const dfFeatures = dataForge.fromObject(config.data);
-  const dfTarget = dataForge.fromObject(config.target);
-
-  // Validate each variant has array values and is not empty
-  for (const [key, value] of Object.entries(config.variants)) {
-    if (value.length === 0) {
-      throw new Error(`Variant '${key}' cannot be an empty array`);
-    }
-  }
-
-  return { frame: df, features: dfFeatures, target: dfTarget };
-};
 
 type ResolvedArg<F extends TFunction> = {
   args: Parameters<F>;
