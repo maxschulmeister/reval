@@ -1598,6 +1598,7 @@ __metadata:
     next-themes: "npm:^0.4.6"
     prettier: "npm:^3.6.2"
     prettier-plugin-tailwindcss: "npm:^0.6.14"
+    pretty-num: "npm:^0.6.2"
     react: "npm:19.1.0"
     react-dom: "npm:19.1.0"
     react-shiki: "npm:^0.7.2"
@@ -4734,6 +4735,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"from-exponential@npm:^1.1.1":
+  version: 1.1.1
+  resolution: "from-exponential@npm:1.1.1"
+  checksum: 10c0/b0f81fae79c94017e818f59e232a16dcdac9bffe005a2ca65cb6d9e9e3e8a694bd1b45e6bf7c3b5137cea74f4fb29e36a89a1472cfe28247aea2b12ac10cf85b
+  languageName: node
+  linkType: hard
+
 "fs-minipass@npm:^3.0.0":
   version: 3.0.3
   resolution: "fs-minipass@npm:3.0.3"
@@ -7306,6 +7314,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"pretty-num@npm:^0.6.2":
+  version: 0.6.2
+  resolution: "pretty-num@npm:0.6.2"
+  dependencies:
+    from-exponential: "npm:^1.1.1"
+    thousands: "npm:^1.0.1"
+  checksum: 10c0/8a5452e43331999e5cf8154dfeec1847d4527b1a2785f3ba7c85cdf3ec22779527ee46612574a90ce3c61eb83a0759c1bc2a384a7162a408172c3e2c0a1997d4
+  languageName: node
+  linkType: hard
+
 "prisma@npm:^6.15.0":
   version: 6.15.0
   resolution: "prisma@npm:6.15.0"
@@ -8605,6 +8623,13 @@ __metadata:
   version: 1.2.4
   resolution: "text-upper-case-first@npm:1.2.4"
   checksum: 10c0/9569b3868e74656e25d152853743c3236b20ac6f8f09652e6f3839deecdf56187445fcb5ee9cf1b974b5e5d02105fefe1cb3a4682302addf5e0bb504f3f3ef56
+  languageName: node
+  linkType: hard
+
+"thousands@npm:^1.0.1":
+  version: 1.0.1
+  resolution: "thousands@npm:1.0.1"
+  checksum: 10c0/3271b42d0ea431d4ceb93f853afd44c4a553e0655c8f686e8b55538f500c8667786a86693d8808b707a3be69bd932870a508ff6ba25668b7c182c050dc08a121
   languageName: node
   linkType: hard
 
