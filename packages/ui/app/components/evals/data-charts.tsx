@@ -3,9 +3,16 @@
 import type { Run } from "@reval/core/types";
 import { type AccessorKeyColumnDef, type Table } from "@tanstack/react-table";
 import Palette from "iwanthue/palette";
+import {
+  ArrowDownWideNarrow,
+  ArrowRightLeft,
+  ArrowUpNarrowWide,
+} from "lucide-react";
+import prettyNum, { PRECISION_SETTING } from "pretty-num";
 import { memo, useMemo, useState } from "react";
 import { Bar, BarChart, Cell, LabelList, XAxis, YAxis } from "recharts";
 import { titleCase } from "text-title-case";
+import { Button } from "../ui/button";
 import { Cell as UICell } from "../ui/cell";
 import { ChartConfig, ChartContainer, ChartTooltip } from "../ui/chart";
 import {
@@ -40,7 +47,9 @@ const DataChartsComponent = ({ data, table }: DataChartsProps) => {
     const allNumericKeys = table
       .getVisibleLeafColumns()
       .filter((column) => column.columnDef.meta?.type === "number")
-      .map((column) => (column.columnDef as AccessorKeyColumnDef<Run>).accessorKey)
+      .map(
+        (column) => (column.columnDef as AccessorKeyColumnDef<Run>).accessorKey,
+      )
       .filter((key): key is string => typeof key === "string");
 
     // Get unique variant combinations from all data
@@ -83,6 +92,10 @@ const DataChartsComponent = ({ data, table }: DataChartsProps) => {
   const [selectedMetric, setSelectedMetric] = useState<string>(
     "score.accuracy.value",
   );
+  const [sortByMetric, setSortByMetric] = useState<string>(
+    "score.accuracy.value",
+  );
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
 
   // Filter chart data to only include values > 0 for the selected metric
   const filteredChartData = useMemo(() => {
@@ -97,15 +110,22 @@ const DataChartsComponent = ({ data, table }: DataChartsProps) => {
       .sort((a, b) => {
         const aValue = getValueAtPath(
           a as Record<string, unknown>,
-          selectedMetric,
+          sortByMetric,
         ) as number;
         const bValue = getValueAtPath(
           b as Record<string, unknown>,
-          selectedMetric,
+          sortByMetric,
         ) as number;
-        return bValue - aValue; // Descending order
-      });
-  }, [chartData, selectedMetric]);
+        return sortDirection === "asc" ? aValue - bValue : bValue - aValue;
+      })
+      .map((item, index) => ({
+        ...item,
+        sortValue: getValueAtPath(
+          item as Record<string, unknown>,
+          sortByMetric,
+        ) as number,
+      }));
+  }, [chartData, selectedMetric, sortByMetric, sortDirection]);
 
   // Calculate Y-axis domain based on actual data values
   const yAxisDomain = useMemo(() => {
@@ -177,6 +197,45 @@ const DataChartsComponent = ({ data, table }: DataChartsProps) => {
             ))}
           </SelectContent>
         </Select>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => {
+            const temp = selectedMetric;
+            setSelectedMetric(sortByMetric);
+            setSortByMetric(temp);
+          }}
+        >
+          <ArrowRightLeft className="h-4 w-4" />
+        </Button>
+        <div className="flex flex-col">
+          <H5>Sort by </H5>
+        </div>
+        <Select value={sortByMetric} onValueChange={setSortByMetric}>
+          <SelectTrigger className="w-48">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {numericKeys.map((key) => (
+              <SelectItem key={key} value={key}>
+                {titleCase(key.replace(".", " "))}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Button
+          variant="outline"
+          // size="icon"
+          onClick={() =>
+            setSortDirection(sortDirection === "asc" ? "desc" : "asc")
+          }
+        >
+          {sortDirection === "asc" ? (
+            <ArrowUpNarrowWide className="h-4 w-4 -rotate-90" />
+          ) : (
+            <ArrowDownWideNarrow className="h-4 w-4 -rotate-90" />
+          )}
+        </Button>
       </div>
       <ChartContainer config={chartConfig} className="h-[50vh] w-full">
         <BarChart
@@ -188,14 +247,25 @@ const DataChartsComponent = ({ data, table }: DataChartsProps) => {
             domain={yAxisDomain}
             hide={false}
             width={60}
-            tickFormatter={(value) => value.toFixed(2)}
+            tickFormatter={(value) =>
+              prettyNum(value, {
+                precision: 2,
+                precisionSetting: PRECISION_SETTING.REDUCE_SIGNIFICANT,
+              })
+            }
           />
           <XAxis
-            dataKey="variant"
-            tickLine={false}
+            dataKey="sortValue"
+            tickLine={true}
             tickMargin={10}
-            axisLine={false}
-            hide
+            axisLine={true}
+            hide={false}
+            tickFormatter={(value) =>
+              prettyNum(value, {
+                precision: 2,
+                precisionSetting: PRECISION_SETTING.REDUCE_SIGNIFICANT,
+              })
+            }
           />
           <ChartTooltip
             cursor={false}
@@ -254,9 +324,10 @@ const DataChartsComponent = ({ data, table }: DataChartsProps) => {
               className="fill-foreground"
               fontSize={12}
               formatter={(value: number) =>
-                value.toFixed(
-                  Math.min(value.toString().split(".")[1]?.length || 0, 4),
-                )
+                prettyNum(value, {
+                  precision: 2,
+                  precisionSetting: PRECISION_SETTING.REDUCE_SIGNIFICANT,
+                })
               }
             />
           </Bar>
@@ -272,8 +343,8 @@ export const DataCharts = memo(DataChartsComponent, (prevProps, nextProps) => {
   const dataLengthChanged = prevProps.data.length !== nextProps.data.length;
 
   // Check if column visibility changed
-  const visibleColumnsChanged = 
-    prevProps.table.getVisibleLeafColumns().length !== 
+  const visibleColumnsChanged =
+    prevProps.table.getVisibleLeafColumns().length !==
     nextProps.table.getVisibleLeafColumns().length;
 
   // Check if first and last data points changed (indicating data refresh)
