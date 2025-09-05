@@ -4,6 +4,7 @@ import { memo } from "react";
 import { CodeDialog } from "../code-dialog";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
+import { PATH_DELIMITER } from "./constants";
 
 interface FormattedCellProps {
   type?: string;
@@ -11,12 +12,16 @@ interface FormattedCellProps {
   header: string;
 }
 
-const FormattedCellComponent = ({ type, value, header }: FormattedCellProps) => {
+const FormattedCellComponent = ({
+  type,
+  value,
+  header,
+}: FormattedCellProps) => {
   if (type === "json" && value) {
     return (
       <div className="flex justify-center">
         <CodeDialog
-          title={header}
+          title={header.replace(PATH_DELIMITER, " ")}
           content={jsBeautify(JSON.stringify(value, null, 2), {
             indent_size: 4,
             indent_char: " ",
@@ -43,11 +48,14 @@ const FormattedCellComponent = ({ type, value, header }: FormattedCellProps) => 
 };
 
 // Memoized component to prevent unnecessary re-renders
-export const FormattedCell = memo(FormattedCellComponent, (prevProps, nextProps) => {
-  // Only re-render if value or type actually changed
-  return (
-    prevProps.value === nextProps.value &&
-    prevProps.type === nextProps.type &&
-    prevProps.header === nextProps.header
-  );
-});
+export const FormattedCell = memo(
+  FormattedCellComponent,
+  (prevProps, nextProps) => {
+    // Only re-render if value or type actually changed
+    return (
+      prevProps.value === nextProps.value &&
+      prevProps.type === nextProps.type &&
+      prevProps.header === nextProps.header
+    );
+  },
+);
