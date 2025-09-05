@@ -67,9 +67,7 @@ export const calculateSuccessRate = (
 /**
  * Calculate average run time
  */
-export const calculateAverageTime = (
-  runs: Array<{ time: number }>,
-): number => {
+export const calculateAverageTime = (runs: Array<{ time: number }>): number => {
   if (runs.length === 0) return 0;
   const totalTime = runs.reduce((sum, r) => sum + r.time, 0);
   return Math.round(totalTime / runs.length);
