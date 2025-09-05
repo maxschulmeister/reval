@@ -51,6 +51,40 @@ const DataChartsComponent = ({ data, table }: DataChartsProps) => {
       .map((column) => column.columnDef.id)
       .filter((key): key is string => typeof key === "string");
 
+    // Detect binary columns (columns with exactly 2 unique values)
+    const binaryColumns: Record<string, { values: unknown[]; columnName: string }> = {};
+    
+    table.getVisibleLeafColumns().forEach((column) => {
+      const columnId = column.columnDef.id;
+      if (!columnId || allNumericKeys.includes(columnId)) return;
+      
+      const uniqueValues = Array.from(
+        new Set(
+          data.map((run) => {
+            const value = getValueAtPath(run as Record<string, unknown>, columnId);
+            return value;
+          }).filter((value) => value !== null && value !== undefined)
+        )
+      );
+      
+      if (uniqueValues.length === 2) {
+        const columnHeader = column.columnDef.header as string || columnId;
+        binaryColumns[columnId] = {
+          values: uniqueValues,
+          columnName: columnHeader
+        };
+      }
+    });
+
+    // Generate binary rate metrics
+    const binaryMetricKeys: string[] = [];
+    Object.entries(binaryColumns).forEach(([columnId, { values, columnName }]) => {
+      values.forEach((value) => {
+        const metricKey = `${columnId}_${String(value)}_rate`;
+        binaryMetricKeys.push(metricKey);
+      });
+    });
+
     // Get unique variant combinations from all data
     const uniqueVariants = Array.from(
       new Set(
@@ -69,7 +103,41 @@ const DataChartsComponent = ({ data, table }: DataChartsProps) => {
       defaultColor: "#fff",
     });
 
-    // Create chart data with colors and flattened metric values for all data
+    // Group runs by variant combination for rate calculations
+    const variantGroups: Record<string, Run[]> = {};
+    data.forEach((run) => {
+      const variantKey = run.variants
+        ? Object.entries(run.variants as Record<string, unknown>)
+            .map(([key, value]) => `${key}: ${value}`)
+            .join(", ")
+        : "No variants";
+      
+      if (!variantGroups[variantKey]) {
+        variantGroups[variantKey] = [];
+      }
+      variantGroups[variantKey].push(run);
+    });
+
+    // Calculate binary rates for each variant group
+    const variantBinaryRates: Record<string, Record<string, number>> = {};
+    Object.entries(variantGroups).forEach(([variantKey, runs]) => {
+      variantBinaryRates[variantKey] = {};
+      
+      Object.entries(binaryColumns).forEach(([columnId, { values }]) => {
+        values.forEach((targetValue) => {
+          const metricKey = `${columnId}_${String(targetValue)}_rate`;
+          const matchingCount = runs.filter((run) => {
+            const value = getValueAtPath(run as Record<string, unknown>, columnId);
+            return value === targetValue;
+          }).length;
+          
+          // Store as numeric value (0-100)
+          variantBinaryRates[variantKey][metricKey] = (matchingCount / runs.length) * 100;
+        });
+      });
+    });
+
+    // Create chart data with colors, flattened metric values, and binary rates
     const chartDataWithColors = data.map((run: Run, index: number) => {
       const variantKey = run.variants
         ? Object.entries(run.variants as Record<string, unknown>)
@@ -80,19 +148,29 @@ const DataChartsComponent = ({ data, table }: DataChartsProps) => {
       // Add flattened metric values for chart access
       const flattenedMetrics: Record<string, unknown> = {};
       allNumericKeys.forEach((key) => {
-        flattenedMetrics[key] = getValueAtPath(run as Record<string, unknown>, key);
+        flattenedMetrics[key] = getValueAtPath(
+          run as Record<string, unknown>,
+          key,
+        );
       });
+
+      // Add binary rate metrics for this variant
+      const binaryRates = variantBinaryRates[variantKey] || {};
 
       return {
         ...run,
         ...flattenedMetrics,
+        ...binaryRates,
         variant: `Run ${index + 1}`,
         variantDetails: variantKey,
         color: palette.get(variantKey),
       };
     });
 
-    return { chartData: chartDataWithColors, numericKeys: allNumericKeys };
+    // Combine numeric keys with binary metric keys
+    const allKeys = [...allNumericKeys, ...binaryMetricKeys];
+
+    return { chartData: chartDataWithColors, numericKeys: allKeys };
   }, [data, table]);
 
   const [selectedMetric, setSelectedMetric] = useState<string>(
@@ -158,9 +236,22 @@ const DataChartsComponent = ({ data, table }: DataChartsProps) => {
   }, [filteredChartData, selectedMetric]);
 
   const chartConfig = useMemo(() => {
+    // Format metric label for chart config
+    const getMetricLabel = (metric: string) => {
+      if (metric.includes('_rate')) {
+        const parts = metric.split('_');
+        if (parts.length >= 3 && parts[parts.length - 1] === 'rate') {
+          const columnName = parts.slice(0, -2).join('_');
+          const value = parts[parts.length - 2];
+          return `${titleCase(columnName.replace(PATH_DELIMITER, " "))} ${value} Rate`;
+        }
+      }
+      return metric.charAt(0).toUpperCase() + metric.slice(1);
+    };
+
     const config: ChartConfig = {
       [selectedMetric]: {
-        label: selectedMetric.charAt(0).toUpperCase() + selectedMetric.slice(1),
+        label: getMetricLabel(selectedMetric),
         color: "hsl(var(--chart-1))",
       },
     };
@@ -196,11 +287,27 @@ const DataChartsComponent = ({ data, table }: DataChartsProps) => {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {numericKeys.map((key) => (
-              <SelectItem key={key} value={key}>
-                {titleCase(key.replace(PATH_DELIMITER, " "))}
-              </SelectItem>
-            ))}
+            {numericKeys.map((key) => {
+              // Format binary rate metric names
+              if (key.includes('_rate')) {
+                const parts = key.split('_');
+                if (parts.length >= 3 && parts[parts.length - 1] === 'rate') {
+                  const columnName = parts.slice(0, -2).join('_');
+                  const value = parts[parts.length - 2];
+                  return (
+                    <SelectItem key={key} value={key}>
+                      {titleCase(columnName.replace(PATH_DELIMITER, " "))} {value} Rate
+                    </SelectItem>
+                  );
+                }
+              }
+              // Default formatting for regular numeric keys
+              return (
+                <SelectItem key={key} value={key}>
+                  {titleCase(key.replace(PATH_DELIMITER, " "))}
+                </SelectItem>
+              );
+            })}
           </SelectContent>
         </Select>
         <Button
@@ -222,11 +329,27 @@ const DataChartsComponent = ({ data, table }: DataChartsProps) => {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {numericKeys.map((key) => (
-              <SelectItem key={key} value={key}>
-                {titleCase(key.replace(PATH_DELIMITER, " "))}
-              </SelectItem>
-            ))}
+            {numericKeys.map((key) => {
+              // Format binary rate metric names
+              if (key.includes('_rate')) {
+                const parts = key.split('_');
+                if (parts.length >= 3 && parts[parts.length - 1] === 'rate') {
+                  const columnName = parts.slice(0, -2).join('_');
+                  const value = parts[parts.length - 2];
+                  return (
+                    <SelectItem key={key} value={key}>
+                      {titleCase(columnName.replace(PATH_DELIMITER, " "))} {value} Rate
+                    </SelectItem>
+                  );
+                }
+              }
+              // Default formatting for regular numeric keys
+              return (
+                <SelectItem key={key} value={key}>
+                  {titleCase(key.replace(PATH_DELIMITER, " "))}
+                </SelectItem>
+              );
+            })}
           </SelectContent>
         </Select>
         <Button
@@ -287,12 +410,22 @@ const DataChartsComponent = ({ data, table }: DataChartsProps) => {
                   <div className="grid gap-2">
                     <div className="flex flex-col">
                       <span className="text-[0.70rem] text-muted-foreground uppercase">
-                        {selectedMetric.charAt(0).toUpperCase() +
-                          selectedMetric.slice(1)}
+                        {(() => {
+                          // Format binary rate metric names in tooltip
+                          if (selectedMetric.includes('_rate')) {
+                            const parts = selectedMetric.split('_');
+                            if (parts.length >= 3 && parts[parts.length - 1] === 'rate') {
+                              const columnName = parts.slice(0, -2).join('_');
+                              const value = parts[parts.length - 2];
+                              return `${titleCase(columnName.replace(PATH_DELIMITER, " "))} ${value} Rate`;
+                            }
+                          }
+                          return selectedMetric.charAt(0).toUpperCase() + selectedMetric.slice(1);
+                        })()}
                       </span>
                       <span className="font-bold text-muted-foreground">
                         {typeof metricValue === "number"
-                          ? metricValue.toString()
+                          ? `${metricValue.toFixed(1)}${selectedMetric.includes('_rate') ? '%' : ''}`
                           : "N/A"}
                       </span>
                     </div>
@@ -329,12 +462,15 @@ const DataChartsComponent = ({ data, table }: DataChartsProps) => {
               offset={12}
               className="fill-foreground"
               fontSize={12}
-              formatter={(value: number) =>
-                prettyNum(value, {
+              formatter={(value: number) => {
+                if (selectedMetric.includes('_rate')) {
+                  return `${value.toFixed(1)}%`;
+                }
+                return prettyNum(value, {
                   precision: 2,
                   precisionSetting: PRECISION_SETTING.REDUCE_SIGNIFICANT,
-                })
-              }
+                });
+              }}
             />
           </Bar>
         </BarChart>
