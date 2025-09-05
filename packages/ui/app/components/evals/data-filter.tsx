@@ -31,20 +31,15 @@ export const DataFilter = <TData,>({
   onFilterChange,
   columnVisibilityToggle,
 }: DataFilterProps<TData>) => {
-  // Calculate uniqueness threshold from the data
-  const uniquenessThreshold = Math.max(2, Math.ceil(data.length / 10));
+  // Memoize uniqueness threshold calculation
+  const uniquenessThreshold = useMemo(
+    () => Math.max(2, Math.ceil(data.length / 10)),
+    [data.length]
+  );
 
-  // Generate filter configurations for columns with sufficient unique values
-  const filterConfigs = useMemo(() => {
-    if (!data.length) return [];
-
-    const configs: FilterConfig[] = [];
-
-    // Helper function to get nested value from object
-    const getNestedValue = (
-      obj: Record<string, unknown>,
-      path: string,
-    ): unknown => {
+  // Memoize the nested value getter function
+  const getNestedValue = useMemo(
+    () => (obj: Record<string, unknown>, path: string): unknown => {
       return path
         .split(".")
         .reduce(
@@ -52,7 +47,15 @@ export const DataFilter = <TData,>({
             (current as Record<string, unknown>)?.[key],
           obj,
         );
-    };
+    },
+    []
+  );
+
+  // Generate filter configurations for columns with sufficient unique values
+  const filterConfigs = useMemo(() => {
+    if (!data.length) return [];
+
+    const configs: FilterConfig[] = [];
 
     // Check each column for filter eligibility
     columns.forEach((column) => {
@@ -64,6 +67,7 @@ export const DataFilter = <TData,>({
         (HIDDEN_COLUMNS as readonly string[]).includes(accessorKey)
       )
         return;
+        
       // Get all unique values for this column
       const values = data
         .map((row) => {
@@ -91,7 +95,7 @@ export const DataFilter = <TData,>({
     });
 
     return configs;
-  }, [data, columns, uniquenessThreshold, columnFilters]);
+  }, [data, columns, uniquenessThreshold, columnFilters, getNestedValue]);
 
   if (filterConfigs.length === 0) {
     // If no filters but we have a column visibility toggle, show just the toggle
@@ -143,23 +147,31 @@ export const filterData = <TData,>(
     return data;
   }
 
+  // Pre-compile filter entries for better performance
+  const activeFilters = Object.entries(columnFilters).filter(
+    ([, selectedValues]) => selectedValues.length > 0
+  );
+
+  if (activeFilters.length === 0) {
+    return data;
+  }
+
+  // Memoize the nested value getter to avoid recreating it
+  const getNestedValue = (
+    obj: Record<string, unknown>,
+    path: string,
+  ): unknown => {
+    return path
+      .split(".")
+      .reduce(
+        (current: unknown, key) =>
+          (current as Record<string, unknown>)?.[key],
+        obj,
+      );
+  };
+
   return data.filter((row) => {
-    return Object.entries(columnFilters).every(([columnId, selectedValues]) => {
-      if (selectedValues.length === 0) return true;
-
-      const getNestedValue = (
-        obj: Record<string, unknown>,
-        path: string,
-      ): unknown => {
-        return path
-          .split(".")
-          .reduce(
-            (current: unknown, key) =>
-              (current as Record<string, unknown>)?.[key],
-            obj,
-          );
-      };
-
+    return activeFilters.every(([columnId, selectedValues]) => {
       const cellValue = String(
         getNestedValue(row as Record<string, unknown>, columnId) ?? "",
       );

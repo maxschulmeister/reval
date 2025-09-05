@@ -1,7 +1,7 @@
 "use client";
 
+import type { EvalDetails, EvalSummary } from "@reval/core/types";
 import useSWR from "swr";
-import type { Eval, EvalDetails, EvalSummary } from "@reval/core/types";
 
 const fetcher = async (url: string) => {
   const res = await fetch(url);
@@ -14,18 +14,16 @@ const fetcher = async (url: string) => {
 
 // Hook for fetching all evals with real-time polling
 export function useEvals() {
-  const { data, error, isLoading, isValidating, mutate } = useSWR<{ evals: EvalSummary[] }>(
-    "/api/evals",
-    fetcher,
-    {
-      refreshInterval: 3000, // Poll every 3 seconds
-      revalidateOnFocus: true,
-      revalidateOnReconnect: true,
-      dedupingInterval: 1000, // Dedupe requests within 1 second
-      errorRetryCount: 3,
-      errorRetryInterval: 5000,
-    }
-  );
+  const { data, error, isLoading, isValidating, mutate } = useSWR<{
+    evals: EvalSummary[];
+  }>("/api/evals", fetcher, {
+    refreshInterval: 10000, // Poll every 3 seconds
+    revalidateOnFocus: true,
+    revalidateOnReconnect: true,
+    dedupingInterval: 1000, // Dedupe requests within 1 second
+    errorRetryCount: 3,
+    errorRetryInterval: 5000,
+  });
 
   return {
     evals: data?.evals || [],
@@ -47,7 +45,7 @@ export function useEvalDetails(evalId: string | null) {
       dedupingInterval: 1000,
       errorRetryCount: 3,
       errorRetryInterval: 5000,
-    }
+    },
   );
 
   return {
@@ -61,9 +59,9 @@ export function useEvalDetails(evalId: string | null) {
 // Hook for getting the latest eval ID
 export function useLatestEval() {
   const { evals, isLoading, isError } = useEvals();
-  
+
   const latestEval = evals.length > 0 ? evals[evals.length - 1] : null;
-  
+
   return {
     latestEval,
     isLoading,

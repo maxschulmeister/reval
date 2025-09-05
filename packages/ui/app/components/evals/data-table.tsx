@@ -17,10 +17,11 @@ import {
   useReactTable,
   VisibilityState,
 } from "@tanstack/react-table";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useCallback } from "react";
 import { ColumnVisibilityToggle } from "./column-visibility-toggle";
 import { HIDDEN_COLUMNS } from "./constants";
 import { createColumns } from "./create-columns";
+import { DataCharts } from "./data-charts";
 import { DataFilter, filterData } from "./data-filter";
 import { FormattedCell } from "./formatted-cell";
 
@@ -41,13 +42,26 @@ export const DataTable = ({ eval: evalData, runs }: Reval) => {
     },
   );
 
-  const columns = useMemo(() => createColumns(runs), [runs]);
+  // Memoize column creation - only recreate when runs structure changes
+  const columns = useMemo(() => {
+    if (runs.length === 0) return [];
+    return createColumns(runs);
+  }, [runs]);
 
-  // Filter data based on selected filters
+  // Memoize filtered data with optimized filtering
   const filteredData = useMemo(() => {
+    const hasActiveFilters = Object.values(columnFilters).some(
+      (filters) => filters.length > 0,
+    );
+    
+    if (!hasActiveFilters) {
+      return runs;
+    }
+    
     return filterData(runs, columnFilters);
   }, [runs, columnFilters]);
 
+  // Memoize table configuration
   const table = useReactTable({
     data: filteredData,
     columns,
@@ -61,12 +75,16 @@ export const DataTable = ({ eval: evalData, runs }: Reval) => {
     },
   });
 
-  const handleFilterChange = (columnId: string, values: string[]) => {
+  // Memoize filter change handler
+  const handleFilterChange = useCallback((columnId: string, values: string[]) => {
     setColumnFilters((prev) => ({ ...prev, [columnId]: values }));
-  };
+  }, []);
 
   return (
     <section className="mt-8">
+      {/* Charts */}
+      <DataCharts data={filteredData} columns={columns} />
+
       {/* Dynamic Filters */}
       <DataFilter
         data={runs}

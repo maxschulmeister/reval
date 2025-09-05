@@ -2,6 +2,7 @@
 
 import type { Reval } from "@reval/core/types";
 import jsBeautify from "js-beautify";
+import { useMemo } from "react";
 import { calculateAverageTime, calculateSuccessRate } from "../lib/grouping";
 import { CodeDialog } from "./code-dialog";
 import { Button } from "./ui/button";
@@ -9,6 +10,24 @@ import { Cell } from "./ui/cell";
 import { H5, Small } from "./ui/typography";
 
 export const Summary = ({ eval: evalData, runs }: Reval) => {
+  // Memoize expensive calculations
+  const successRate = useMemo(() => calculateSuccessRate(runs), [runs]);
+  const averageTime = useMemo(() => calculateAverageTime(runs), [runs]);
+  const beautifiedFunction = useMemo(
+    () => jsBeautify(evalData.function, {
+      indent_size: 4,
+      indent_char: " ",
+    }),
+    [evalData.function]
+  );
+  const formattedDate = useMemo(
+    () => new Intl.DateTimeFormat("en-GB", {
+      dateStyle: "long",
+      timeStyle: "short",
+    }).format(new Date(evalData.timestamp)),
+    [evalData.timestamp]
+  );
+
   return (
     <Cell className="border-b border-border">
       {/* Function summary */}
@@ -17,10 +36,7 @@ export const Summary = ({ eval: evalData, runs }: Reval) => {
         <Small as="dd" className="mr-8">
           <CodeDialog
             title="Function"
-            content={jsBeautify(evalData.function, {
-              indent_size: 4,
-              indent_char: " ",
-            })}
+            content={beautifiedFunction}
             trigger={
               <Button
                 variant="outline"
@@ -36,11 +52,7 @@ export const Summary = ({ eval: evalData, runs }: Reval) => {
         {/* Timestamp Summary */}
         <H5 as="dt">Date</H5>
         <Small as="dd" className="mr-8">
-          {new Intl.DateTimeFormat("en-GB", {
-            dateStyle: "long",
-            timeStyle: "short",
-            // timeZoneName: "short",
-          }).format(new Date(evalData.timestamp))}
+          {formattedDate}
         </Small>
 
         {/* Runs Summary */}
@@ -52,12 +64,12 @@ export const Summary = ({ eval: evalData, runs }: Reval) => {
         {/* Success Rate Summary */}
         <H5 as="dt">Success Rate</H5>
         <Small as="dd" className="mr-8">
-          {calculateSuccessRate(runs)}%
+          {successRate}%
         </Small>
         {/* Average Time Summary */}
         <H5 as="dt">Avg Time</H5>
         <Small as="dd" className="mr-8">
-          {calculateAverageTime(runs)}ms
+          {averageTime}ms
         </Small>
       </dl>
     </Cell>

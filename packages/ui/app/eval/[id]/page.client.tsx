@@ -6,7 +6,6 @@ import { useEvalDetails, useEvals } from "@/app/lib/hooks";
 import type { Eval, Reval } from "@reval/core/types";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { DataCharts } from "../../components/evals/data-charts";
 import { Header } from "../../components/header";
 
 interface EvalPageClientProps {
@@ -100,8 +99,6 @@ export const EvalPageClient = ({
         />
 
         <Summary {...currentEvalData} />
-
-        <DataCharts {...currentEvalData} />
 
         <DataTable {...currentEvalData} />
       </div>
