@@ -97,22 +97,21 @@ export function calculateJsonAccuracy(
   result: JsonValue,
   target: JsonValue,
 ): { value: number; details: JsonObject } {
-  const accuracies: Record<string, number> = {};
+  const allAccuracies: number[] = [];
 
   // Helper function to recursively compare objects
   const compareValues = (
     targetVal: JsonValue,
     resultVal: JsonValue,
-    path: string = "",
-  ): void => {
+  ): JsonValue => {
     // Handle null/undefined cases
     if (targetVal === null && resultVal === null) {
-      accuracies[path] = 100;
-      return;
+      allAccuracies.push(100);
+      return 100;
     }
     if (targetVal === undefined && resultVal === undefined) {
-      accuracies[path] = 100;
-      return;
+      allAccuracies.push(100);
+      return 100;
     }
     if (
       targetVal === null ||
@@ -120,8 +119,8 @@ export function calculateJsonAccuracy(
       resultVal === null ||
       resultVal === undefined
     ) {
-      accuracies[path] = 0;
-      return;
+      allAccuracies.push(0);
+      return 0;
     }
 
     // Check if types match
@@ -129,70 +128,76 @@ export function calculateJsonAccuracy(
     const resultType = typeof resultVal;
 
     if (targetType !== resultType) {
-      accuracies[path] = 0;
-      return;
+      allAccuracies.push(0);
+      return 0;
     }
 
     // Handle different types
     if (targetType === "string") {
-      accuracies[path] = calculateStringAccuracy(
+      const accuracy = calculateStringAccuracy(
         targetVal as string,
         resultVal as string,
       );
+      allAccuracies.push(accuracy);
+      return accuracy;
     } else if (targetType === "number") {
-      accuracies[path] = calculateNumberAccuracy(
+      const accuracy = calculateNumberAccuracy(
         targetVal as number,
         resultVal as number,
       );
+      allAccuracies.push(accuracy);
+      return accuracy;
     } else if (targetType === "boolean") {
-      accuracies[path] = targetVal === resultVal ? 100 : 0;
+      const accuracy = targetVal === resultVal ? 100 : 0;
+      allAccuracies.push(accuracy);
+      return accuracy;
     } else if (Array.isArray(targetVal) && Array.isArray(resultVal)) {
       // For arrays, order matters - compare element by element
       const maxLength = Math.max(targetVal.length, resultVal.length);
+      const arrayAccuracies = [];
       for (let i = 0; i < maxLength; i++) {
         const targetItem = i < targetVal.length ? targetVal[i] : null;
         const resultItem = i < resultVal.length ? resultVal[i] : null;
-        compareValues(targetItem, resultItem, `${path}[${i}]`);
+        arrayAccuracies[i] = compareValues(targetItem, resultItem);
       }
+      return arrayAccuracies;
     } else if (targetType === "object") {
       // For objects, get all unique keys from both objects
       const targetKeys = new Set(Object.keys(targetVal));
       const resultKeys = new Set(Object.keys(resultVal));
       const allKeys = new Set([...targetKeys, ...resultKeys]);
 
-      // Compare each key
+      const objectAccuracies: Record<string, JsonValue> = {};
       for (const key of allKeys) {
         const targetKeyVal = targetVal[key as keyof typeof targetVal];
         const resultKeyVal = resultVal[key as keyof typeof resultVal];
-        compareValues(
-          targetKeyVal,
-          resultKeyVal,
-          path ? `${path}.${key}` : key,
-        );
+        objectAccuracies[key] = compareValues(targetKeyVal, resultKeyVal);
       }
+      return objectAccuracies;
     } else {
       // For other types, use strict equality
-      accuracies[path] = targetVal === resultVal ? 100 : 0;
+      const accuracy = targetVal === resultVal ? 100 : 0;
+      allAccuracies.push(accuracy);
+      return accuracy;
     }
   };
 
   // Start comparison
-  compareValues(target, result);
+  const details = compareValues(target, result);
 
   // Calculate mean accuracy
-  if (accuracies.length === 0) {
+  if (allAccuracies.length === 0) {
     return {
       value: 100,
-      details: accuracies,
+      details: {},
     }; // Empty objects are considered identical
   }
 
   const meanAccuracy =
-    Object.values(accuracies).reduce((sum, acc) => sum + acc, 0) /
-    Object.values(accuracies).length;
+    allAccuracies.reduce((sum, acc) => sum + acc, 0) / allAccuracies.length;
   return {
     value: Math.round(meanAccuracy * 100) / 100,
-    details: accuracies,
+    details: details as JsonObject,
   };
 }
 
