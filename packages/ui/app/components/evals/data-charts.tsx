@@ -1,7 +1,7 @@
 "use client";
 
 import type { Run } from "@reval/core/types";
-import { type AccessorKeyColumnDef, type Table } from "@tanstack/react-table";
+import { type Table } from "@tanstack/react-table";
 import Palette from "iwanthue/palette";
 import {
   ArrowDownWideNarrow,
@@ -23,6 +23,7 @@ import {
   SelectValue,
 } from "../ui/select";
 import { H5 } from "../ui/typography";
+import { PATH_DELIMITER } from "./constants";
 
 interface DataChartsProps {
   data: Run[];
@@ -33,7 +34,7 @@ const getValueAtPath = (
   obj: Record<string, unknown>,
   path: string,
 ): unknown => {
-  return path.split(".").reduce((current: unknown, key: string) => {
+  return path.split(PATH_DELIMITER).reduce((current: unknown, key: string) => {
     return (current as Record<string, unknown>)?.[key];
   }, obj);
 };
@@ -47,9 +48,7 @@ const DataChartsComponent = ({ data, table }: DataChartsProps) => {
     const allNumericKeys = table
       .getVisibleLeafColumns()
       .filter((column) => column.columnDef.meta?.type === "number")
-      .map(
-        (column) => (column.columnDef as AccessorKeyColumnDef<Run>).accessorKey,
-      )
+      .map((column) => column.columnDef.id)
       .filter((key): key is string => typeof key === "string");
 
     // Get unique variant combinations from all data
@@ -70,7 +69,7 @@ const DataChartsComponent = ({ data, table }: DataChartsProps) => {
       defaultColor: "#fff",
     });
 
-    // Create chart data with colors for all data
+    // Create chart data with colors and flattened metric values for all data
     const chartDataWithColors = data.map((run: Run, index: number) => {
       const variantKey = run.variants
         ? Object.entries(run.variants as Record<string, unknown>)
@@ -78,8 +77,15 @@ const DataChartsComponent = ({ data, table }: DataChartsProps) => {
             .join(", ")
         : "No variants";
 
+      // Add flattened metric values for chart access
+      const flattenedMetrics: Record<string, unknown> = {};
+      allNumericKeys.forEach((key) => {
+        flattenedMetrics[key] = getValueAtPath(run as Record<string, unknown>, key);
+      });
+
       return {
         ...run,
+        ...flattenedMetrics,
         variant: `Run ${index + 1}`,
         variantDetails: variantKey,
         color: palette.get(variantKey),
@@ -90,10 +96,10 @@ const DataChartsComponent = ({ data, table }: DataChartsProps) => {
   }, [data, table]);
 
   const [selectedMetric, setSelectedMetric] = useState<string>(
-    "score.accuracy.value",
+    `score${PATH_DELIMITER}accuracy${PATH_DELIMITER}value`,
   );
   const [sortByMetric, setSortByMetric] = useState<string>(
-    "score.accuracy.value",
+    `score${PATH_DELIMITER}accuracy${PATH_DELIMITER}value`,
   );
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
 
@@ -192,7 +198,7 @@ const DataChartsComponent = ({ data, table }: DataChartsProps) => {
           <SelectContent>
             {numericKeys.map((key) => (
               <SelectItem key={key} value={key}>
-                {titleCase(key.replace(".", " "))}
+                {titleCase(key.replace(PATH_DELIMITER, " "))}
               </SelectItem>
             ))}
           </SelectContent>
@@ -218,7 +224,7 @@ const DataChartsComponent = ({ data, table }: DataChartsProps) => {
           <SelectContent>
             {numericKeys.map((key) => (
               <SelectItem key={key} value={key}>
-                {titleCase(key.replace(".", " "))}
+                {titleCase(key.replace(PATH_DELIMITER, " "))}
               </SelectItem>
             ))}
           </SelectContent>

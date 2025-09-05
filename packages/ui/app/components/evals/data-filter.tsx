@@ -2,11 +2,11 @@
 
 import type { Eval } from "@reval/core/types";
 import { ColumnDef } from "@tanstack/react-table";
-import { useMemo, memo } from "react";
+import { memo, useMemo } from "react";
 import { Cell } from "../ui/cell";
 import { MultiSelect } from "../ui/multi-select";
 import { H5 } from "../ui/typography";
-import { HIDDEN_COLUMNS } from "./constants";
+import { HIDDEN_COLUMNS, PATH_DELIMITER } from "./constants";
 
 type FilterConfig = {
   columnId: string;
@@ -42,7 +42,7 @@ const DataFilterComponent = <TData,>({
     () =>
       (obj: Record<string, unknown>, path: string): unknown => {
         return path
-          .split(".")
+          .split(PATH_DELIMITER)
           .reduce(
             (current: unknown, key) =>
               (current as Record<string, unknown>)?.[key],
@@ -60,12 +60,12 @@ const DataFilterComponent = <TData,>({
 
     // Check each column for filter eligibility
     columns.forEach((column) => {
-      const accessorKey = (column as { accessorKey?: string }).accessorKey;
+      const columnId = column.id as string;
       const type = column.meta?.type;
       if (
-        !accessorKey ||
+        !columnId ||
         (type !== "string" && type !== "status") ||
-        (HIDDEN_COLUMNS as readonly string[]).includes(accessorKey)
+        (HIDDEN_COLUMNS as readonly string[]).includes(columnId)
       )
         return;
 
@@ -74,7 +74,7 @@ const DataFilterComponent = <TData,>({
         .map((row) => {
           const value = getNestedValue(
             row as Record<string, unknown>,
-            accessorKey,
+            columnId,
           );
           return String(value ?? "");
         })
@@ -88,9 +88,12 @@ const DataFilterComponent = <TData,>({
         (type === "status" && uniqueValues.length >= 2)
       ) {
         configs.push({
-          columnId: accessorKey,
-          options: uniqueValues.map((value) => ({ label: value, value })),
-          selected: columnFilters[accessorKey] || [],
+          columnId: columnId,
+          options: uniqueValues.map((value) => ({
+            label: value,
+            value,
+          })),
+          selected: columnFilters[columnId] || [],
         });
       }
     });
@@ -125,7 +128,7 @@ const DataFilterComponent = <TData,>({
               options={config.options}
               selected={config.selected}
               onChange={(values) => onFilterChange(config.columnId, values)}
-              placeholder={`Filter by ${config.columnId.replace(".", " ")}`}
+              placeholder={`Filter by ${config.columnId.replace(PATH_DELIMITER, " ")}`}
             />
           </div>
         ))}
@@ -141,11 +144,10 @@ export const DataFilter = memo(DataFilterComponent, (prevProps, nextProps) => {
   return (
     prevProps.data.length === nextProps.data.length &&
     prevProps.columns.length === nextProps.columns.length &&
-    JSON.stringify(prevProps.columnFilters) === JSON.stringify(nextProps.columnFilters)
+    JSON.stringify(prevProps.columnFilters) ===
+      JSON.stringify(nextProps.columnFilters)
   );
-}) as <TData>(
-  props: DataFilterProps<TData>,
-) => React.ReactElement | null;
+}) as <TData>(props: DataFilterProps<TData>) => React.ReactElement | null;
 
 // Helper function to filter data based on selected filters
 export const filterData = <TData,>(
@@ -175,10 +177,9 @@ export const filterData = <TData,>(
     path: string,
   ): unknown => {
     return path
-      .split(".")
+      .split(PATH_DELIMITER)
       .reduce(
-        (current: unknown, key) =>
-          (current as Record<string, unknown>)?.[key],
+        (current: unknown, key) => (current as Record<string, unknown>)?.[key],
         obj,
       );
   };

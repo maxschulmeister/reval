@@ -7,4 +7,7 @@ export const HIDDEN_COLUMNS = [
   "eval_id",
 ] as const;
 
-export type HiddenColumn = typeof HIDDEN_COLUMNS[number];
+export type HiddenColumn = (typeof HIDDEN_COLUMNS)[number];
+
+// Path delimiter for object key exploration
+export const PATH_DELIMITER = "::" as const;

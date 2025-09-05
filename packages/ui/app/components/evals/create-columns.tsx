@@ -5,12 +5,14 @@ import { Status } from "@reval/core/types";
 import "@tanstack/react-table";
 import type {
   AccessorKeyColumnDef,
+  ColumnDef,
   Column,
   RowData,
 } from "@tanstack/react-table";
 import { ArrowDown, ArrowUp } from "lucide-react";
 import { titleCase } from "text-title-case";
 import { Button } from "../ui/button";
+import { PATH_DELIMITER } from "./constants";
 
 export type ColumnMetaType =
   | "json"
@@ -62,7 +64,7 @@ const getValueAtPath = (
   obj: Record<string, unknown>,
   path: string,
 ): unknown => {
-  return path.split(".").reduce(
+  return path.split(PATH_DELIMITER).reduce(
     (current: Record<string, unknown> | unknown, key: string) => {
       return (current as Record<string, unknown>)?.[key];
     },
@@ -79,7 +81,7 @@ const getColumnOrder = (accessorKey: string): number => {
 
   // Then check if accessorKey starts with any base column name
   for (let i = 0; i < COLUMN_ORDER.length; i++) {
-    if (accessorKey.startsWith(COLUMN_ORDER[i] + ".")) {
+    if (accessorKey.startsWith(COLUMN_ORDER[i] + PATH_DELIMITER)) {
       return i;
     }
   }
@@ -125,10 +127,10 @@ const flattenObject = (
   currentDepth = 0,
 ): string[] => {
   return Object.keys(obj).flatMap((key) => {
-    const path = prefix ? `${prefix}.${key}` : key;
+    const path = prefix ? `${prefix}${PATH_DELIMITER}${key}` : key;
     const value = obj[key];
     // Get expansion depth for this column (use root key for nested paths)
-    const rootKey = prefix ? prefix.split(".")[0] : key;
+    const rootKey = prefix ? prefix.split(PATH_DELIMITER)[0] : key;
     const config = COLUMN_EXPANSION_CONFIG[rootKey];
     // Check if this specific key should be excluded at the current level
     if (config?.exclude?.includes(key) && prefix === rootKey) {
@@ -153,21 +155,21 @@ const flattenObject = (
 const createColumn = (
   accessorKey: string,
   runs: Run[],
-): AccessorKeyColumnDef<Run> => {
+): ColumnDef<Run> => {
   const sampleValue = getValueAtPath(runs[0], accessorKey);
-  const title = accessorKey.includes(".")
-    ? accessorKey.split(".").slice(1).join(" ")
+  const title = accessorKey.includes(PATH_DELIMITER)
+    ? accessorKey.split(PATH_DELIMITER).slice(1).join(" ")
     : accessorKey;
 
   return {
-    accessorKey,
     id: accessorKey,
     header: createSortableHeader(title),
     meta: { type: getColumnType(sampleValue) },
+    accessorFn: (row: Run) => getValueAtPath(row as Record<string, unknown>, accessorKey),
   };
 };
 
-export const createColumns = (runs: Run[]): AccessorKeyColumnDef<Run>[] => {
+export const createColumns = (runs: Run[]): ColumnDef<Run>[] => {
   if (runs.length === 0) return [];
 
   const allPaths = [
@@ -179,8 +181,8 @@ export const createColumns = (runs: Run[]): AccessorKeyColumnDef<Run>[] => {
   return allPaths
     .map((path) => createColumn(path, runs))
     .sort((a, b) => {
-      const orderA = getColumnOrder(a.accessorKey);
-      const orderB = getColumnOrder(b.accessorKey);
+      const orderA = getColumnOrder(a.id as string);
+      const orderB = getColumnOrder(b.id as string);
       return orderA - orderB;
     });
 };
