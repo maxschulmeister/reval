@@ -60,7 +60,7 @@ export function useEvalDetails(evalId: string | null) {
 export function useLatestEval() {
   const { evals, isLoading, isError } = useEvals();
 
-  const latestEval = evals.length > 0 ? evals[evals.length - 1] : null;
+  const latestEval = evals.length > 0 ? evals[0] : null;
 
   return {
     latestEval,
