@@ -93,7 +93,8 @@ const getColumnType = (value: unknown): ColumnMetaType => {
     return "string";
   }
   if (typeof value === "object" || typeof value === "function") return "json";
-  if (typeof value === "number") return "number";
+  if (typeof value === "number" || typeof Number(value) === "number")
+    return "number";
   if (typeof value === "boolean") return "boolean";
 
   return "string";
@@ -126,11 +127,9 @@ const flattenObject = (
   return Object.keys(obj).flatMap((key) => {
     const path = prefix ? `${prefix}.${key}` : key;
     const value = obj[key];
-
     // Get expansion depth for this column (use root key for nested paths)
     const rootKey = prefix ? prefix.split(".")[0] : key;
     const config = COLUMN_EXPANSION_CONFIG[rootKey];
-
     // Check if this specific key should be excluded at the current level
     if (config?.exclude?.includes(key) && prefix === rootKey) {
       return [path]; // Stop expansion here, treat as leaf
@@ -171,7 +170,11 @@ const createColumn = (
 export const createColumns = (runs: Run[]): AccessorKeyColumnDef<Run>[] => {
   if (runs.length === 0) return [];
 
-  const allPaths = flattenObject(runs[0] as Record<string, unknown>);
+  const allPaths = [
+    ...new Set(
+      runs.flatMap((run) => flattenObject(run as Record<string, unknown>)),
+    ),
+  ];
 
   return allPaths
     .map((path) => createColumn(path, runs))
