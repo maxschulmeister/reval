@@ -30,6 +30,8 @@ export function getScore(result: JsonValue, target: JsonValue): Score {
   if (resultType === "object" && targetType === "object") {
     return {
       accuracy: calculateJsonAccuracy(result, target),
+      // NOTE: Diffing is quite useless, because the order of the keys is different most of the time.
+      // diff: calculateJsonDiffAccuracy(result, target),
     };
   }
 

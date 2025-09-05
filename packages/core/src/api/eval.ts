@@ -150,7 +150,9 @@ export const runEval = async <
 
         const target = getTargets(config)[dataIndex];
 
-        const score = result.output ? getScore(result.output, target) : null;
+        const score = result.output
+          ? ensureJson(getScore(result.output, target))
+          : null;
 
         const run: Run = {
           id,

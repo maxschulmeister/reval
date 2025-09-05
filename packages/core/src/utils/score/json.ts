@@ -1,5 +1,5 @@
 import type { JsonObject, JsonValue } from "@prisma/client/runtime/library";
-import { diff } from "json-diff";
+import { diff } from "json-diff-ts";
 import { calculateNumberAccuracy } from "./number";
 import { calculateStringAccuracy } from "./text";
 
@@ -10,20 +10,26 @@ import { calculateStringAccuracy } from "./text";
  * @returns Accuracy as a percentage (0-100)
  */
 export function calculateJsonDiffAccuracy(
-  target: JsonValue,
   result: JsonValue,
-): number {
+  target: JsonValue,
+) {
   // If objects are exactly the same, return 100% accuracy
   if (JSON.stringify(target) === JSON.stringify(result)) {
-    return 100;
+    return {
+      score: 100,
+      object: { old: target, new: result, changes: [] },
+    };
   }
 
-  // Calculate structural diff
+  // Calculate structural diff using json-diff-ts
   const diffResult = diff(target, result);
 
   // If no diff, objects are structurally identical
-  if (!diffResult) {
-    return 100;
+  if (!diffResult || diffResult.length === 0) {
+    return {
+      score: 100,
+      object: { old: target, new: result, changes: [] },
+    };
   }
 
   // Count total properties in both objects to establish baseline
@@ -39,34 +45,17 @@ export function calculateJsonDiffAccuracy(
     );
   };
 
-  // Count differences in the diff result
-  const countDifferences = (diffObj: any): number => {
-    if (!diffObj || typeof diffObj !== "object") return 0;
+  // Count differences in the diff result from json-diff-ts
+  const countDifferences = (changes: any[]): number => {
+    if (!changes || !Array.isArray(changes)) return 0;
 
     let differences = 0;
 
-    for (const key in diffObj) {
-      const value = diffObj[key];
-
-      // Handle special diff markers
-      if (key.endsWith("__added") || key.endsWith("__deleted")) {
-        differences += countProperties(value);
-      } else if (value && typeof value === "object") {
-        // Handle __old/__new pattern
-        if (value.__old !== undefined && value.__new !== undefined) {
-          differences += 1;
-        } else if (Array.isArray(value)) {
-          // Handle array diffs
-          differences += value.filter(
-            (item) =>
-              Array.isArray(item) &&
-              item.length === 2 &&
-              (item[0] === "+" || item[0] === "-" || item[0] === "~"),
-          ).length;
-        } else {
-          // Recursively count nested differences
-          differences += countDifferences(value);
-        }
+    for (const change of changes) {
+      if (change.type === "ADD" || change.type === "DELETE") {
+        differences += countProperties(change.value);
+      } else if (change.type === "UPDATE") {
+        differences += 1;
       }
     }
 
@@ -84,7 +73,10 @@ export function calculateJsonDiffAccuracy(
   // Calculate accuracy as percentage of unchanged properties
   const accuracy = Math.max(0, (1 - differences / totalProperties) * 100);
 
-  return Math.round(accuracy * 100) / 100; // Round to 2 decimal places
+  return {
+    score: Math.round(accuracy * 100) / 100,
+    object: { old: target, new: result, changes: diffResult },
+  }; // Round to 2 decimal places
 }
 
 /**

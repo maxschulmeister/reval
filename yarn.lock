@@ -343,15 +343,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ewoudenberg/difflib@npm:0.1.0":
-  version: 0.1.0
-  resolution: "@ewoudenberg/difflib@npm:0.1.0"
-  dependencies:
-    heap: "npm:>= 0.2.0"
-  checksum: 10c0/3060807c91f39c5c1e5421fe51573bb2bffcab48cb32e9dcc69ce0d43e658dbf5959421382541012628ca6b842d252fc157a79f70cea8088a864572fec2bd094
-  languageName: node
-  linkType: hard
-
 "@floating-ui/core@npm:^1.7.3":
   version: 1.7.3
   resolution: "@floating-ui/core@npm:1.7.3"
@@ -1543,13 +1534,12 @@ __metadata:
   dependencies:
     "@eslint/js": "npm:^9.34.0"
     "@prisma/client": "npm:6.15.0"
-    "@types/json-diff": "npm:^1"
     "@types/node": "npm:^24.3.1"
     "@types/p-queue": "npm:^3.2.1"
     execa: "npm:^9.6.0"
     fastest-levenshtein: "npm:^1.0.16"
     jiti: "npm:^2.5.1"
-    json-diff: "npm:^1.0.6"
+    json-diff-ts: "npm:^4.8.2"
     nanoid: "npm:^5.1.5"
     p-queue: "npm:^8.1.0"
     p-retry: "npm:^7.0.0"
@@ -1577,6 +1567,7 @@ __metadata:
     "@radix-ui/react-slot": "npm:^1.2.3"
     "@radix-ui/react-use-controllable-state": "npm:^1.2.2"
     "@reval/core": "workspace:*"
+    "@shikijs/transformers": "npm:^3.12.2"
     "@tailwindcss/postcss": "npm:^4"
     "@tanstack/react-table": "npm:^8.21.3"
     "@tanstack/react-virtual": "npm:^3.13.12"
@@ -1592,6 +1583,7 @@ __metadata:
     flourite: "npm:^1.3.0"
     iwanthue: "npm:^2.0.0"
     js-beautify: "npm:^1.15.4"
+    json-diff-ts: "npm:^4.8.2"
     lucide-react: "npm:^0.542.0"
     motion: "npm:^12.23.12"
     next: "npm:15.4.5"
@@ -1830,6 +1822,16 @@ __metadata:
   dependencies:
     "@shikijs/types": "npm:3.12.2"
   checksum: 10c0/728b89554a166dca87aa3a4b53d0aa2c0b2c560252036275b3e8d3b4c790cf8fc980b5e06574e4fbad223627149eff150af12db5acd599fffd71e6ff6391af18
+  languageName: node
+  linkType: hard
+
+"@shikijs/transformers@npm:^3.12.2":
+  version: 3.12.2
+  resolution: "@shikijs/transformers@npm:3.12.2"
+  dependencies:
+    "@shikijs/core": "npm:3.12.2"
+    "@shikijs/types": "npm:3.12.2"
+  checksum: 10c0/e1dd3911f284af2dd526317b932f842aa2228acc1761a87c8a17f512953e7dde5abca085e6549913c2816c8eb3b0217eaabeb4399268e18a84c304ffb7885c5d
   languageName: node
   linkType: hard
 
@@ -2341,13 +2343,6 @@ __metadata:
   version: 1.14.3
   resolution: "@types/js-beautify@npm:1.14.3"
   checksum: 10c0/e2e8cbe03c39bc596130151ae050884e4da25fc8dfb15cd1a0d0de92ee0963d43fc37b372de46fc8ba8ec99e6041debc70cdf92a1c160e3b472df3effa5b6c8f
-  languageName: node
-  linkType: hard
-
-"@types/json-diff@npm:^1":
-  version: 1.0.3
-  resolution: "@types/json-diff@npm:1.0.3"
-  checksum: 10c0/ad4dd1b1c4a253c4bfa54e9dfbd087ff7eb58a299eb77ac208c5852372b7637c77f7c507e876dab48eada03b9010db011088dd3d966089cc2b3778e7a35e5150
   languageName: node
   linkType: hard
 
@@ -3448,13 +3443,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"colors@npm:^1.4.0":
-  version: 1.4.0
-  resolution: "colors@npm:1.4.0"
-  checksum: 10c0/9af357c019da3c5a098a301cf64e3799d27549d8f185d86f79af23069e4f4303110d115da98483519331f6fb71c8568d5688fa1c6523600044fd4a54e97c4efb
-  languageName: node
-  linkType: hard
-
 "comma-separated-tokens@npm:^2.0.0":
   version: 2.0.3
   resolution: "comma-separated-tokens@npm:2.0.3"
@@ -3826,15 +3814,6 @@ __metadata:
   version: 16.6.1
   resolution: "dotenv@npm:16.6.1"
   checksum: 10c0/15ce56608326ea0d1d9414a5c8ee6dcf0fffc79d2c16422b4ac2268e7e2d76ff5a572d37ffe747c377de12005f14b3cc22361e79fc7f1061cce81f77d2c973dc
-  languageName: node
-  linkType: hard
-
-"dreamopt@npm:~0.8.0":
-  version: 0.8.0
-  resolution: "dreamopt@npm:0.8.0"
-  dependencies:
-    wordwrap: "npm:>=0.0.2"
-  checksum: 10c0/8e5953c19519c9ec9427eff91b618c3ded7d2b50fcb89c051ca9c4f49e712460103c12dea09eb3feec5a63f21950488a19481798425aaba815b1c5016b3d58b9
   languageName: node
   linkType: hard
 
@@ -5075,13 +5054,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"heap@npm:>= 0.2.0":
-  version: 0.2.7
-  resolution: "heap@npm:0.2.7"
-  checksum: 10c0/341c5d51ae13dc8346c371a8a69c57c972fcb9a3233090d3dd5ba29d483d6b5b4e75492443cbfeacd46608bb30e6680f646ffb7a6205900221735587d07a79b6
-  languageName: node
-  linkType: hard
-
 "hosted-git-info@npm:^7.0.0":
   version: 7.0.2
   resolution: "hosted-git-info@npm:7.0.2"
@@ -5755,16 +5727,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"json-diff@npm:^1.0.6":
-  version: 1.0.6
-  resolution: "json-diff@npm:1.0.6"
-  dependencies:
-    "@ewoudenberg/difflib": "npm:0.1.0"
-    colors: "npm:^1.4.0"
-    dreamopt: "npm:~0.8.0"
-  bin:
-    json-diff: bin/json-diff.js
-  checksum: 10c0/21d0477a703ceaf1cbb8bcbb6ff38c16d16285a1ce6e358a47732632ece0c1d29d169cc5c099b64e65d8820784a04a53bc848699446ff3c546897426b0d3e443
+"json-diff-ts@npm:^4.8.2":
+  version: 4.8.2
+  resolution: "json-diff-ts@npm:4.8.2"
+  checksum: 10c0/81cb837a5dcb3a085fff0a05acec6f657b0de5c9e11f454a918a29b22d8d37ce6fda3411b2b8d5a55c81ee91818d747ad4226fc40407dd8297cd9870443f4660
   languageName: node
   linkType: hard
 
@@ -9445,13 +9411,6 @@ __metadata:
   version: 1.2.5
   resolution: "word-wrap@npm:1.2.5"
   checksum: 10c0/e0e4a1ca27599c92a6ca4c32260e8a92e8a44f4ef6ef93f803f8ed823f486e0889fc0b93be4db59c8d51b3064951d25e43d434e95dc8c960cc3a63d65d00ba20
-  languageName: node
-  linkType: hard
-
-"wordwrap@npm:>=0.0.2":
-  version: 1.0.0
-  resolution: "wordwrap@npm:1.0.0"
-  checksum: 10c0/7ed2e44f3c33c5c3e3771134d2b0aee4314c9e49c749e37f464bf69f2bcdf0cbf9419ca638098e2717cff4875c47f56a007532f6111c3319f557a2ca91278e92
   languageName: node
   linkType: hard
 

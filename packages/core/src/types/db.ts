@@ -3,8 +3,8 @@ import type {
   Run as PrismaRun,
   Status as PrismaStatus,
 } from "@prisma/client/client";
-import type { JsonObject } from "@prisma/client/runtime/library";
-
+import type { JsonObject, JsonValue } from "@prisma/client/runtime/library";
+import { diff } from "json-diff-ts";
 // Prisma types are generated from Prisma schema
 export type Eval = PrismaEval;
 
@@ -33,5 +33,14 @@ export interface EvalDetails extends EvalSummary {
 
 export type Score = {
   accuracy: number | JsonObject;
-  diff?: number | JsonObject;
+  diff?: {
+    score: number;
+    object: Diff;
+  };
 } | null;
+
+export interface Diff {
+  old: JsonValue;
+  new: JsonValue;
+  changes: ReturnType<typeof diff>;
+}
