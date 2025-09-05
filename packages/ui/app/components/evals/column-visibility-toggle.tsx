@@ -4,6 +4,7 @@ import { cn } from "@/app/lib/utils";
 import type { Run } from "@reval/core/types";
 import type { Table } from "@tanstack/react-table";
 import { Check, Columns3Cog } from "lucide-react";
+import { memo } from "react";
 import { Button } from "../ui/button";
 import {
   Command,
@@ -19,7 +20,7 @@ interface ColumnVisibilityToggleProps {
   table: Table<Run>;
 }
 
-export function ColumnVisibilityToggle({ table }: ColumnVisibilityToggleProps) {
+const ColumnVisibilityToggleComponent = ({ table }: ColumnVisibilityToggleProps) => {
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -62,4 +63,24 @@ export function ColumnVisibilityToggle({ table }: ColumnVisibilityToggleProps) {
       </PopoverContent>
     </Popover>
   );
-}
+};
+
+// Memoized component to prevent unnecessary re-renders
+export const ColumnVisibilityToggle = memo(ColumnVisibilityToggleComponent, (prevProps, nextProps) => {
+  // Only re-render if the table columns or their visibility state changed
+  const prevColumns = prevProps.table.getAllColumns();
+  const nextColumns = nextProps.table.getAllColumns();
+  
+  if (prevColumns.length !== nextColumns.length) {
+    return false; // Re-render if column count changed
+  }
+  
+  // Check if any column visibility changed
+  for (let i = 0; i < prevColumns.length; i++) {
+    if (prevColumns[i].getIsVisible() !== nextColumns[i].getIsVisible()) {
+      return false; // Re-render if visibility changed
+    }
+  }
+  
+  return true; // Don't re-render if nothing changed
+});

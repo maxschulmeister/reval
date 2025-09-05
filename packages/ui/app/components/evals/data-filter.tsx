@@ -2,7 +2,7 @@
 
 import type { Eval } from "@reval/core/types";
 import { ColumnDef } from "@tanstack/react-table";
-import { useMemo } from "react";
+import { useMemo, memo } from "react";
 import { Cell } from "../ui/cell";
 import { MultiSelect } from "../ui/multi-select";
 import { H5 } from "../ui/typography";
@@ -23,7 +23,7 @@ interface DataFilterProps<TData> {
   columnVisibilityToggle?: React.ReactNode;
 }
 
-export const DataFilter = <TData,>({
+const DataFilterComponent = <TData,>({
   data,
   columns,
   eval: evalData,
@@ -34,21 +34,22 @@ export const DataFilter = <TData,>({
   // Memoize uniqueness threshold calculation
   const uniquenessThreshold = useMemo(
     () => Math.max(2, Math.ceil(data.length / 10)),
-    [data.length]
+    [data.length],
   );
 
   // Memoize the nested value getter function
   const getNestedValue = useMemo(
-    () => (obj: Record<string, unknown>, path: string): unknown => {
-      return path
-        .split(".")
-        .reduce(
-          (current: unknown, key) =>
-            (current as Record<string, unknown>)?.[key],
-          obj,
-        );
-    },
-    []
+    () =>
+      (obj: Record<string, unknown>, path: string): unknown => {
+        return path
+          .split(".")
+          .reduce(
+            (current: unknown, key) =>
+              (current as Record<string, unknown>)?.[key],
+            obj,
+          );
+      },
+    [],
   );
 
   // Generate filter configurations for columns with sufficient unique values
@@ -67,7 +68,7 @@ export const DataFilter = <TData,>({
         (HIDDEN_COLUMNS as readonly string[]).includes(accessorKey)
       )
         return;
-        
+
       // Get all unique values for this column
       const values = data
         .map((row) => {
@@ -134,6 +135,18 @@ export const DataFilter = <TData,>({
   );
 };
 
+// Memoized DataFilter with smart comparison
+export const DataFilter = memo(DataFilterComponent, (prevProps, nextProps) => {
+  // Re-render if data length, columns, or filters changed
+  return (
+    prevProps.data.length === nextProps.data.length &&
+    prevProps.columns.length === nextProps.columns.length &&
+    JSON.stringify(prevProps.columnFilters) === JSON.stringify(nextProps.columnFilters)
+  );
+}) as <TData>(
+  props: DataFilterProps<TData>,
+) => React.ReactElement | null;
+
 // Helper function to filter data based on selected filters
 export const filterData = <TData,>(
   data: TData[],
@@ -149,7 +162,7 @@ export const filterData = <TData,>(
 
   // Pre-compile filter entries for better performance
   const activeFilters = Object.entries(columnFilters).filter(
-    ([, selectedValues]) => selectedValues.length > 0
+    ([, selectedValues]) => selectedValues.length > 0,
   );
 
   if (activeFilters.length === 0) {

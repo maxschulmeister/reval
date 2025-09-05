@@ -14,18 +14,20 @@ export const Summary = ({ eval: evalData, runs }: Reval) => {
   const successRate = useMemo(() => calculateSuccessRate(runs), [runs]);
   const averageTime = useMemo(() => calculateAverageTime(runs), [runs]);
   const beautifiedFunction = useMemo(
-    () => jsBeautify(evalData.function, {
-      indent_size: 4,
-      indent_char: " ",
-    }),
-    [evalData.function]
+    () =>
+      jsBeautify(evalData.function, {
+        indent_size: 4,
+        indent_char: " ",
+      }),
+    [evalData.function],
   );
   const formattedDate = useMemo(
-    () => new Intl.DateTimeFormat("en-GB", {
-      dateStyle: "long",
-      timeStyle: "short",
-    }).format(new Date(evalData.timestamp)),
-    [evalData.timestamp]
+    () =>
+      new Intl.DateTimeFormat("en-GB", {
+        dateStyle: "long",
+        timeStyle: "short",
+      }).format(new Date(evalData.timestamp)),
+    [evalData.timestamp],
   );
 
   return (

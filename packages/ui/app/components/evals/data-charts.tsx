@@ -1,9 +1,9 @@
 "use client";
 
 import type { Run } from "@reval/core/types";
-import { type AccessorKeyColumnDef } from "@tanstack/react-table";
+import { type AccessorKeyColumnDef, type Table } from "@tanstack/react-table";
 import Palette from "iwanthue/palette";
-import { useMemo, useState } from "react";
+import { memo, useMemo, useState } from "react";
 import { Bar, BarChart, Cell, LabelList, XAxis, YAxis } from "recharts";
 import { titleCase } from "text-title-case";
 import { Cell as UICell } from "../ui/cell";
@@ -19,7 +19,7 @@ import { H5 } from "../ui/typography";
 
 interface DataChartsProps {
   data: Run[];
-  columns: AccessorKeyColumnDef<Run>[];
+  table: Table<Run>;
 }
 
 const getValueAtPath = (
@@ -31,14 +31,16 @@ const getValueAtPath = (
   }, obj);
 };
 
-export const DataCharts = ({ data, columns }: DataChartsProps) => {
+// Memoized chart component with smart re-rendering
+const DataChartsComponent = ({ data, table }: DataChartsProps) => {
   const { chartData, numericKeys } = useMemo(() => {
     if (!data || data.length === 0) return { chartData: [], numericKeys: [] };
 
-    // Get numeric keys from columns with number type
-    const allNumericKeys = columns
-      .filter((column) => column.meta?.type === "number")
-      .map((column) => column.accessorKey)
+    // Get numeric keys from columns with number type that are currently visible
+    const allNumericKeys = table
+      .getVisibleLeafColumns()
+      .filter((column) => column.columnDef.meta?.type === "number")
+      .map((column) => (column.columnDef as AccessorKeyColumnDef<Run>).accessorKey)
       .filter((key): key is string => typeof key === "string");
 
     // Get unique variant combinations from all data
@@ -76,7 +78,7 @@ export const DataCharts = ({ data, columns }: DataChartsProps) => {
     });
 
     return { chartData: chartDataWithColors, numericKeys: allNumericKeys };
-  }, [data, columns]);
+  }, [data, table]);
 
   const [selectedMetric, setSelectedMetric] = useState<string>(
     "score.accuracy.value",
@@ -243,14 +245,7 @@ export const DataCharts = ({ data, columns }: DataChartsProps) => {
                 },
                 index: number,
               ) => (
-                <Cell
-                  key={`cell-${index}`}
-                  fill={entry.color}
-                  className={`animate-bar opacity-0`}
-                  style={{
-                    animationDelay: `${index * 100}ms`,
-                  }}
-                />
+                <Cell key={`cell-${index}`} fill={entry.color} />
               ),
             )}
             <LabelList
@@ -270,3 +265,28 @@ export const DataCharts = ({ data, columns }: DataChartsProps) => {
     </UICell>
   );
 };
+
+// Smart re-rendering with memo and custom comparison
+export const DataCharts = memo(DataChartsComponent, (prevProps, nextProps) => {
+  // Only re-render if data length changes significantly
+  const dataLengthChanged = prevProps.data.length !== nextProps.data.length;
+
+  // Check if column visibility changed
+  const visibleColumnsChanged = 
+    prevProps.table.getVisibleLeafColumns().length !== 
+    nextProps.table.getVisibleLeafColumns().length;
+
+  // Check if first and last data points changed (indicating data refresh)
+  const firstDataChanged = prevProps.data[0]?.id !== nextProps.data[0]?.id;
+  const lastDataChanged =
+    prevProps.data[prevProps.data.length - 1]?.id !==
+    nextProps.data[nextProps.data.length - 1]?.id;
+
+  // Re-render only if significant changes occurred
+  return (
+    !dataLengthChanged &&
+    !visibleColumnsChanged &&
+    !firstDataChanged &&
+    !lastDataChanged
+  );
+});

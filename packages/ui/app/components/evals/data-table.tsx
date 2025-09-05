@@ -17,7 +17,7 @@ import {
   useReactTable,
   VisibilityState,
 } from "@tanstack/react-table";
-import { useMemo, useState, useCallback } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { ColumnVisibilityToggle } from "./column-visibility-toggle";
 import { HIDDEN_COLUMNS } from "./constants";
 import { createColumns } from "./create-columns";
@@ -53,11 +53,11 @@ export const DataTable = ({ eval: evalData, runs }: Reval) => {
     const hasActiveFilters = Object.values(columnFilters).some(
       (filters) => filters.length > 0,
     );
-    
+
     if (!hasActiveFilters) {
       return runs;
     }
-    
+
     return filterData(runs, columnFilters);
   }, [runs, columnFilters]);
 
@@ -76,14 +76,17 @@ export const DataTable = ({ eval: evalData, runs }: Reval) => {
   });
 
   // Memoize filter change handler
-  const handleFilterChange = useCallback((columnId: string, values: string[]) => {
-    setColumnFilters((prev) => ({ ...prev, [columnId]: values }));
-  }, []);
+  const handleFilterChange = useCallback(
+    (columnId: string, values: string[]) => {
+      setColumnFilters((prev) => ({ ...prev, [columnId]: values }));
+    },
+    [],
+  );
 
   return (
     <section className="mt-8">
       {/* Charts */}
-      <DataCharts data={filteredData} columns={columns} />
+      <DataCharts data={filteredData} table={table} />
 
       {/* Dynamic Filters */}
       <DataFilter

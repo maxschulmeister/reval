@@ -1,18 +1,17 @@
 import type { Status } from "@reval/core/types";
 import jsBeautify from "js-beautify";
+import { memo } from "react";
 import { CodeDialog } from "../code-dialog";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 
-export const FormattedCell = ({
-  type,
-  value,
-  header,
-}: {
+interface FormattedCellProps {
   type?: string;
   value: unknown;
   header: string;
-}) => {
+}
+
+const FormattedCellComponent = ({ type, value, header }: FormattedCellProps) => {
   if (type === "json" && value) {
     return (
       <div className="flex justify-center">
@@ -42,3 +41,13 @@ export const FormattedCell = ({
     return String(value ?? "");
   }
 };
+
+// Memoized component to prevent unnecessary re-renders
+export const FormattedCell = memo(FormattedCellComponent, (prevProps, nextProps) => {
+  // Only re-render if value or type actually changed
+  return (
+    prevProps.value === nextProps.value &&
+    prevProps.type === nextProps.type &&
+    prevProps.header === nextProps.header
+  );
+});
