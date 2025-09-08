@@ -8,6 +8,7 @@ export default defineConfig({
     lib: {
       entry: {
         index: resolve(__dirname, "src/index.ts"),
+        client: resolve(__dirname, "src/client.ts"),
         "types/index": resolve(__dirname, "src/types/index.ts"),
       },
       name: "RevalCore",

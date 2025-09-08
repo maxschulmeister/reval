@@ -1,12 +1,12 @@
 import type { Status } from "@reval/core/types";
 
+import { formatFieldName, PATH_DELIMITER } from "@reval/core/client";
 import jsBeautify from "js-beautify";
 import { memo } from "react";
 import { CodeDialog } from "../code-dialog";
 import { FileDialog } from "../file-dialog";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
-import { PATH_DELIMITER } from "./constants";
 
 interface FormattedCellProps {
   type?: string;
@@ -23,7 +23,7 @@ const FormattedCellComponent = ({
     return (
       <div className="flex justify-center">
         <CodeDialog
-          title={header.replace(PATH_DELIMITER, " ")}
+          title={formatFieldName(header)}
           content={jsBeautify(JSON.stringify(value, null, 2), {
             indent_size: 4,
             indent_char: " ",
@@ -41,7 +41,7 @@ const FormattedCellComponent = ({
       <div className="flex items-center justify-between gap-4">
         {value as string}
         <FileDialog
-          title={header.replace(PATH_DELIMITER, " ")}
+          title={formatFieldName(header)}
           content={value as string}
           trigger={
             <Button variant="outline" size="sm">

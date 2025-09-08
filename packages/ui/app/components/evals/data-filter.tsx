@@ -1,12 +1,13 @@
 "use client";
 
+import { PATH_DELIMITER, formatFieldName } from "@reval/core/client";
 import type { Eval } from "@reval/core/types";
 import { ColumnDef } from "@tanstack/react-table";
 import { memo, useMemo } from "react";
 import { Cell } from "../ui/cell";
 import { MultiSelect } from "../ui/multi-select";
 import { H5 } from "../ui/typography";
-import { HIDDEN_COLUMNS, PATH_DELIMITER } from "./constants";
+import { HIDDEN_COLUMNS } from "./constants";
 
 type FilterConfig = {
   columnId: string;
@@ -127,7 +128,7 @@ const DataFilterComponent = <TData,>({
               options={config.options}
               selected={config.selected}
               onChange={(values) => onFilterChange(config.columnId, values)}
-              placeholder={`Filter by ${config.columnId.replace(PATH_DELIMITER, " ")}`}
+              placeholder={`Filter by ${formatFieldName(config.columnId)}`}
             />
           </div>
         ))}

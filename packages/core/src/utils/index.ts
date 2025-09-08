@@ -15,6 +15,7 @@ import type {
 
 export * from "./config";
 export * from "./score";
+export * from "./chart";
 
 type ResolvedArg<F extends TFunction> = {
   args: Parameters<F>;

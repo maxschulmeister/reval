@@ -1,5 +1,7 @@
 import { getDb } from "../db";
 import type { Eval, EvalDetails, EvalSummary } from "../types";
+import { PATH_DELIMITER, COLUMN_EXPANSION_CONFIG } from "../constants";
+import { flattenObject, getValueAtPath, generateChartSummary, formatFieldName } from "../utils";
 
 export async function listEvals(limit = 20): Promise<EvalSummary[]> {
   const prisma = getDb();
@@ -146,10 +148,12 @@ export async function getEvalDetails(
   };
 }
 
+
+
 export async function exportEval(
   eval_id: string,
-  format: "json" | "csv" = "json",
-): Promise<string> {
+  format: "json" | "csv" | "md" = "json",
+): Promise<string | { runs: string; summary: string }> {
   const details = await getEvalDetails(eval_id);
   const prisma = getDb();
 
@@ -157,20 +161,142 @@ export async function exportEval(
     throw new Error(`Eval with id ${eval_id} not found`);
   }
 
+  // Generate chart summary for all formats
+  const { chartData, numericKeys } = generateChartSummary(details.runs);
+  const enhancedDetails = {
+    ...details,
+    chartSummary: {
+      variantGroups: chartData,
+      availableMetrics: numericKeys,
+      totalVariants: chartData.length,
+    },
+  };
+
   if (format === "json") {
-    return JSON.stringify(details, null, 2);
+    return JSON.stringify(enhancedDetails, null, 2);
   }
 
   if (format === "csv") {
-    const headers = Object.keys(prisma.run.fields);
-
-    const rows = details.runs.map((run) => [...Object.values(details.runs)]);
-
-    const csvContent = [headers, ...rows]
-      .map((row) => row.map((cell) => JSON.stringify(cell)).join(","))
+    // Generate runs CSV
+    const runHeaders = [...new Set(details.runs.flatMap((run) => flattenObject(run as Record<string, unknown>)))];
+    const runRows = details.runs.map((run) =>
+      runHeaders.map((header) => {
+        const value = getValueAtPath(run as Record<string, unknown>, header);
+        return value !== null && value !== undefined ? JSON.stringify(value) : "";
+      })
+    );
+    const runsCSV = [runHeaders, ...runRows]
+      .map((row) =>
+        row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(","),
+      )
       .join("\n");
 
-    return csvContent;
+    // Generate summary CSV
+    const summaryHeaders = ["variant", "runCount", ...numericKeys];
+    const summaryRows = chartData.map((item) => [
+      item.variantDetails,
+      item.runCount,
+      ...numericKeys.map((key) => item[key] || 0),
+    ]);
+    const summaryCSV = [summaryHeaders, ...summaryRows]
+      .map((row) =>
+        row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(","),
+      )
+      .join("\n");
+
+    return { runs: runsCSV, summary: summaryCSV };
+  }
+
+  if (format === "md") {
+    const formatDate = (date: Date) => date.toLocaleString();
+    const formatNumber = (num: number) => num.toFixed(2);
+
+    let markdown = `# Eval Export Report\n\n`;
+    markdown += `**Eval ID:** ${details.id}\n`;
+    markdown += `**Name:** ${details.name}\n`;
+    markdown += `**Timestamp:** ${formatDate(details.timestamp)}\n`;
+    if (details.notes) {
+      markdown += `**Notes:** ${details.notes}\n`;
+    }
+    markdown += `\n`;
+
+    // Summary Statistics
+    markdown += `## Summary Statistics\n\n`;
+    markdown += `| Metric | Value |\n`;
+    markdown += `|--------|-------|\n`;
+    markdown += `| Total Runs | ${details.totalRuns} |\n`;
+    markdown += `| Success Count | ${details.successCount} |\n`;
+    markdown += `| Error Count | ${details.errorCount} |\n`;
+    markdown += `| Success Rate | ${formatNumber(details.successRate)}% |\n`;
+    markdown += `| Average Time | ${formatNumber(details.avgTime)}ms |\n`;
+    markdown += `\n`;
+
+    // Variant Analysis (Chart Summary)
+    if (chartData.length > 0) {
+      markdown += `## Variant Performance Summary\n\n`;
+      markdown += `This section represents the data that would be visualized in the interactive charts.\n\n`;
+
+      // Variant performance table with all metrics
+      const tableHeaders = ["Variant", "Run Count", ...numericKeys.map(key => formatFieldName(key))];
+      markdown += `| ${tableHeaders.join(" | ")} |\n`;
+      markdown += `| ${tableHeaders.map(() => "---").join(" | ")} |\n`;
+
+      chartData.forEach((item) => {
+        const row = [
+          item.variantDetails,
+          item.runCount.toString(),
+          ...numericKeys.map((key) => (item[key] ? formatNumber(item[key]) : "N/A")),
+        ];
+        markdown += `| ${row.join(" | ")} |\n`;
+      });
+      markdown += `\n`;
+    }
+
+    // Detailed Run Data (all runs)
+    markdown += `## All Run Data\n\n`;
+    markdown += `Complete run data with all available metrics:\n\n`;
+
+    if (details.runs.length > 0) {
+      // Get all available fields from the runs data (same logic as UI table)
+       const allFields = [...new Set(details.runs.flatMap((run) => flattenObject(run as Record<string, unknown>)))];
+       
+       // Filter out hidden columns that are typically not shown in UI
+       const hiddenColumns = ["args", "dataIndex", "evalId", "id", "eval_id"];
+       
+       // For markdown, also filter out fields that contain objects (only keep strings and numbers)
+       const visibleFields = allFields.filter(field => {
+         if (hiddenColumns.includes(field)) return false;
+         
+         // Check if this field contains objects in any of the runs
+         const sampleValue = getValueAtPath(details.runs[0] as Record<string, unknown>, field);
+         return typeof sampleValue === "string" || typeof sampleValue === "number" || typeof sampleValue === "boolean";
+       });
+      
+      // Create table headers
+        const headers = visibleFields.map(field => formatFieldName(field));
+      markdown += `| ${headers.join(" | ")} |\n`;
+      markdown += `| ${headers.map(() => "---").join(" | ")} |\n`;
+      
+      // Add all run data
+      details.runs.forEach((run) => {
+        const row = visibleFields.map((field) => {
+           const value = getValueAtPath(run as Record<string, unknown>, field);
+           if (typeof value === "number") return formatNumber(value);
+           return String(value || "N/A");
+         });
+        markdown += `| ${row.join(" | ")} |\n`;
+      });
+      markdown += `\n`;
+    }
+
+    // Export metadata
+    markdown += `## Export Information\n\n`;
+    markdown += `- **Export Date:** ${formatDate(new Date())}\n`;
+    markdown += `- **Format:** Markdown\n`;
+    markdown += `- **Total Variants:** ${chartData.length}\n`;
+    markdown += `- **Available Metrics:** ${numericKeys.length}\n`;
+
+    return markdown;
   }
 
   throw new Error(`Unsupported format: ${format}`);

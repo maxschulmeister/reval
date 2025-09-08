@@ -1,5 +1,6 @@
 "use client";
 
+import { PATH_DELIMITER, getValueAtPath, formatFieldName } from "@reval/core/client";
 import type { Run } from "@reval/core/types";
 import { type Table } from "@tanstack/react-table";
 import Palette from "iwanthue/palette";
@@ -11,7 +12,7 @@ import {
 import prettyNum, { PRECISION_SETTING } from "pretty-num";
 import { memo, useMemo, useState } from "react";
 import { Bar, BarChart, Cell, LabelList, XAxis, YAxis } from "recharts";
-import { titleCase } from "text-title-case";
+
 import { Button } from "../ui/button";
 import { Cell as UICell } from "../ui/cell";
 import { ChartConfig, ChartContainer, ChartTooltip } from "../ui/chart";
@@ -23,7 +24,6 @@ import {
   SelectValue,
 } from "../ui/select";
 import { H5 } from "../ui/typography";
-import { PATH_DELIMITER } from "./constants";
 
 interface DataChartsProps {
   data: Run[];
@@ -75,13 +75,8 @@ const DataChartsComponent = ({ data, table }: DataChartsProps) => {
         allNumericKeys.forEach((key) => {
           const values = runs
             .map((run) => {
-              // Navigate nested object structure for original run data
-              const keys = key.split(PATH_DELIMITER);
-              let value: unknown = run;
-              for (const k of keys) {
-                value = (value as Record<string, unknown>)?.[k];
-                if (value === undefined) break;
-              }
+              // Use shared utility function for nested object navigation
+              const value = getValueAtPath(run as Record<string, unknown>, key);
               return typeof value === "number" ? value : null;
             })
             .filter((value): value is number => value !== null);
@@ -160,7 +155,7 @@ const DataChartsComponent = ({ data, table }: DataChartsProps) => {
   const chartConfig = useMemo(() => {
     const config: ChartConfig = {
       [selectedMetric]: {
-        label: selectedMetric.charAt(0).toUpperCase() + selectedMetric.slice(1),
+        label: formatFieldName(selectedMetric),
         color: "hsl(var(--chart-1))",
       },
     };
@@ -205,7 +200,7 @@ const DataChartsComponent = ({ data, table }: DataChartsProps) => {
           <SelectContent>
             {numericKeys.map((key) => (
               <SelectItem key={key} value={key}>
-                {titleCase(key.replace(PATH_DELIMITER, " "))}
+                {formatFieldName(key)}
               </SelectItem>
             ))}
           </SelectContent>
@@ -231,7 +226,7 @@ const DataChartsComponent = ({ data, table }: DataChartsProps) => {
           <SelectContent>
             {numericKeys.map((key) => (
               <SelectItem key={key} value={key}>
-                {titleCase(key.replace(PATH_DELIMITER, " "))}
+                {formatFieldName(key)}
               </SelectItem>
             ))}
           </SelectContent>
@@ -293,8 +288,7 @@ const DataChartsComponent = ({ data, table }: DataChartsProps) => {
                   <div className="grid gap-2">
                     <div className="flex flex-col">
                       <span className="text-[0.70rem] text-muted-foreground uppercase">
-                        {selectedMetric.charAt(0).toUpperCase() +
-                          selectedMetric.slice(1)}
+                        {formatFieldName(selectedMetric)}
                       </span>
                       <span className="font-bold text-muted-foreground">
                         {typeof metricValue === "number"

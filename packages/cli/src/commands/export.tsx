@@ -16,13 +16,17 @@ export const args = zod.tuple([
 ]);
 
 export const options = zod.object({
-  format: zod.enum(["json", "csv"]).default("json").describe("Export format"),
+  format: zod
+    .enum(["json", "csv", "md"])
+    .default("json")
+    .describe("Export format"),
   out: zod
     .string()
     .optional()
     .describe(
       option({
-        description: "Output file path",
+        description:
+          "Output file path (for CSV, this will be the base name for multiple files)",
         alias: "o",
       }),
     ),
@@ -38,7 +42,7 @@ export default function Export({ args, options }: Props) {
     "exporting",
   );
   const [error, setError] = useState<string | null>(null);
-  const [outputPath, setOutputPath] = useState<string | null>(null);
+  const [outputPath, setOutputPath] = useState<string | string[] | null>(null);
   const [eval_id] = args;
 
   useEffect(() => {
@@ -46,18 +50,47 @@ export default function Export({ args, options }: Props) {
       try {
         const data = await exportEval(eval_id, options.format);
 
-        const fileName =
-          options.out || `reval-export-${eval_id.slice(0, 8)}.${options.format}`;
+        if (
+          options.format === "csv" &&
+          typeof data === "object" &&
+          "runs" in data
+        ) {
+          // Handle CSV dual-file export
+          const baseName = options.out || `reval-export-${eval_id.slice(0, 8)}`;
+          const runsFileName = `${baseName}-runs.csv`;
+          const summaryFileName = `${baseName}-summary.csv`;
 
-        // Create parent directories if they don't exist
-        const dir = dirname(fileName);
-        if (dir !== ".") {
-          mkdirSync(dir, { recursive: true });
+          // Create parent directories if they don't exist
+          const runsDir = dirname(runsFileName);
+          const summaryDir = dirname(summaryFileName);
+          if (runsDir !== ".") {
+            mkdirSync(runsDir, { recursive: true });
+          }
+          if (summaryDir !== ".") {
+            mkdirSync(summaryDir, { recursive: true });
+          }
+
+          writeFileSync(runsFileName, data.runs, "utf8");
+          writeFileSync(summaryFileName, data.summary, "utf8");
+
+          setOutputPath([runsFileName, summaryFileName]);
+        } else {
+          // Handle single-file export (JSON, Markdown)
+          const extension = options.format === "md" ? "md" : options.format;
+          const fileName =
+            options.out || `reval-export-${eval_id.slice(0, 8)}.${extension}`;
+
+          // Create parent directories if they don't exist
+          const dir = dirname(fileName);
+          if (dir !== ".") {
+            mkdirSync(dir, { recursive: true });
+          }
+
+          writeFileSync(fileName, data as string, "utf8");
+
+          setOutputPath(fileName);
         }
 
-        writeFileSync(fileName, data, "utf8");
-
-        setOutputPath(fileName);
         setStatus("completed");
       } catch (err) {
         setError(err instanceof Error ? err.message : String(err));
@@ -98,11 +131,36 @@ export default function Export({ args, options }: Props) {
       <Text>
         <Text bold>Format:</Text> {options.format.toUpperCase()}
       </Text>
-      <Text>
-        <Text bold>Output file:</Text> {outputPath}
-      </Text>
+      {Array.isArray(outputPath) ? (
+        <>
+          <Text>
+            <Text bold>Output files:</Text>
+          </Text>
+          {outputPath.map((path, index) => (
+            <Text key={index}> - {path}</Text>
+          ))}
+        </>
+      ) : (
+        <Text>
+          <Text bold>Output file:</Text> {outputPath}
+        </Text>
+      )}
       <Text></Text>
-      <Text color="gray">File saved successfully</Text>
+      <Text color="gray">
+        {Array.isArray(outputPath)
+          ? "Files saved successfully"
+          : "File saved successfully"}
+      </Text>
+      {options.format === "csv" && Array.isArray(outputPath) && (
+        <Text color="gray">
+          CSV export includes separate files for run data and summary analysis
+        </Text>
+      )}
+      {options.format === "md" && (
+        <Text color="gray">
+          Markdown export includes comprehensive analysis with chart summaries
+        </Text>
+      )}
     </Box>
   );
 }

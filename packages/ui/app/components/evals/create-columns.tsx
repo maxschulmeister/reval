@@ -1,13 +1,18 @@
 "use client";
 
+import {
+  COLUMN_EXPANSION_CONFIG,
+  PATH_DELIMITER,
+  formatFieldName,
+  getValueAtPath,
+} from "@reval/core/client";
 import type { Run } from "@reval/core/types";
 import { Status } from "@reval/core/types";
 import "@tanstack/react-table";
 import type { Column, ColumnDef, RowData } from "@tanstack/react-table";
 import { ArrowDown, ArrowUp } from "lucide-react";
-import { titleCase } from "text-title-case";
+
 import { Button } from "../ui/button";
-import { PATH_DELIMITER } from "./constants";
 
 export type ColumnMetaType =
   | "json"
@@ -42,7 +47,7 @@ const createSortableHeader = (title: string) => {
       onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
       className="h-auto p-0! text-sm font-medium hover:bg-transparent"
     >
-      {titleCase(title)}
+      {title}
       {column.getIsSorted() === "asc" ? (
         <ArrowUp className="size-3 text-accent-foreground" />
       ) : column.getIsSorted() === "desc" ? (
@@ -56,17 +61,7 @@ const createSortableHeader = (title: string) => {
   return SortableHeader;
 };
 
-const getValueAtPath = (
-  obj: Record<string, unknown>,
-  path: string,
-): unknown => {
-  return path.split(PATH_DELIMITER).reduce(
-    (current: Record<string, unknown> | unknown, key: string) => {
-      return (current as Record<string, unknown>)?.[key];
-    },
-    obj as Record<string, unknown> | unknown,
-  );
-};
+// getValueAtPath is now imported from @reval/core/client
 
 const getColumnOrder = (accessorKey: string): number => {
   // First check for exact match
@@ -98,24 +93,6 @@ const getColumnType = (value: unknown): ColumnMetaType => {
 
   return "string";
 };
-
-// Column expansion configuration
-// By default, no columns are expanded (depth 0)
-// Only explicitly configured columns will be expanded
-// Column expansion configuration with proper typing
-
-const COLUMN_EXPANSION_CONFIG: Record<
-  string,
-  {
-    depth: number;
-    exclude?: string[];
-  }
-> = {
-  result: { depth: -1, exclude: ["output"] }, // Expand infinitely but exclude output
-  score: { depth: 4 },
-  features: { depth: -1 },
-  variants: { depth: -1 },
-} as const;
 
 const flattenObject = (
   obj: Record<string, unknown>,
@@ -151,9 +128,7 @@ const flattenObject = (
 
 const createColumn = (accessorKey: string, runs: Run[]): ColumnDef<Run> => {
   const sampleValue = getValueAtPath(runs[0], accessorKey);
-  const title = accessorKey.includes(PATH_DELIMITER)
-    ? accessorKey.split(PATH_DELIMITER).slice(1).join(" ")
-    : accessorKey;
+  const title = formatFieldName(accessorKey);
 
   return {
     id: accessorKey,

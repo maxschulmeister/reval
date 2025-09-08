@@ -115,36 +115,6 @@ export const runEval = async <
           result = { output: ensureJson(error) };
         }
 
-        // try {
-        //   const response = await pRetry(
-        //     async () => {
-        //       try {
-        //         return await config.function(...args);
-        //       } catch (fnError) {
-        //         throw fnError instanceof Error
-        //           ? fnError
-        //           : new Error(JSON.stringify(fnError));
-        //       }
-        //     },
-        //     {
-        //       retries: config.retries,
-        //       onFailedAttempt: (attemptError) => {
-        //         retryCount = attemptError.attemptNumber - 1;
-        //         console.log(
-        //           `Attempt ${attemptError.attemptNumber} failed for args ${JSON.stringify(args)}. ${attemptError.retriesLeft} retries left. Error: ${attemptError.message}`,
-        //         );
-        //       },
-        //     },
-        //   );
-        //   result = config.result(response as ResultContext<F>);
-        // } catch (error) {
-        //   console.error(
-        //     `Run failed for args ${JSON.stringify(args)}. Error: ${error instanceof Error ? error.message : error}`,
-        //   );
-        //   status = "error";
-        //   result = { output: ensureJson(error) };
-        // }
-
         const endTime = Date.now();
         const executionTime = endTime - startTime;
 

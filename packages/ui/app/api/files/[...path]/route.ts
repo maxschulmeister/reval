@@ -4,9 +4,10 @@ import path from "path";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { path: string[] } },
+  { params }: { params: Promise<{ path: string[] }> },
 ) {
   try {
+    const resolvedParams = await params;
     const projectRoot = process.env.REVAL_PROJECT_ROOT;
 
     if (!projectRoot) {
@@ -16,7 +17,7 @@ export async function GET(
       );
     }
 
-    const filePath = path.join(projectRoot, ...params.path);
+    const filePath = path.join(projectRoot, ...resolvedParams.path);
 
     // Security check: ensure the file is within the project root
     const resolvedPath = path.resolve(filePath);
