@@ -30,15 +30,6 @@ interface DataChartsProps {
   table: Table<Run>;
 }
 
-const getValueAtPath = (
-  obj: Record<string, unknown>,
-  path: string,
-): unknown => {
-  return path.split(PATH_DELIMITER).reduce((current: unknown, key: string) => {
-    return (current as Record<string, unknown>)?.[key];
-  }, obj);
-};
-
 // Memoized chart component with smart re-rendering
 const DataChartsComponent = ({ data, table }: DataChartsProps) => {
   const { chartData, numericKeys } = useMemo(() => {
@@ -51,46 +42,69 @@ const DataChartsComponent = ({ data, table }: DataChartsProps) => {
       .map((column) => column.columnDef.id)
       .filter((key): key is string => typeof key === "string");
 
-    // Get unique variant combinations from all data
-    const uniqueVariants = Array.from(
-      new Set(
-        data.map((run: Run) =>
-          run.variants
-            ? Object.entries(run.variants as Record<string, unknown>)
-                .map(([key, value]) => `${key}: ${value}`)
-                .join(", ")
-            : "No variants",
-        ),
-      ),
-    );
+    // Group runs by variant combinations
+    const variantGroups = new Map<string, Run[]>();
 
-    // Generate color palette for unique variants
-    const palette = Palette.generateFromValues("variants", uniqueVariants, {
-      defaultColor: "#fff",
-    });
-
-    // Create chart data with colors and flattened metric values for all data
-    const chartDataWithColors = data.map((run: Run, index: number) => {
+    data.forEach((run: Run) => {
       const variantKey = run.variants
         ? Object.entries(run.variants as Record<string, unknown>)
             .map(([key, value]) => `${key}: ${value}`)
             .join(", ")
         : "No variants";
 
-      // Add flattened metric values for chart access
-      const flattenedMetrics: Record<string, unknown> = {};
-      allNumericKeys.forEach((key) => {
-        flattenedMetrics[key] = getValueAtPath(run as Record<string, unknown>, key);
-      });
-
-      return {
-        ...run,
-        ...flattenedMetrics,
-        variant: `Run ${index + 1}`,
-        variantDetails: variantKey,
-        color: palette.get(variantKey),
-      };
+      if (!variantGroups.has(variantKey)) {
+        variantGroups.set(variantKey, []);
+      }
+      variantGroups.get(variantKey)!.push(run);
     });
+
+    // Get unique variant combinations for color palette
+    const uniqueVariants = Array.from(variantGroups.keys());
+
+    // Generate color palette for unique variants
+    const palette = Palette.generateFromValues("variants", uniqueVariants, {
+      defaultColor: "#fff",
+    });
+
+    // Create aggregated chart data
+    const chartDataWithColors = Array.from(variantGroups.entries()).map(
+      ([variantKey, runs], index) => {
+        // Calculate mean values for each numeric metric
+        const aggregatedMetrics: Record<string, number> = {};
+
+        allNumericKeys.forEach((key) => {
+          const values = runs
+            .map((run) => {
+              // Navigate nested object structure for original run data
+              const keys = key.split(PATH_DELIMITER);
+              let value: unknown = run;
+              for (const k of keys) {
+                value = (value as Record<string, unknown>)?.[k];
+                if (value === undefined) break;
+              }
+              return typeof value === "number" ? value : null;
+            })
+            .filter((value): value is number => value !== null);
+
+          if (values.length > 0) {
+            aggregatedMetrics[key] =
+              values.reduce((sum, val) => sum + val, 0) / values.length;
+          }
+        });
+
+        // Use the first run's variants for display
+        const firstRun = runs[0];
+
+        return {
+          ...aggregatedMetrics,
+          variants: firstRun.variants,
+          variant: `${variantKey} (${runs.length} runs)`,
+          variantDetails: variantKey,
+          color: palette.get(variantKey),
+          runCount: runs.length,
+        };
+      },
+    );
 
     return { chartData: chartDataWithColors, numericKeys: allNumericKeys };
   }, [data, table]);
@@ -107,29 +121,18 @@ const DataChartsComponent = ({ data, table }: DataChartsProps) => {
   const filteredChartData = useMemo(() => {
     return chartData
       .filter((item) => {
-        const metricValue = getValueAtPath(
-          item as Record<string, unknown>,
-          selectedMetric,
-        );
+        // For aggregated data, use direct property access since keys are flattened
+        const metricValue = (item as Record<string, unknown>)[selectedMetric];
         return typeof metricValue === "number" && metricValue > 0;
       })
       .sort((a, b) => {
-        const aValue = getValueAtPath(
-          a as Record<string, unknown>,
-          sortByMetric,
-        ) as number;
-        const bValue = getValueAtPath(
-          b as Record<string, unknown>,
-          sortByMetric,
-        ) as number;
+        const aValue = (a as Record<string, unknown>)[sortByMetric] as number;
+        const bValue = (b as Record<string, unknown>)[sortByMetric] as number;
         return sortDirection === "asc" ? aValue - bValue : bValue - aValue;
       })
-      .map((item, index) => ({
+      .map((item) => ({
         ...item,
-        sortValue: getValueAtPath(
-          item as Record<string, unknown>,
-          sortByMetric,
-        ) as number,
+        sortValue: (item as Record<string, unknown>)[sortByMetric] as number,
       }));
   }, [chartData, selectedMetric, sortByMetric, sortDirection]);
 
@@ -139,10 +142,7 @@ const DataChartsComponent = ({ data, table }: DataChartsProps) => {
 
     const values = filteredChartData
       .map((item) => {
-        const value = getValueAtPath(
-          item as Record<string, unknown>,
-          selectedMetric,
-        );
+        const value = (item as Record<string, unknown>)[selectedMetric];
         return typeof value === "number" ? value : 0;
       })
       .filter((value) => value > 0);
@@ -168,7 +168,14 @@ const DataChartsComponent = ({ data, table }: DataChartsProps) => {
     // Add each variant as a config entry with its unique color
     filteredChartData.forEach(
       (
-        item: Run & { variant: string; variantDetails: string; color: string },
+        item: {
+          sortValue: number;
+          variants: unknown;
+          variant: string;
+          variantDetails: string;
+          color: string;
+          runCount: number;
+        },
         index: number,
       ) => {
         config[`variant${index}`] = {
@@ -181,7 +188,7 @@ const DataChartsComponent = ({ data, table }: DataChartsProps) => {
     return config;
   }, [filteredChartData, selectedMetric]);
 
-  if (filteredChartData.length <= 1 || numericKeys.length === 0) {
+  if (filteredChartData.length === 0 || numericKeys.length === 0) {
     return;
   }
 
@@ -278,10 +285,9 @@ const DataChartsComponent = ({ data, table }: DataChartsProps) => {
             content={({ active, payload }) => {
               if (!active || !payload?.length) return null;
               const data = payload[0]?.payload;
-              const metricValue = getValueAtPath(
-                data as Record<string, unknown>,
-                selectedMetric,
-              );
+              const metricValue = (data as Record<string, unknown>)[
+                selectedMetric
+              ];
               return (
                 <div className="rounded-lg border bg-background p-2 shadow-md">
                   <div className="grid gap-2">
@@ -296,6 +302,7 @@ const DataChartsComponent = ({ data, table }: DataChartsProps) => {
                           : "N/A"}
                       </span>
                     </div>
+
                     {data?.variants &&
                       Object.keys(data.variants).length > 0 &&
                       Object.entries(data.variants).map(([key, value]) => (
@@ -306,6 +313,12 @@ const DataChartsComponent = ({ data, table }: DataChartsProps) => {
                           <span className="font-medium">{String(value)}</span>
                         </div>
                       ))}
+                    <div className="flex flex-col">
+                      <span className="text-[0.70rem] text-muted-foreground uppercase">
+                        Runs
+                      </span>
+                      <span className="font-medium">{data?.runCount || 1}</span>
+                    </div>
                   </div>
                 </div>
               );
@@ -314,10 +327,13 @@ const DataChartsComponent = ({ data, table }: DataChartsProps) => {
           <Bar dataKey={selectedMetric} radius={4} isAnimationActive={false}>
             {filteredChartData.map(
               (
-                entry: Run & {
+                entry: {
+                  sortValue: number;
+                  variants: unknown;
                   variant: string;
                   variantDetails: string;
                   color: string;
+                  runCount: number;
                 },
                 index: number,
               ) => (

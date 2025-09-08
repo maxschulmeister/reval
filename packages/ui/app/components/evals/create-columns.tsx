@@ -3,12 +3,7 @@
 import type { Run } from "@reval/core/types";
 import { Status } from "@reval/core/types";
 import "@tanstack/react-table";
-import type {
-  AccessorKeyColumnDef,
-  ColumnDef,
-  Column,
-  RowData,
-} from "@tanstack/react-table";
+import type { Column, ColumnDef, RowData } from "@tanstack/react-table";
 import { ArrowDown, ArrowUp } from "lucide-react";
 import { titleCase } from "text-title-case";
 import { Button } from "../ui/button";
@@ -152,10 +147,7 @@ const flattenObject = (
   });
 };
 
-const createColumn = (
-  accessorKey: string,
-  runs: Run[],
-): ColumnDef<Run> => {
+const createColumn = (accessorKey: string, runs: Run[]): ColumnDef<Run> => {
   const sampleValue = getValueAtPath(runs[0], accessorKey);
   const title = accessorKey.includes(PATH_DELIMITER)
     ? accessorKey.split(PATH_DELIMITER).slice(1).join(" ")
@@ -165,7 +157,8 @@ const createColumn = (
     id: accessorKey,
     header: createSortableHeader(title),
     meta: { type: getColumnType(sampleValue) },
-    accessorFn: (row: Run) => getValueAtPath(row as Record<string, unknown>, accessorKey),
+    accessorFn: (row: Run) =>
+      getValueAtPath(row as Record<string, unknown>, accessorKey),
   };
 };
 

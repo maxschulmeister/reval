@@ -31,10 +31,26 @@ const DataFilterComponent = <TData,>({
   onFilterChange,
   columnVisibilityToggle,
 }: DataFilterProps<TData>) => {
-  // Memoize uniqueness threshold calculation
-  const uniquenessThreshold = useMemo(
-    () => Math.max(2, Math.ceil(data.length / 10)),
-    [data.length],
+  // Calculate filter eligibility based on data-to-variant ratio
+  const shouldCreateFilter = useMemo(
+    () => (uniqueValues: number, columnType: string) => {
+      // String columns: filter is useful when each variant has enough data points
+      // Rule: Each variant should represent at least 2-3 data points on average
+      // This ensures filtering actually groups meaningful amounts of data
+      const runsCount = data.length;
+      const featuresCount = columns.filter((column) =>
+        column.id?.startsWith(`features${PATH_DELIMITER}`),
+      ).length;
+
+      // NOTE: not sure if this is flawed,
+      // but for now we dont want to create filter where the uniqueValues matches exactly the amount of original data
+      // (not data.length as this is already cartesian products)
+      if (uniqueValues === runsCount / (runsCount / featuresCount)) {
+        return false;
+      }
+      return uniqueValues >= 2 && uniqueValues < runsCount / featuresCount;
+    },
+    [data.length, columns],
   );
 
   // Memoize the nested value getter function
@@ -82,11 +98,8 @@ const DataFilterComponent = <TData,>({
 
       const uniqueValues = [...new Set(values)];
 
-      // Only create filter if unique values are equal to or exceed threshold
-      if (
-        (uniqueValues.length >= uniquenessThreshold && type === "string") ||
-        (type === "status" && uniqueValues.length >= 2)
-      ) {
+      // Only create filter if it provides meaningful filtering capability
+      if (shouldCreateFilter(uniqueValues.length, type || "string")) {
         configs.push({
           columnId: columnId,
           options: uniqueValues.map((value) => ({
@@ -99,7 +112,7 @@ const DataFilterComponent = <TData,>({
     });
 
     return configs;
-  }, [data, columns, uniquenessThreshold, columnFilters, getNestedValue]);
+  }, [data, columns, shouldCreateFilter, columnFilters, getNestedValue]);
 
   if (filterConfigs.length === 0) {
     // If no filters but we have a column visibility toggle, show just the toggle
