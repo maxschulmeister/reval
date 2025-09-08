@@ -34,23 +34,9 @@ const DataFilterComponent = <TData,>({
   // Calculate filter eligibility based on data-to-variant ratio
   const shouldCreateFilter = useMemo(
     () => (uniqueValues: number, columnType: string) => {
-      // String columns: filter is useful when each variant has enough data points
-      // Rule: Each variant should represent at least 2-3 data points on average
-      // This ensures filtering actually groups meaningful amounts of data
-      const runsCount = data.length;
-      const featuresCount = columns.filter((column) =>
-        column.id?.startsWith(`features${PATH_DELIMITER}`),
-      ).length;
-
-      // NOTE: not sure if this is flawed,
-      // but for now we dont want to create filter where the uniqueValues matches exactly the amount of original data
-      // (not data.length as this is already cartesian products)
-      if (uniqueValues === runsCount / (runsCount / featuresCount)) {
-        return false;
-      }
-      return uniqueValues >= 2 && uniqueValues < runsCount / featuresCount;
+      return uniqueValues >= 2;
     },
-    [data.length, columns],
+    [],
   );
 
   // Memoize the nested value getter function

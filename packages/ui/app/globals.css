@@ -222,3 +222,7 @@
     }
   }
 }
+
+.pdf-viewer-container .optionBar {
+  display: none !important;
+}

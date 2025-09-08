@@ -15,6 +15,7 @@ export type ColumnMetaType =
   | "number"
   | "string"
   | "boolean"
+  | "file"
   | "";
 
 declare module "@tanstack/react-table" {
@@ -87,6 +88,7 @@ const getColumnOrder = (accessorKey: string): number => {
 const getColumnType = (value: unknown): ColumnMetaType => {
   if (typeof value === "string") {
     if (isStatus(value)) return "status";
+    if (/\.(jpg|jpeg|png|pdf)$/i.test(value)) return "file";
     return "string";
   }
   if (typeof value === "object" || typeof value === "function") return "json";
@@ -110,7 +112,7 @@ const COLUMN_EXPANSION_CONFIG: Record<
   }
 > = {
   result: { depth: -1, exclude: ["output"] }, // Expand infinitely but exclude output
-  score: { depth: 2 },
+  score: { depth: 4 },
   features: { depth: -1 },
   variants: { depth: -1 },
 } as const;

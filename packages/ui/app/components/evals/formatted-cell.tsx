@@ -1,7 +1,9 @@
 import type { Status } from "@reval/core/types";
+
 import jsBeautify from "js-beautify";
 import { memo } from "react";
 import { CodeDialog } from "../code-dialog";
+import { FileDialog } from "../file-dialog";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import { PATH_DELIMITER } from "./constants";
@@ -26,6 +28,21 @@ const FormattedCellComponent = ({
             indent_size: 4,
             indent_char: " ",
           })}
+          trigger={
+            <Button variant="outline" size="sm">
+              View
+            </Button>
+          }
+        />
+      </div>
+    );
+  } else if (type === "file") {
+    return (
+      <div className="flex items-center justify-between gap-4">
+        {value as string}
+        <FileDialog
+          title={header.replace(PATH_DELIMITER, " ")}
+          content={value as string}
           trigger={
             <Button variant="outline" size="sm">
               View
