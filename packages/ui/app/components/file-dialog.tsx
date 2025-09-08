@@ -23,7 +23,7 @@ export const FileDialog = ({ title, content, trigger }: FileDialogProps) => {
   return (
     <Dialog>
       {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
-      <DialogContent className="rounded-radius my-4 h-full w-full border-border bg-background shadow-none">
+      <DialogContent className="rounded-radius h-[calc(100vh-4rem)] w-full border-border bg-background shadow-none">
         <DialogHeader>
           <DialogTitle className="text-foreground capitalize">
             {title}
