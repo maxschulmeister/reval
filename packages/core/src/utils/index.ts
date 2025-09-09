@@ -13,9 +13,9 @@ import type {
   TVariants,
 } from "../types/config";
 
-export * from "./config";
-export * from "./score";
+export * from "./accuracy";
 export * from "./chart";
+export * from "./config";
 
 type ResolvedArg<F extends TFunction> = {
   args: Parameters<F>;
