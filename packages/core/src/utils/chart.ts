@@ -7,11 +7,11 @@ type ColumnExpansionConfig = typeof COLUMN_EXPANSION_CONFIG;
 // Utility function to format field names for display (matches UI table logic)
 export function formatFieldName(fieldName: string): string {
   let formatted = fieldName.includes(PATH_DELIMITER)
-    ? fieldName.split(PATH_DELIMITER).slice(1).join(' ')
+    ? fieldName.split(PATH_DELIMITER).slice(1).join(" ")
     : fieldName;
-  
+
   // Replace underscores with spaces and apply title case
-  formatted = formatted.replace(/_/g, ' ');
+  formatted = formatted.replace(/_/g, " ");
   return titleCase(formatted);
 }
 
@@ -52,13 +52,13 @@ export function flattenObject(
 }
 
 // Helper function to get value at nested path
-export function getValueAtPath(obj: Record<string, unknown>, path: string): unknown {
-  return path.split(PATH_DELIMITER).reduce(
-    (current: unknown, key: string) => {
-      return (current as Record<string, unknown>)?.[key];
-    },
-    obj,
-  );
+export function getValueAtPath(
+  obj: Record<string, unknown>,
+  path: string,
+): unknown {
+  return path.split(PATH_DELIMITER).reduce((current: unknown, key: string) => {
+    return (current as Record<string, unknown>)?.[key];
+  }, obj);
 }
 
 // Generate chart summary data (mirrors data-charts.tsx logic)
@@ -66,9 +66,16 @@ export function generateChartSummary(runs: Run[]) {
   if (!runs || runs.length === 0) return { chartData: [], numericKeys: [] };
 
   // Get all numeric keys from flattened run data
-  const allPaths = [...new Set(runs.flatMap((run) => flattenObject(run as Record<string, unknown>)))];
+  const allPaths = [
+    ...new Set(
+      runs.flatMap((run) => flattenObject(run as Record<string, unknown>)),
+    ),
+  ];
   const numericKeys = allPaths.filter((path) => {
-    const sampleValue = getValueAtPath(runs[0] as Record<string, unknown>, path);
+    const sampleValue = getValueAtPath(
+      runs[0] as Record<string, unknown>,
+      path,
+    );
     return typeof sampleValue === "number";
   });
 

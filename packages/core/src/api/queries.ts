@@ -1,7 +1,12 @@
 import { getDb } from "../db";
 import type { Eval, EvalDetails, EvalSummary } from "../types";
 import { PATH_DELIMITER, COLUMN_EXPANSION_CONFIG } from "../constants";
-import { flattenObject, getValueAtPath, generateChartSummary, formatFieldName } from "../utils";
+import {
+  flattenObject,
+  getValueAtPath,
+  generateChartSummary,
+  formatFieldName,
+} from "../utils";
 
 export async function listEvals(limit = 20): Promise<EvalSummary[]> {
   const prisma = getDb();
@@ -148,8 +153,6 @@ export async function getEvalDetails(
   };
 }
 
-
-
 export async function exportEval(
   eval_id: string,
   format: "json" | "csv" | "md" = "json",
@@ -178,12 +181,20 @@ export async function exportEval(
 
   if (format === "csv") {
     // Generate runs CSV
-    const runHeaders = [...new Set(details.runs.flatMap((run) => flattenObject(run as Record<string, unknown>)))];
+    const runHeaders = [
+      ...new Set(
+        details.runs.flatMap((run) =>
+          flattenObject(run as Record<string, unknown>),
+        ),
+      ),
+    ];
     const runRows = details.runs.map((run) =>
       runHeaders.map((header) => {
         const value = getValueAtPath(run as Record<string, unknown>, header);
-        return value !== null && value !== undefined ? JSON.stringify(value) : "";
-      })
+        return value !== null && value !== undefined
+          ? JSON.stringify(value)
+          : "";
+      }),
     );
     const runsCSV = [runHeaders, ...runRows]
       .map((row) =>
@@ -237,7 +248,11 @@ export async function exportEval(
       markdown += `This section represents the data that would be visualized in the interactive charts.\n\n`;
 
       // Variant performance table with all metrics
-      const tableHeaders = ["Variant", "Run Count", ...numericKeys.map(key => formatFieldName(key))];
+      const tableHeaders = [
+        "Variant",
+        "Run Count",
+        ...numericKeys.map((key) => formatFieldName(key)),
+      ];
       markdown += `| ${tableHeaders.join(" | ")} |\n`;
       markdown += `| ${tableHeaders.map(() => "---").join(" | ")} |\n`;
 
@@ -245,7 +260,9 @@ export async function exportEval(
         const row = [
           item.variantDetails,
           item.runCount.toString(),
-          ...numericKeys.map((key) => (item[key] ? formatNumber(item[key]) : "N/A")),
+          ...numericKeys.map((key) =>
+            item[key] ? formatNumber(item[key]) : "N/A",
+          ),
         ];
         markdown += `| ${row.join(" | ")} |\n`;
       });
@@ -258,32 +275,45 @@ export async function exportEval(
 
     if (details.runs.length > 0) {
       // Get all available fields from the runs data (same logic as UI table)
-       const allFields = [...new Set(details.runs.flatMap((run) => flattenObject(run as Record<string, unknown>)))];
-       
-       // Filter out hidden columns that are typically not shown in UI
-       const hiddenColumns = ["args", "dataIndex", "evalId", "id", "eval_id"];
-       
-       // For markdown, also filter out fields that contain objects (only keep strings and numbers)
-       const visibleFields = allFields.filter(field => {
-         if (hiddenColumns.includes(field)) return false;
-         
-         // Check if this field contains objects in any of the runs
-         const sampleValue = getValueAtPath(details.runs[0] as Record<string, unknown>, field);
-         return typeof sampleValue === "string" || typeof sampleValue === "number" || typeof sampleValue === "boolean";
-       });
-      
+      const allFields = [
+        ...new Set(
+          details.runs.flatMap((run) =>
+            flattenObject(run as Record<string, unknown>),
+          ),
+        ),
+      ];
+
+      // Filter out hidden columns that are typically not shown in UI
+      const hiddenColumns = ["args", "dataIndex", "evalId", "id", "eval_id"];
+
+      // For markdown, also filter out fields that contain objects (only keep strings and numbers)
+      const visibleFields = allFields.filter((field) => {
+        if (hiddenColumns.includes(field)) return false;
+
+        // Check if this field contains objects in any of the runs
+        const sampleValue = getValueAtPath(
+          details.runs[0] as Record<string, unknown>,
+          field,
+        );
+        return (
+          typeof sampleValue === "string" ||
+          typeof sampleValue === "number" ||
+          typeof sampleValue === "boolean"
+        );
+      });
+
       // Create table headers
-        const headers = visibleFields.map(field => formatFieldName(field));
+      const headers = visibleFields.map((field) => formatFieldName(field));
       markdown += `| ${headers.join(" | ")} |\n`;
       markdown += `| ${headers.map(() => "---").join(" | ")} |\n`;
-      
+
       // Add all run data
       details.runs.forEach((run) => {
         const row = visibleFields.map((field) => {
-           const value = getValueAtPath(run as Record<string, unknown>, field);
-           if (typeof value === "number") return formatNumber(value);
-           return String(value || "N/A");
-         });
+          const value = getValueAtPath(run as Record<string, unknown>, field);
+          if (typeof value === "number") return formatNumber(value);
+          return String(value || "N/A");
+        });
         markdown += `| ${row.join(" | ")} |\n`;
       });
       markdown += `\n`;
