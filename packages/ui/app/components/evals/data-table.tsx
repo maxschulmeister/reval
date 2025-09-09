@@ -131,6 +131,9 @@ export const DataTable = ({ eval: evalData, runs }: Reval) => {
                       type={cell.column.columnDef.meta?.type}
                       value={cell.getValue()}
                       header={cell.getContext().column.id}
+                      rowIndex={row.index}
+                      allRows={filteredData}
+                      columnId={cell.column.id}
                     />
                   </TableCell>
                 ))}

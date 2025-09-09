@@ -1,4 +1,4 @@
-import type { Status } from "@reval/core/types";
+import type { Status, Run } from "@reval/core/types";
 
 import { formatFieldName, PATH_DELIMITER } from "@reval/core/client";
 import jsBeautify from "js-beautify";
@@ -12,12 +12,18 @@ interface FormattedCellProps {
   type?: string;
   value: unknown;
   header: string;
+  rowIndex?: number;
+  allRows?: Run[];
+  columnId?: string;
 }
 
 const FormattedCellComponent = ({
   type,
   value,
   header,
+  rowIndex,
+  allRows,
+  columnId,
 }: FormattedCellProps) => {
   if (type === "json" && value) {
     return (
@@ -33,6 +39,9 @@ const FormattedCellComponent = ({
               View
             </Button>
           }
+          rowIndex={rowIndex}
+          allRows={allRows}
+          columnId={columnId}
         />
       </div>
     );
@@ -48,6 +57,9 @@ const FormattedCellComponent = ({
               View
             </Button>
           }
+          rowIndex={rowIndex}
+          allRows={allRows}
+          columnId={columnId}
         />
       </div>
     );
@@ -68,11 +80,14 @@ const FormattedCellComponent = ({
 export const FormattedCell = memo(
   FormattedCellComponent,
   (prevProps, nextProps) => {
-    // Only re-render if value or type actually changed
+    // Only re-render if value, type, or navigation context changed
     return (
       prevProps.value === nextProps.value &&
       prevProps.type === nextProps.type &&
-      prevProps.header === nextProps.header
+      prevProps.header === nextProps.header &&
+      prevProps.rowIndex === nextProps.rowIndex &&
+      prevProps.allRows === nextProps.allRows &&
+      prevProps.columnId === nextProps.columnId
     );
   },
 );
