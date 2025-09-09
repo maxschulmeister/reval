@@ -88,7 +88,7 @@ export function calculateJsonDiffAccuracy(
 export function calculateJsonAccuracy(
   result: JsonValue,
   target: JsonValue,
-): { value: number; details: JsonObject } {
+): { score: number; details: JsonObject } {
   const allAccuracies: number[] = [];
 
   // Helper function to recursively compare objects
@@ -157,7 +157,7 @@ export function calculateJsonAccuracy(
       // For objects, get all unique keys from both objects
       const targetKeys = new Set(Object.keys(targetVal));
       const resultKeys = new Set(Object.keys(resultVal));
-      const allKeys = new Set([...targetKeys, ...resultKeys]);
+      const allKeys: Set<string> = new Set([...targetKeys, ...resultKeys]);
 
       const objectAccuracies: Record<string, JsonValue> = {};
       for (const key of allKeys) {
@@ -180,7 +180,7 @@ export function calculateJsonAccuracy(
   // Calculate mean accuracy
   if (allAccuracies.length === 0) {
     return {
-      value: 100,
+      score: 100,
       details: {},
     }; // Empty objects are considered identical
   }
@@ -188,7 +188,7 @@ export function calculateJsonAccuracy(
   const meanAccuracy =
     allAccuracies.reduce((sum, acc) => sum + acc, 0) / allAccuracies.length;
   return {
-    value: Math.round(meanAccuracy * 100) / 100,
+    score: Math.round(meanAccuracy * 100) / 100,
     details: details as JsonObject,
   };
 }

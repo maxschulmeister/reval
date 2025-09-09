@@ -1,6 +1,10 @@
 "use client";
 
-import { PATH_DELIMITER, getValueAtPath, formatFieldName } from "@reval/core/client";
+import {
+  PATH_DELIMITER,
+  formatFieldName,
+  getValueAtPath,
+} from "@reval/core/client";
 import type { Run } from "@reval/core/types";
 import { type Table } from "@tanstack/react-table";
 import Palette from "iwanthue/palette";

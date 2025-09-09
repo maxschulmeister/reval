@@ -104,24 +104,22 @@ export const Header = ({
         </div>
       </Cell>
 
-      <div className="flex items-center gap-0">
-        <Cell borderLeft>
-          <ThemeSwitcher />
-          <Button
-            variant="outline"
-            onClick={() => window.open("https://www.github.com", "_blank")}
-            className="rounded-radius border-border shadow-none hover:text-primary"
-          >
-            GitHub
-          </Button>
-          <Button
-            onClick={() => window.open("https://www.google.com", "_blank")}
-            className="rounded-radius bg-primary text-primary-foreground shadow-none hover:bg-primary/90"
-          >
-            Documentation
-          </Button>
-        </Cell>
-      </div>
+      <Cell borderLeft>
+        <ThemeSwitcher />
+        <Button
+          variant="outline"
+          onClick={() => window.open("https://www.github.com", "_blank")}
+          className="rounded-radius border-border shadow-none hover:text-primary"
+        >
+          GitHub
+        </Button>
+        <Button
+          onClick={() => window.open("https://www.google.com", "_blank")}
+          className="rounded-radius bg-primary text-primary-foreground shadow-none hover:bg-primary/90"
+        >
+          Documentation
+        </Button>
+      </Cell>
     </div>
   );
 };
