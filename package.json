@@ -1,6 +1,6 @@
 {
   "name": "@rectangle0/reval",
-  "version": "0.0.2-0",
+  "version": "0.0.2-1",
   "description": "A benchmark framework for evaluating LLM applications",
   "author": "Max Schulmeister <mail@kmaxschulmeister.com> (https://github.com/maxschulmeister)",
   "license": "MIT",
