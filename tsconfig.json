@@ -19,5 +19,6 @@
     "noEmit": true,
     "outDir": "./dist"
   },
+  "include": ["packages"],
   "exclude": ["node_modules", "dist", ".reval"]
 }

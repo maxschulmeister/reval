@@ -132,7 +132,7 @@ const AccuracyChartComponent = ({ data }: BaseChartProps) => {
                       <span className="text-[0.70rem] text-muted-foreground uppercase">
                         Average Accuracy
                       </span>
-                      <span className="font-medium text-blue-600">
+                      <span className="font-medium">
                         {data.averageValue.toFixed(1)}
                       </span>
                     </div>

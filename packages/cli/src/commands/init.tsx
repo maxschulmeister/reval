@@ -1,5 +1,6 @@
 import { coreRoot, createDb, DATA_DIR, NAMESPACE } from "@reval/core";
 import { copyFileSync, existsSync, mkdirSync } from "fs";
+import fs from "fs/promises";
 import { Box, Text } from "ink";
 import path from "path";
 import { useEffect, useState } from "react";
@@ -61,10 +62,19 @@ export default function Init({ options }: Props) {
         await createDb(options.force);
         files.push(path.resolve(`.${NAMESPACE}`, `${NAMESPACE}.db (database)`));
 
-        // TODO: We need to edit an existing tsconfig or create a bew tsconfig to include the sample json.
-        // let the user know we did this and that he has to modify it if using other data
-        // "resolveJsonModule": true,
-        // "include": tsconfig.include.push["sample.json"],
+        const tsConfigPath = path.resolve(coreRoot, "tsconfig.json");
+        const tsConfig = {
+          extends: tsConfigPath,
+          compilerOptions: {
+            resolveJsonModule: true,
+            esModuleInterop: true,
+          },
+          include: [`${NAMESPACE}.config.ts`],
+        };
+        await fs.writeFile(
+          path.resolve(coreRoot, `tsconfig.${NAMESPACE}.json`),
+          JSON.stringify(tsConfig, null, 2),
+        );
 
         setCreatedFiles(files);
         setStatus("completed");

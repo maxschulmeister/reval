@@ -76,14 +76,15 @@ export default function List({ options }: Props) {
       {evals.map((evalItem, index) => (
         <Box key={evalItem.id} flexDirection="column" marginBottom={1}>
           <Text>
-            <Text color="green">{index + 1}.</Text> <Text bold>{evalItem.name}</Text>{" "}
-            <Text color="gray">({evalItem.id.slice(0, 8)})</Text>
+            <Text color="green">{index + 1}.</Text>{" "}
+            <Text bold>{evalItem.name}</Text>{" "}
+            <Text color="gray">({evalItem.id})</Text>
           </Text>
           <Text color="gray">
             {" "}
-            {new Date(evalItem.timestamp).toLocaleString()} |{evalItem.totalRuns}{" "}
-            runs |{evalItem.successRate.toFixed(1)}% success |
-            {evalItem.avgTime.toFixed(2)}ms avg
+            {new Date(evalItem.timestamp).toLocaleString()} |
+            {evalItem.totalRuns} runs |{evalItem.successRate.toFixed(1)}%
+            success |{evalItem.avgTime.toFixed(2)}ms avg
           </Text>
           {evalItem.notes && <Text color="gray"> {evalItem.notes}</Text>}
         </Box>

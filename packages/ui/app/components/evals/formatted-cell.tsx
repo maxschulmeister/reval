@@ -1,6 +1,6 @@
-import type { Status, Run } from "@reval/core/types";
+import type { Run, Status } from "@reval/core/types";
 
-import { formatFieldName, PATH_DELIMITER } from "@reval/core/client";
+import { formatFieldName } from "@reval/core/client";
 import jsBeautify from "js-beautify";
 import { memo } from "react";
 import { CodeDialog } from "../code-dialog";

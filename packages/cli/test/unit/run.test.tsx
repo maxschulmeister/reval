@@ -1,6 +1,6 @@
 import { render } from "ink-testing-library";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import Eval from "../../src/commands/eval";
+import Eval from "../../src/commands/run";
 import { waitForComponentCompletion } from "../utils";
 
 // Mock @reval/core

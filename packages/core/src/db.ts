@@ -28,7 +28,6 @@ export const getDb = () => {
   return prisma;
 };
 
-// Clean disconnect function
 export const disconnectDb = async () => {
   if (prisma) {
     await prisma.$disconnect();

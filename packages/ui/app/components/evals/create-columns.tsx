@@ -81,6 +81,7 @@ const getColumnOrder = (accessorKey: string): number => {
 };
 
 const getColumnType = (value: unknown): ColumnMetaType => {
+  if (value === null || value === undefined) return "";
   if (typeof value === "string") {
     if (isStatus(value)) return "status";
     if (/\.(jpg|jpeg|png|pdf)$/i.test(value)) return "file";
@@ -127,7 +128,10 @@ const flattenObject = (
 };
 
 const createColumn = (accessorKey: string, runs: Run[]): ColumnDef<Run> => {
-  const sampleValue = getValueAtPath(runs[0], accessorKey);
+  const sampleValue = getValueAtPath(
+    runs.filter((run) => run.status === "success")[0],
+    accessorKey,
+  );
   const title = formatFieldName(accessorKey);
 
   return {

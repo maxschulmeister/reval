@@ -42,10 +42,10 @@ const VariantsChartComponent = ({ data, table }: BaseChartProps) => {
   }, [data, table]);
 
   const [selectedMetric, setSelectedMetric] = useState<string>(
-    `score${PATH_DELIMITER}accuracy${PATH_DELIMITER}value`,
+    `score${PATH_DELIMITER}accuracy${PATH_DELIMITER}score`,
   );
   const [sortByMetric, setSortByMetric] = useState<string>(
-    `score${PATH_DELIMITER}accuracy${PATH_DELIMITER}value`,
+    `score${PATH_DELIMITER}accuracy${PATH_DELIMITER}score`,
   );
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
 
