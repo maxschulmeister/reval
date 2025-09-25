@@ -8,6 +8,9 @@
 
 _Simplify the evaluation and scoring of functions across multiple variants and datasets with type-safe, declarative configuration._
 
+**🏗️ Note:**
+This project is under active development and construction! Some parts of the codebase are currently "vibe coded" (written quickly to validate ideas) and will be refactored for better structure and maintainability in future releases. We're actively building and improving - stay tuned for updates!
+
 </div>
 
 ## Features
@@ -44,13 +47,13 @@ Get up and running in seconds with a simple initialization command.
 Initialize reval in your project without global installation:
 
 ```bash
-npx reval init
+npx @rectangle0/reval init
 ```
 
 Or install globally for convenience:
 
 ```bash
-npm install -g reval
+npm install -g @rectangle0/reval
 reval init
 ```
 
