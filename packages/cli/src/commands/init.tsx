@@ -71,9 +71,8 @@ export default function Init({ options }: Props) {
         );
 
         // initialize ts config
-        const tsConfigPath = path.resolve(coreRoot, "tsconfig.json");
         const tsConfig = {
-          extends: tsConfigPath,
+          extends: "tsconfig.json",
           compilerOptions: {
             resolveJsonModule: true,
             esModuleInterop: true,
