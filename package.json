@@ -13,7 +13,10 @@
     "prepublishOnly": "yarn build"
   },
   "files": [
-    "packages/*/dist/**",
+    "packages/cli/dist",
+    "packages/core/dist",
+    "packages/ui/dist",
+    "packages/ui/.next",
     "packages/core/reval.prisma",
     "packages/core/sample.json",
     "packages/core/reval.config.ts"
