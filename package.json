@@ -13,13 +13,15 @@
     "prepublishOnly": "yarn build"
   },
   "files": [
-    "packages/cli/dist",
     "packages/core/dist",
-    "packages/ui/dist",
-    "packages/ui/.next",
-    "packages/core/reval.prisma",
+    "packages/core/vite.config.ts",
     "packages/core/sample.json",
-    "packages/core/reval.config.ts"
+    "packages/core/reval.prisma",
+    "packages/core/reval.config.ts",
+    "packages/core/package.json",
+    "packages/cli/dist",
+    "packages/cli/package.json",
+    "packages/ui"
   ],
   "devDependencies": {
     "glob": "^11.0.3",
