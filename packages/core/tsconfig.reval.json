@@ -1,0 +1,10 @@
+{
+  "extends": "/Users/max/Documents/reval/packages/core/tsconfig.json",
+  "compilerOptions": {
+    "resolveJsonModule": true,
+    "esModuleInterop": true
+  },
+  "include": [
+    "reval.config.ts"
+  ]
+}

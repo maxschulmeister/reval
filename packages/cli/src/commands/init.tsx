@@ -1,4 +1,9 @@
-import { coreRoot, createDb, DATA_DIR, NAMESPACE } from "@rectangle0/reval-core";
+import {
+  coreRoot,
+  createDb,
+  DATA_DIR,
+  NAMESPACE,
+} from "@rectangle0/reval-core";
 import { copyFileSync, existsSync, mkdirSync } from "fs";
 import fs from "fs/promises";
 import { Box, Text } from "ink";
@@ -61,7 +66,11 @@ export default function Init({ options }: Props) {
         // Initialize database in current working directory
         await createDb(options.force);
         files.push(path.resolve(`.${NAMESPACE}`, `${NAMESPACE}.db (database)`));
+        files.push(
+          path.resolve(`.${NAMESPACE}`, `${NAMESPACE}.prisma (schema)`),
+        );
 
+        // initialize ts config
         const tsConfigPath = path.resolve(coreRoot, "tsconfig.json");
         const tsConfig = {
           extends: tsConfigPath,
@@ -72,9 +81,10 @@ export default function Init({ options }: Props) {
           include: [`${NAMESPACE}.config.ts`],
         };
         await fs.writeFile(
-          path.resolve(coreRoot, `tsconfig.${NAMESPACE}.json`),
+          `tsconfig.${NAMESPACE}.json`,
           JSON.stringify(tsConfig, null, 2),
         );
+        files.push(`tsconfig.${NAMESPACE}.json`);
 
         setCreatedFiles(files);
         setStatus("completed");

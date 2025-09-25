@@ -1,9 +1,17 @@
 {
   "name": "@rectangle0/reval",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "description": "A benchmark framework for evaluating LLM applications",
   "author": "Max Schulmeister <mail@kmaxschulmeister.com> (https://github.com/maxschulmeister)",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/maxschulmeister/reval.git"
+  },
+  "homepage": "https://github.com/maxschulmeister/reval#readme",
+  "bugs": {
+    "url": "https://github.com/maxschulmeister/reval/issues"
+  },
   "bin": "packages/cli/dist/cli.js",
   "type": "module",
   "scripts": {
@@ -20,8 +28,7 @@
     "packages/core/reval.config.ts",
     "packages/core/package.json",
     "packages/cli/dist",
-    "packages/cli/package.json",
-    "packages/ui"
+    "packages/cli/package.json"
   ],
   "devDependencies": {
     "glob": "^11.0.3",
@@ -33,6 +40,9 @@
   "packageManager": "yarn@4.9.2",
   "engines": {
     "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "dependencies": {
     "@prisma/client": "6.15.0",
