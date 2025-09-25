@@ -1,6 +1,6 @@
 'use server';
 
-import { deleteEval, updateEval } from '@reval/core';
+import { deleteEval, updateEval } from '@rectangle0/reval-core';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 

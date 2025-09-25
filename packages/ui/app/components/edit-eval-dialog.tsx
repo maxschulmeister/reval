@@ -15,7 +15,7 @@ import {
 import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
 import { updateEvalAction } from '../actions/eval-actions';
-import type { Eval } from '@reval/core/types';
+import type { Eval } from '@rectangle0/reval-core/types';
 
 interface EditEvalDialogProps {
   evalItem: Eval;

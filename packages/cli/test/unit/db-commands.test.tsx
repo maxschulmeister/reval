@@ -6,8 +6,8 @@ import Create from '../../src/commands/db/create';
 import Migrate from '../../src/commands/db/migrate';
 import Studio from '../../src/commands/db/studio';
 
-// Mock @reval/core
-vi.mock('@reval/core', () => ({
+// Mock @rectangle0/reval-core
+vi.mock('@rectangle0/reval-core', () => ({
   initializeDatabase: vi.fn(),
   runMigrations: vi.fn(),
 }));
@@ -24,7 +24,7 @@ vi.mock('execa', () => ({
   }),
 }));
 
-import { initializeDatabase, runMigrations } from '@reval/core';
+import { initializeDatabase, runMigrations } from '@rectangle0/reval-core';
 import { execa } from 'execa';
 
 const mockInitializeDatabase = vi.mocked(initializeDatabase);

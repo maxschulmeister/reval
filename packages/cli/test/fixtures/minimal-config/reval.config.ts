@@ -1,4 +1,4 @@
-import { defineConfig } from '@reval/core';
+import { defineConfig } from '@rectangle0/reval-core';
 
 export default defineConfig({
   concurrency: 2,

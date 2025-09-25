@@ -1,6 +1,6 @@
 "use client";
 
-import type { Run } from "@reval/core/types";
+import type { Run } from "@rectangle0/reval-core/types";
 import { PDFViewer, PdfFocusProvider } from "@llamaindex/pdf-viewer";
 import "@llamaindex/pdf-viewer/index.css";
 import Image from "next/image";

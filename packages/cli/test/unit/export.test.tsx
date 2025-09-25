@@ -3,8 +3,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import Export from "../../src/commands/export";
 import { waitForComponentCompletion } from "../utils";
 
-// Mock @reval/core
-vi.mock("@reval/core", () => ({
+// Mock @rectangle0/reval-core
+vi.mock("@rectangle0/reval-core", () => ({
   exportEval: vi.fn(),
 }));
 
@@ -17,7 +17,7 @@ vi.mock("fs", async () => {
   };
 });
 
-import { exportEval } from "@reval/core";
+import { exportEval } from "@rectangle0/reval-core";
 import * as fs from "fs";
 
 const mockExportEval = vi.mocked(exportEval);

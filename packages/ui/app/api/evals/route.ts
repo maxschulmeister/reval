@@ -1,4 +1,4 @@
-import { listEvals } from "@reval/core";
+import { listEvals } from "@rectangle0/reval-core";
 import { NextResponse } from "next/server";
 
 export async function GET() {

@@ -1,4 +1,4 @@
-import { exportEval } from "@reval/core";
+import { exportEval } from "@rectangle0/reval-core";
 import { mkdirSync, writeFileSync } from "fs";
 import { Box, Text } from "ink";
 import { argument, option } from "pastel";

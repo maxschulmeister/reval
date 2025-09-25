@@ -1,4 +1,4 @@
-import { coreRoot, createDb, DATA_DIR, NAMESPACE } from "@reval/core";
+import { coreRoot, createDb, DATA_DIR, NAMESPACE } from "@rectangle0/reval-core";
 import { copyFileSync, existsSync, mkdirSync } from "fs";
 import fs from "fs/promises";
 import { Box, Text } from "ink";

@@ -5,9 +5,9 @@ import {
   PATH_DELIMITER,
   formatFieldName,
   getValueAtPath,
-} from "@reval/core/client";
-import type { Run } from "@reval/core/types";
-import { Status } from "@reval/core/types";
+} from "@rectangle0/reval-core/client";
+import type { Run } from "@rectangle0/reval-core/types";
+import { Status } from "@rectangle0/reval-core/types";
 import "@tanstack/react-table";
 import type { Column, ColumnDef, RowData } from "@tanstack/react-table";
 import { ArrowDown, ArrowUp } from "lucide-react";
@@ -61,7 +61,7 @@ const createSortableHeader = (title: string) => {
   return SortableHeader;
 };
 
-// getValueAtPath is now imported from @reval/core/client
+// getValueAtPath is now imported from @rectangle0/reval-core/client
 
 const getColumnOrder = (accessorKey: string): number => {
   // First check for exact match

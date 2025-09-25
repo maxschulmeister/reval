@@ -1,5 +1,5 @@
 {
-  "name": "reval",
+  "name": "@rectangle0/reval",
   "version": "0.1.0",
   "description": "A benchmark framework for evaluating LLM applications",
   "author": "Max Schulmeister <mail@kmaxschulmeister.com> (https://github.com/maxschulmeister)",
@@ -9,8 +9,15 @@
   "scripts": {
     "build": "npx prisma generate --schema packages/core/reval.prisma && turbo run build",
     "dev": "npx prisma generate --schema packages/core/reval.prisma && turbo run dev",
-    "lint": "npx prisma generate --schema packages/core/reval.prisma && turbo run lint"
+    "lint": "npx prisma generate --schema packages/core/reval.prisma && turbo run lint",
+    "prepublishOnly": "yarn build"
   },
+  "files": [
+    "packages/*/dist/**",
+    "packages/core/reval.prisma",
+    "packages/core/sample.json",
+    "packages/core/reval.config.ts"
+  ],
   "devDependencies": {
     "glob": "^11.0.3",
     "turbo": "^2.5.6"
@@ -24,7 +31,6 @@
   },
   "dependencies": {
     "@prisma/client": "6.15.0",
-    "@reval/cli": "workspace:*",
     "prisma": "^6.15.0"
   }
 }

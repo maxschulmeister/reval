@@ -3,7 +3,7 @@
 import { DataTable } from "@/app/components/evals/data-table";
 import { Summary } from "@/app/components/summary";
 import { useEvalDetails, useEvals } from "@/app/lib/hooks";
-import type { Eval, Reval } from "@reval/core/types";
+import type { Eval, Reval } from "@rectangle0/reval-core/types";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { Header } from "../../components/header";

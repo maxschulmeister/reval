@@ -1,4 +1,4 @@
-import { migrateDb } from "@reval/core";
+import { migrateDb } from "@rectangle0/reval-core";
 import { Box, Text } from "ink";
 import { useEffect, useState } from "react";
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { PATH_DELIMITER, formatFieldName } from "@reval/core/client";
+import { PATH_DELIMITER, formatFieldName } from "@rectangle0/reval-core/client";
 import {
   ArrowDownWideNarrow,
   ArrowRightLeft,

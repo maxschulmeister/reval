@@ -1,4 +1,4 @@
-import { getEvalDetails } from "@reval/core";
+import { getEvalDetails } from "@rectangle0/reval-core";
 import { Box, Text } from "ink";
 import { argument } from "pastel";
 import { useEffect, useState } from "react";

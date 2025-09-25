@@ -1,6 +1,6 @@
 "use client";
 
-import { Status } from "@reval/core/types";
+import { Status } from "@rectangle0/reval-core/types";
 import { Badge } from "../ui/badge";
 
 interface StatusBadgeProps {

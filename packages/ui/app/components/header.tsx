@@ -1,6 +1,6 @@
 "use client";
 
-import type { Eval } from "@reval/core/types";
+import type { Eval } from "@rectangle0/reval-core/types";
 import { Circle, LoaderCircle } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useRouter } from "next/navigation";

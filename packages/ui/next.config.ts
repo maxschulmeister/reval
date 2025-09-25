@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: ["@reval/core"],
+  serverExternalPackages: ["@rectangle0/reval-core"],
   env: {
     REVAL_PROJECT_ROOT: process.env.REVAL_PROJECT_ROOT,
   },

@@ -1,4 +1,4 @@
-import { getEvalDetails } from "@reval/core";
+import { getEvalDetails } from "@rectangle0/reval-core";
 import { NextResponse } from "next/server";
 
 interface RouteParams {

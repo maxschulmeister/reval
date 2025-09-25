@@ -3,12 +3,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import Show from "../../src/commands/show";
 import { waitForComponentCompletion } from "../utils";
 
-// Mock @reval/core
-vi.mock("@reval/core", () => ({
+// Mock @rectangle0/reval-core
+vi.mock("@rectangle0/reval-core", () => ({
   getEvalDetails: vi.fn(),
 }));
 
-import { getEvalDetails } from "@reval/core";
+import { getEvalDetails } from "@rectangle0/reval-core";
 
 const mockGetEvalDetails = vi.mocked(getEvalDetails);
 

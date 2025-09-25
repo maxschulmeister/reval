@@ -1,4 +1,4 @@
-import { listEvals } from "@reval/core";
+import { listEvals } from "@rectangle0/reval-core";
 import { Box, Text } from "ink";
 import { option } from "pastel";
 import { useEffect, useState } from "react";

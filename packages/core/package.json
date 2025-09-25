@@ -1,7 +1,7 @@
 {
-  "name": "@reval/core",
+  "name": "@rectangle0/reval-core",
   "version": "0.1.0",
-  "description": "A benchmark framework for evaluating LLM applications",
+  "description": "Core functionality for the reval benchmark framework",
   "private": true,
   "type": "module",
   "main": "dist/index.js",

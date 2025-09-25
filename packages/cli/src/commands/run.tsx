@@ -1,4 +1,4 @@
-import { loadConfig, runEval } from "@reval/core";
+import { loadConfig, runEval } from "@rectangle0/reval-core";
 import { Box, Text, useApp } from "ink";
 import { option } from "pastel";
 import { useEffect, useState } from "react";

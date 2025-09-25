@@ -1,4 +1,4 @@
-import { defineConfig } from "@reval/core";
+import { defineConfig } from "@rectangle0/reval-core";
 import data from "./sample.json";
 
 export default defineConfig({

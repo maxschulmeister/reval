@@ -1,6 +1,6 @@
 "use client";
 
-import type { Reval } from "@reval/core/types";
+import type { Reval } from "@rectangle0/reval-core/types";
 import jsBeautify from "js-beautify";
 import { useMemo } from "react";
 import { calculateAverageTime, calculateSuccessRate } from "../lib/grouping";

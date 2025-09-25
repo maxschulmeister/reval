@@ -8,13 +8,13 @@ import Export from '../../src/commands/export';
 import { withTempDir, writeFiles } from '../utils';
 import { completeProject } from '../fixtures';
 
-// Mock @reval/core for integration tests
-vi.mock('@reval/core', () => ({
+// Mock @rectangle0/reval-core for integration tests
+vi.mock('@rectangle0/reval-core', () => ({
   initializeDatabase: vi.fn().mockResolvedValue(undefined),
   exportRun: vi.fn(),
 }));
 
-import { initializeDatabase, exportRun } from '@reval/core';
+import { initializeDatabase, exportRun } from '@rectangle0/reval-core';
 
 const mockInitializeDatabase = vi.mocked(initializeDatabase);
 const mockExportRun = vi.mocked(exportRun);

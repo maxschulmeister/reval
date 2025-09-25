@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/app/lib/utils";
-import type { Run } from "@reval/core/types";
+import type { Run } from "@rectangle0/reval-core/types";
 import type { Table } from "@tanstack/react-table";
 import { Check, Columns3Cog } from "lucide-react";
 import { memo } from "react";

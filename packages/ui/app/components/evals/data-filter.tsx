@@ -1,7 +1,7 @@
 "use client";
 
-import { PATH_DELIMITER, formatFieldName } from "@reval/core/client";
-import type { Eval } from "@reval/core/types";
+import { PATH_DELIMITER, formatFieldName } from "@rectangle0/reval-core/client";
+import type { Eval } from "@rectangle0/reval-core/types";
 import { ColumnDef } from "@tanstack/react-table";
 import { memo, useMemo } from "react";
 import { Cell } from "../ui/cell";

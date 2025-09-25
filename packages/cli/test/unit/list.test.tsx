@@ -4,12 +4,12 @@ import { waitForComponentCompletion } from '../utils';
 import { render } from 'ink-testing-library';
 import List from '../../src/commands/list';
 
-// Mock @reval/core
-vi.mock('@reval/core', () => ({
+// Mock @rectangle0/reval-core
+vi.mock('@rectangle0/reval-core', () => ({
   listEvals: vi.fn(),
 }));
 
-import { listEvals } from "@reval/core";
+import { listEvals } from "@rectangle0/reval-core";
 
 const mockListEvals = vi.mocked(listEvals);
 

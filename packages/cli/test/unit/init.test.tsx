@@ -5,8 +5,8 @@ import { existsSync, readFileSync } from 'fs';
 import Init from '../../src/commands/init';
 import { withTempDir, waitForComponentCompletion } from '../utils';
 
-// Mock @reval/core
-vi.mock('@reval/core', () => ({
+// Mock @rectangle0/reval-core
+vi.mock('@rectangle0/reval-core', () => ({
   initializeDatabase: vi.fn(),
 }));
 
@@ -21,7 +21,7 @@ vi.mock('fs', async () => {
   };
 });
 
-import { initializeDatabase } from '@reval/core';
+import { initializeDatabase } from '@rectangle0/reval-core';
 import * as fs from 'fs';
 
 const mockInitializeDatabase = vi.mocked(initializeDatabase);
@@ -136,7 +136,7 @@ describe('Init Command', () => {
     
     expect(configCall).toBeDefined();
     const configContent = configCall![1] as string;
-    expect(configContent).toContain('import { defineConfig } from \'@reval/core\';');
+    expect(configContent).toContain('import { defineConfig } from \'@rectangle0/reval-core\';');
     expect(configContent).toContain('export default defineConfig({');
     expect(configContent).toContain('concurrency: 5');
     expect(configContent).toContain('path: \'./data/sample.csv\'');

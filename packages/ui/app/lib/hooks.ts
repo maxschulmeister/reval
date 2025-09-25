@@ -1,6 +1,6 @@
 "use client";
 
-import type { EvalDetails, EvalSummary } from "@reval/core/types";
+import type { EvalDetails, EvalSummary } from "@rectangle0/reval-core/types";
 import useSWR from "swr";
 
 const fetcher = async (url: string) => {

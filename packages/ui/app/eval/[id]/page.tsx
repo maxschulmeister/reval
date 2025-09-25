@@ -1,5 +1,5 @@
-import { getEvalDetails, listEvals } from "@reval/core";
-import type { Eval } from "@reval/core/types";
+import { getEvalDetails, listEvals } from "@rectangle0/reval-core";
+import type { Eval } from "@rectangle0/reval-core/types";
 import { notFound, redirect } from "next/navigation";
 import { EvalPageClient } from "./page.client";
 

@@ -1,5 +1,5 @@
 {
-  "name": "@reval/cli",
+  "name": "@rectangle0/reval-cli",
   "version": "0.1.0",
   "description": "CLI for the reval benchmark framework",
   "private": true,
@@ -30,7 +30,7 @@
     "typescript": "^5.9.2"
   },
   "dependencies": {
-    "@reval/core": "workspace:*",
+    "@rectangle0/reval-core": "workspace:*",
     "ink": "^4.4.1",
     "pastel": "^3.0.0",
     "react": "^18.2.0",

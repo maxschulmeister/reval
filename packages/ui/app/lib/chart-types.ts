@@ -1,4 +1,4 @@
-import type { Run } from "@reval/core/types";
+import type { Run } from "@rectangle0/reval-core/types";
 import type { Table } from "@tanstack/react-table";
 
 export interface BaseChartProps {

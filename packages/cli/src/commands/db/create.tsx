@@ -1,4 +1,4 @@
-import { createDb } from "@reval/core";
+import { createDb } from "@rectangle0/reval-core";
 import { Box, Text } from "ink";
 import { useEffect, useState } from "react";
 import zod from "zod";

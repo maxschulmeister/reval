@@ -1,4 +1,4 @@
-import type { Status } from "@reval/core";
+import type { Status } from "@rectangle0/reval-core";
 import { quantile } from "simple-statistics";
 
 export type GroupCategory = 1 | 2 | 3;

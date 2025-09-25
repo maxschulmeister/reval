@@ -1,7 +1,7 @@
 import { FileTree } from '../utils';
 
 export const minimalConfig: FileTree = {
-  'reval.config.ts': `import { defineConfig } from '@reval/core';
+  'reval.config.ts': `import { defineConfig } from '@rectangle0/reval-core';
 
 export default defineConfig({
   concurrency: 2,

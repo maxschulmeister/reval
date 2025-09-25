@@ -1,6 +1,6 @@
 "use client";
 
-import type { Run } from "@reval/core/types";
+import type { Run } from "@rectangle0/reval-core/types";
 import flourite from "flourite";
 import jsBeautify from "js-beautify";
 import { ReactNode, useState } from "react";

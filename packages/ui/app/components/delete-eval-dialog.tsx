@@ -16,7 +16,7 @@ import {
 } from './ui/alert-dialog';
 import { deleteEvalAction } from '../actions/eval-actions';
 import { useRouter } from 'next/navigation';
-import type { Eval } from '@reval/core/types';
+import type { Eval } from '@rectangle0/reval-core/types';
 
 interface DeleteEvalDialogProps {
   evalItem: Eval;

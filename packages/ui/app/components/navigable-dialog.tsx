@@ -1,7 +1,7 @@
 "use client";
 
-import { getValueAtPath } from "@reval/core/client";
-import type { Run } from "@reval/core/types";
+import { getValueAtPath } from "@rectangle0/reval-core/client";
+import type { Run } from "@rectangle0/reval-core/types";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { ReactNode, useState } from "react";
 import { Button } from "./ui/button";
